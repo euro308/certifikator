@@ -10,19 +10,14 @@ import { authClient } from "@/server/better-auth/client";
 export function NavbarInside() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
-  user?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || user?.email?.charAt(0).toUpperCase() || "U";
+
   return (
     <nav className="fixed w-full top-0 right-0 left-0 z-50 border-b bg-white/80 backdrop-blur-md">
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between px-6 py-2">
         {/* Logo */}
         <Link
           href={"/"}
-          className="bg-gradient-primary bg-clip-text text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent whitespace-nowrap"
+          className="bg-gradient-primary bg-clip-text text-2xl sm:text-2xl lg:text-3xl font-bold text-transparent whitespace-nowrap"
         >
           Uživatelský panel
         </Link>
@@ -31,25 +26,25 @@ export function NavbarInside() {
         <div className="hidden lg:flex items-center gap-6 lg:gap-8 whitespace-nowrap">
           <Link
             href="/dashboard"
-            className="text-base lg:text-lg xl:text-xl text-gray-700 hover:text-[#E65758] transition-colors font-medium"
+            className="text-base lg:text-base xl:text-lg text-gray-700 hover:text-[#E65758] transition-colors font-medium"
           >
             Domů
           </Link>
           <Link
-            href="/me-certifikaty"
-            className="text-base lg:text-lg xl:text-xl text-gray-700 hover:text-[#E65758] transition-colors font-medium"
+            href="/dashboard/me-certifikaty"
+            className="text-base lg:text-base xl:text-lg text-gray-700 hover:text-[#E65758] transition-colors font-medium"
           >
             Mé certifikáty
           </Link>
           <Link
-            href="/me-sablony"
-            className="text-base lg:text-lg xl:text-xl text-gray-700 hover:text-[#E65758] transition-colors font-medium"
+            href="/dashboard/me-sablony"
+            className="text-base lg:text-base xl:text-lg text-gray-700 hover:text-[#E65758] transition-colors font-medium"
           >
             Mé šablony
           </Link>
           <Link
             href="/galerie"
-            className="text-base lg:text-lg xl:text-xl text-gray-700 hover:text-[#E65758] transition-colors font-medium"
+            className="text-base lg:text-base xl:text-lg text-gray-700 hover:text-[#E65758] transition-colors font-medium"
           >
             Galerie šablon
           </Link>

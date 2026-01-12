@@ -1,64 +1,42 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Award, Users, TrendingUp, Plus, Upload, Download } from "lucide-react";
+import { FileText, Award, Users, Plus } from "lucide-react";
 import Link from "next/link";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { certificates, templates } from "@/server/db/schema";
-import { and, eq, gte } from "drizzle-orm";
 import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
+import { api } from "@/trpc/server";
 
 export default async function Dashboard() {
   let isThisWeeksCertificateChangePositive = false;
   let isThisWeeksTemplateChangePositive = false;
 
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not defined");
-  }
-
-  const db = drizzle(process.env.DATABASE_URL);
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  let certificateCount = -1;
-  let templateCount = -1;
-  let certificateChangeThisWeek = -1;
-  let templateChangeThisWeek = -1;
+  let certificateCount = 999;
+  let templateCount = 999;
+  let certificateChangeThisWeek = 999;
+  let templateChangeThisWeek = 999;
 
 
   if (session?.user) {
-    const userId = session.user.id;
+    certificateCount = await api.certificates.getUserCertificateCount({
+      userId: session.user.id
+    });
 
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    certificateCount = await db.$count(
-      certificates,
-      eq(certificates.userId, userId)
+    templateCount = await api.templates.getUserTemplateCount({
+      userId: session.user.id
+      }
     );
 
-    templateCount = await db.$count(
-      templates,
-      eq(templates.userId, userId)
-    );
+    certificateChangeThisWeek = await api.certificates.pastWeeksChange({
+      userId: session.user.id
+    });
 
-    certificateChangeThisWeek = await db.$count(
-      certificates,
-      and(
-        eq(certificates.userId, userId),
-        gte(certificates.createdAt, weekAgo)
-      )
-    );
-
-    templateChangeThisWeek = await db.$count(
-      templates,
-      and(
-        eq(templates.userId, userId),
-        gte(templates.createdAt, weekAgo)
-      )
-    );
+    templateChangeThisWeek = await api.templates.pastWeeksChange({
+      userId: session.user.id
+    });
   }
 
   if(certificateChangeThisWeek >= 0) {
@@ -70,7 +48,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 pt-24 pb-20">
+    <main className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 pt-1 pb-14">
       <div className="flex justify-center px-6 py-8">
         <div className="w-full max-w-7xl space-y-8">
           {/* Header */}

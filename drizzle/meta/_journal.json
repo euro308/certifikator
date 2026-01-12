@@ -8,6 +8,13 @@
       "when": 1763986497830,
       "tag": "0000_hard_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768162521670,
+      "tag": "0001_bizarre_warbound",
+      "breakpoints": true
     }
   ]
 }

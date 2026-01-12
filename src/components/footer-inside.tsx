@@ -1,8 +1,6 @@
-import Link from "next/link";
-
 export function FooterInside() {
   return (
-    <footer className="absolute bottom-0 flex justify-center items-center border-t w-screen h-s h-12">
+    <footer className="flex justify-center items-center border-t w-full h-12 bg-white">
           {/* Right side - Copyright */}
           <span className="text-base text-gray-500">
             © 2025 Certifikátor.

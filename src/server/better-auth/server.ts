@@ -1,4 +1,4 @@
-import { auth } from ".";
+import { auth } from "./config";
 import { headers } from "next/headers";
 import { cache } from "react";
 

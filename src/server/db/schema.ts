@@ -78,7 +78,7 @@ export const verification = createTable("verification", {
   ),
 });
 
-export const courses = createTable("courses", {
+export const categories = createTable("categories", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull().unique(),
     slug: text("slug").notNull().unique(),
@@ -96,8 +96,8 @@ export const courses = createTable("courses", {
   },
   // Indexing
   (table) => ({
-    slugIdx: uniqueIndex("courses_slug_idx").on(table.slug),
-    activeOrderIdx: index("courses_active_order_idx").on(
+    slugIdx: uniqueIndex("categories_slug_idx").on(table.slug),
+    activeOrderIdx: index("categories_active_order_idx").on(
       table.isActive,
       table.order,
     ),
@@ -109,9 +109,9 @@ export const templates = createTable("templates", {
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    courseId: uuid("course_id")
+    categoryId: uuid("category_id")
       .notNull()
-      .references(() => courses.id, { onDelete: "restrict" }),
+      .references(() => categories.id, { onDelete: "restrict" }),
     name: text("name").notNull(),
     description: text("description"),
     canvasData: jsonb("canvas_data").notNull(),
@@ -134,8 +134,8 @@ export const templates = createTable("templates", {
       table.userId,
       table.deletedAt,
     ),
-    coursePublicIdx: index("templates_course_public_idx").on(
-      table.courseId,
+    categoryPublicIdx: index("templates_category_public_idx").on(
+      table.categoryId,
       table.isPublic,
       table.deletedAt,
     ),
@@ -152,9 +152,9 @@ export const certificates = createTable("certificates", {
     templateId: uuid("template_id").references(() => templates.id, {
       onDelete: "set null",
     }),
-    courseId: uuid("course_id")
+    categoryId: uuid("category_id")
       .notNull()
-      .references(() => courses.id, { onDelete: "restrict" }),
+      .references(() => categories.id, { onDelete: "restrict" }),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -179,8 +179,8 @@ export const certificates = createTable("certificates", {
       table.userId,
       table.createdAt,
     ),
-    courseCreatedIdx: index("certificates_course_created_idx").on(
-      table.courseId,
+    categoryCreatedIdx: index("certificates_category_created_idx").on(
+      table.categoryId,
       table.createdAt,
     ),
     recipientEmailIdx: index("certificates_recipient_email_idx").on(
@@ -206,16 +206,16 @@ export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),
 }));
 
-export const coursesRelations = relations(courses, ({ many }) => ({
+export const categoriesRelations = relations(categories, ({ many }) => ({
   templates: many(templates),
   certificates: many(certificates),
 }));
 
 export const templatesRelations = relations(templates, ({ one, many }) => ({
   user: one(user, { fields: [templates.userId], references: [user.id] }),
-  course: one(courses, {
-    fields: [templates.courseId],
-    references: [courses.id],
+  category: one(categories, {
+    fields: [templates.categoryId],
+    references: [categories.id],
   }),
   certificates: many(certificates),
 }));
@@ -226,9 +226,9 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
     fields: [certificates.templateId],
     references: [templates.id],
   }),
-  course: one(courses, {
-    fields: [certificates.courseId],
-    references: [courses.id],
+  category: one(categories, {
+    fields: [certificates.categoryId],
+    references: [categories.id],
   }),
 }));
 
@@ -237,7 +237,7 @@ export const schema = {
   session,
   account,
   verification,
-  courses,
+  categories,
   templates,
   certificates
 };

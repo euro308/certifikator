@@ -63,7 +63,7 @@ export function UserButton() {
       <DropdownMenu>
         <DropdownMenuTrigger className="outline-none cursor-pointer hover:bg-black/5 p-2 rounded-[0.5rem] transition">
           <div className="flex items-center gap-3 transition-opacity cursor-pointer">
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={user.image ?? undefined} alt={user.name || "User"} />
               <AvatarFallback className="bg-gradient-primary text-white font-semibold">
                 {initials}
@@ -71,31 +71,31 @@ export function UserButton() {
             </Avatar>
 
             <div className="flex flex-col items-start">
-              <span className="text-lg font-semibold text-gray-900">
+              <span className="text-base font-semibold text-gray-900">
                 {user.name || "Uživatel"}
               </span>
-              <span className="text-base text-gray-500">
+              <span className="text-sm text-gray-500">
                 {user.email}
               </span>
             </div>
           </div>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-80">
+        <DropdownMenuContent align="end" className="w-70 h-[10.25rem]">
           {/* User info header */}
           <DropdownMenuLabel className="font-normal">
-            <div className="flex items-center gap-3 py-2">
-              <Avatar className="h-14 w-14">
+            <div className="flex items-center gap-3 py-1">
+              <Avatar className="h-10 w-10">
                 <AvatarImage src={user.image ?? undefined} alt={user.name || "User"} />
                 <AvatarFallback className="bg-gradient-primary text-white font-semibold text-base">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-base font-semibold text-gray-900">
                   {user.name || "Uživatel"}
                 </span>
-                <span className="text-base text-gray-500">
+                <span className="text-sm text-gray-500">
                   {user.email}
                 </span>
               </div>
@@ -107,7 +107,7 @@ export function UserButton() {
           {/* Menu items */}
           <DropdownMenuItem
             onClick={() => router.push("/dashboard/nastaveni-uzivatele")}
-            className="cursor-pointer py-3 text-lg"
+            className="cursor-pointer py-2 text-base"
           >
             <Settings className="mr-2 size-[1.25rem]"/>
             <span>Nastavení</span>
@@ -116,7 +116,7 @@ export function UserButton() {
           <DropdownMenuItem
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="cursor-pointer py-3 0 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+            className="cursor-pointer py-2 0 disabled:opacity-50 disabled:cursor-not-allowed text-base"
           >
             <LogOut className="mr-2 size-[1.25rem]" />
             <span>Odhlásit se</span>

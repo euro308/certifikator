@@ -11,6 +11,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  user: {
+    changeEmail: {
+      enabled: true,
+    },
+  },
+  // TODO: Implement actual email sending
+  emailVerification: {
+     sendOnSignUp: true,
+     sendVerificationEmail: async ({ user, url }) => {
+       console.log("Sending verification email to:", user.email, "URL:", url);
+     },
+  },
   plugins: [
     localization({
       defaultLocale: "fr",

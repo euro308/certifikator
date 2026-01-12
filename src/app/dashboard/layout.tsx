@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { NavbarInside } from "@/components/navbar-inside";
 import { FooterInside } from "@/components/footer-inside";
-import { LoaderOverlay } from "@/components/loader-overlay";
 import React from "react";
 
 export default async function DashboardLayout({
@@ -21,10 +20,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <NavbarInside />
+      <main className="flex-1 w-full pt-12 lg:pt-18">
         {children}
+      </main>
       <FooterInside />
-    </>
+    </div>
   );
 }
