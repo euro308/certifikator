@@ -2,183 +2,241 @@
 // SHAPE PROPERTIES SECTION - Vlastnosti vybraného tvaru
 // =============================================================================
 
-'use client';
+"use client";
 
-import { useEditorContext } from '../editor-context';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import React from "react";
+import { useEditorContext } from "../editor-context";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import React, { useEffect, useState } from "react";
 
 // Definice kategorií tvarů pro zobrazení vlastností
-const REGULAR_SHAPES = ['square', 'circle', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle', ]; // Tvary s poměrem stran 1:1 (nebo specifickým ovládáním)
-const LINE_SHAPES = ['line', 'arrow']; // Čáry a šipky (definované body, ne šířkou/výškou)
+const REGULAR_SHAPES = [
+  "square",
+  "circle",
+  "wedge",
+  "arc",
+  "ring",
+  "star",
+  "regularPolygon",
+  "triangle",
+]; // Tvary s poměrem stran 1:1 (nebo specifickým ovládáním)
+const LINE_SHAPES = ["line", "arrow"]; // Čáry a šipky (definované body, ne šířkou/výškou)
 
 export function ShapePropertiesSection() {
-    const { selectedElement, updateElement } = useEditorContext();
+  const { selectedElement, updateElement } = useEditorContext();
 
-    // Zobrazit pouze pokud je vybrán tvar
-    if (selectedElement?.type !== 'shape') {
-        return null;
+  // ===== LOKÁLNÍ STATE PRO VELIKOST INPUT =====
+  const [shapeWidth, setShapeWidth] = useState<string>("");
+  const [shapeHeight, setShapeHeight] = useState<string>("");
+
+  // ===== SYNCHRONIZUJ STATE S VYBRANÝM PRVKEM =====
+  useEffect(() => {
+    if (selectedElement?.type === 'shape') {
+      setShapeWidth(selectedElement.width.toString());
+      setShapeHeight(selectedElement.height.toString());
     }
+  }, [selectedElement]);
 
-    const shape = selectedElement;
-    const isRegular = REGULAR_SHAPES.includes(shape.shapeType);
-    const isLine = LINE_SHAPES.includes(shape.shapeType);
+  // Zobrazit pouze pokud je vybrán tvar
+  if (selectedElement?.type !== "shape") {
+    return null;
+  }
 
-    // Handlery pro změnu vlastností
-    const handleFillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        updateElement(shape.id, { fill: e.target.value } as any);
-    };
+  const shape = selectedElement;
+  const isRegular = REGULAR_SHAPES.includes(shape.shapeType);
+  const isLine = LINE_SHAPES.includes(shape.shapeType);
 
-    const handleStrokeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        updateElement(shape.id, { stroke: e.target.value } as any);
-    };
+  // Handlery pro změnu vlastností
+  const handleFillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateElement(shape.id, { fill: e.target.value });
+  };
 
-    const handleStrokeWidthChange = (value: number[]) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        updateElement(shape.id, { strokeWidth: value[0] } as any);
-    };
+  const handleStrokeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateElement(shape.id, { stroke: e.target.value });
+  };
 
-    const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseInt(e.target.value, 10);
-        if (!isNaN(val)) {
-            if (isRegular) {
-                // Pro pravidelné tvary měníme oba rozměry
-                updateElement(shape.id, { width: val, height: val });
-            } else {
-                updateElement(shape.id, { width: val });
-            }
-        }
-    };
+  const handleStrokeWidthChange = (value: number[]) => {
+    updateElement(shape.id, { strokeWidth: value[0] });
+  };
 
-    const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseInt(e.target.value, 10);
-        if (!isNaN(val)) {
-            if (isRegular) {
-                updateElement(shape.id, { width: val, height: val });
-            } else {
-                updateElement(shape.id, { height: val });
-            }
-        }
-    };
+  const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Povolit prázdný string (když uživatel maže)
+    setShapeWidth(e.target.value);
 
-    return (
-        <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold text-foreground">
-                Vlastnosti tvaru
-            </h3>
+    const val = parseInt(e.target.value, 10);
 
-            <div className="space-y-3">
-                {/* Rozměry - Skryjeme pro čáry (jsou definované body) */}
-                {!isLine && (
-                    <div className="grid grid-cols-2 gap-2">
-                        {isRegular ? (
-                            <div className="space-y-1 col-span-2">
-                                <Label htmlFor="shape-size" className="text-xs">Velikost (px)</Label>
-                                <Input
-                                    id="shape-size"
-                                    type="number"
-                                    value={Math.round(shape.width)}
-                                    onChange={handleWidthChange}
-                                    className="h-8"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <div className="space-y-1">
-                                    <Label htmlFor="shape-width" className="text-xs">Šířka</Label>
-                                    <Input
-                                        id="shape-width"
-                                        type="number"
-                                        value={Math.round(shape.width)}
-                                        onChange={handleWidthChange}
-                                        className="h-8"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="shape-height" className="text-xs">Výška</Label>
-                                    <Input
-                                        id="shape-height"
-                                        type="number"
-                                        value={Math.round(shape.height)}
-                                        onChange={handleHeightChange}
-                                        className="h-8"
-                                    />
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
+    if (!isNaN(val)) {
+      if (isRegular) {
+        // Pro pravidelné tvary měníme oba rozměry
+        updateElement(shape.id, { width: val, height: val });
+      } else {
+        updateElement(shape.id, { width: val });
+      }
+    }
+  };
 
-                {/* Výplň - Skryjeme pro Line (Arrow může mít výplň šipky) */}
-                {shape.shapeType !== 'line' && (
-                    <div className="space-y-1">
-                        <Label htmlFor="shape-fill" className="text-xs">Výplň</Label>
-                        <div className="flex gap-2">
-                            <input
-                                id="fill-color"
-                                type="color"
-                                value={shape.fill}
-                                onChange={handleFillChange}
-                                className="h-8 w-8 cursor-pointer rounded border"
-                            />
-                            <Input
-                                id="shape-fill"
-                                type="text"
-                                value={shape.fill}
-                                onChange={handleFillChange}
-                                className="h-8 flex-1"
-                                placeholder="#000000 nebo transparent"
-                            />
-                        </div>
-                    </div>
-                )}
+  // ===== BLUR HANDLER - fallback na validní hodnotu =====
+  const handleWidthBlur = () => {
+    const size = parseInt(shapeWidth, 10);
 
-                {/* Obrys */}
+    // Pokud není validní, vrátit původní hodnotu
+    if (isNaN(size) || size <= 0) {
+      setShapeWidth(selectedElement.width.toString());
+    }
+  };
+
+  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Povolit prázdný string (když uživatel maže)
+    setShapeHeight(e.target.value);
+
+    const val = parseInt(e.target.value, 10);
+    if (!isNaN(val)) {
+      if (isRegular) {
+        updateElement(shape.id, { width: val, height: val });
+      } else {
+        updateElement(shape.id, { height: val });
+      }
+    }
+  };
+
+  // ===== BLUR HANDLER - fallback na validní hodnotu =====
+  const handleHeightBlur = () => {
+    const size = parseInt(shapeWidth, 10);
+
+    // Pokud není validní, vrátit původní hodnotu
+    if (isNaN(size) || size <= 0) {
+      setShapeHeight(selectedElement.height.toString());
+    }
+  };
+
+  return (
+    <div className="space-y-4 border-t pt-4">
+      <h3 className="text-foreground text-sm font-semibold">
+        Vlastnosti tvaru
+      </h3>
+
+      <div className="space-y-3">
+        {/* Rozměry - Skryjeme pro čáry (jsou definované body) */}
+        {!isLine && (
+          <div className="grid grid-cols-2 gap-2">
+            {isRegular ? (
+              <div className="col-span-2 space-y-1">
+                <Label htmlFor="shape-size" className="text-xs">
+                  Velikost (px)
+                </Label>
+                <Input
+                  id="shape-size"
+                  type="number"
+                  value={shapeWidth}
+                  onChange={handleWidthChange}
+                  onBlur={handleWidthBlur}
+                  className="h-8"
+                />
+              </div>
+            ) : (
+              <>
                 <div className="space-y-1">
-                    <Label htmlFor="shape-stroke" className="text-xs">
-                        {isLine ? 'Barva čáry' : 'Obrys'}
-                    </Label>
-                    <div className="flex gap-2">
-                        <input
-                            id="stroke-color"
-                            type="color"
-                            value={shape.stroke}
-                            onChange={handleStrokeChange}
-                            className="h-8 w-8 cursor-pointer rounded border"
-                        />
-                        <Input
-                            id="shape-stroke"
-                            type="text"
-                            value={shape.stroke}
-                            onChange={handleStrokeChange}
-                            className="h-8 flex-1"
-                            placeholder="#000000"
-                        />
-                    </div>
+                  <Label htmlFor="shape-width" className="text-xs">
+                    Šířka
+                  </Label>
+                  <Input
+                    id="shape-width"
+                    type="number"
+                    value={shapeWidth}
+                    onChange={handleWidthChange}
+                    onBlur={handleWidthBlur}
+                    className="h-8"
+                  />
                 </div>
+                <div className="space-y-1">
+                  <Label htmlFor="shape-height" className="text-xs">
+                    Výška
+                  </Label>
+                  <Input
+                    id="shape-height"
+                    type="number"
+                    value={shapeHeight}
+                    onChange={handleHeightChange}
+                    onBlur={handleHeightBlur}
+                    className="h-8"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-                {/* Tloušťka obrysu */}
-                <div className="space-y-2">
-                    <div className="flex justify-between">
-                        <Label className="text-xs">
-                            {isLine ? 'Tloušťka čáry' : 'Tloušťka obrysu'}
-                        </Label>
-                        <span className="text-xs text-muted-foreground">{shape.strokeWidth}px</span>
-                    </div>
-                    <Slider
-                        defaultValue={[2]}
-                        value={[shape.strokeWidth]}
-                        min={0}
-                        max={30}
-                        step={1}
-                        onValueChange={handleStrokeWidthChange}
-                    />
-                </div>
+        {/* Výplň - Skryjeme pro Line (Arrow může mít výplň šipky) */}
+        {shape.shapeType !== "line" && (
+          <div className="space-y-1">
+            <Label htmlFor="shape-fill" className="text-xs">
+              Výplň
+            </Label>
+            <div className="flex gap-2">
+              <input
+                id="fill-color"
+                type="color"
+                value={shape.fill}
+                onChange={handleFillChange}
+                className="h-8 w-8 cursor-pointer rounded border"
+              />
+              <Input
+                id="shape-fill"
+                type="text"
+                value={shape.fill}
+                onChange={handleFillChange}
+                className="h-8 flex-1"
+                placeholder="#000000 nebo transparent"
+              />
             </div>
+          </div>
+        )}
+
+        {/* Obrys */}
+        <div className="space-y-1">
+          <Label htmlFor="shape-stroke" className="text-xs">
+            {isLine ? "Barva čáry" : "Obrys"}
+          </Label>
+          <div className="flex gap-2">
+            <input
+              id="stroke-color"
+              type="color"
+              value={shape.stroke}
+              onChange={handleStrokeChange}
+              className="h-8 w-8 cursor-pointer rounded border"
+            />
+            <Input
+              id="shape-stroke"
+              type="text"
+              value={shape.stroke}
+              onChange={handleStrokeChange}
+              className="h-8 flex-1"
+              placeholder="#000000"
+            />
+          </div>
         </div>
-    );
+
+        {/* Tloušťka obrysu */}
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <Label className="text-xs">
+              {isLine ? "Tloušťka čáry" : "Tloušťka obrysu"}
+            </Label>
+            <span className="text-muted-foreground text-xs">
+              {shape.strokeWidth}px
+            </span>
+          </div>
+          <Slider
+            defaultValue={[2]}
+            value={[shape.strokeWidth]}
+            min={0}
+            max={30}
+            step={1}
+            onValueChange={handleStrokeWidthChange}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }

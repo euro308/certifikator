@@ -73,7 +73,7 @@ export function TextFormattingSection() {
       } else {
         newStyle = currentIsItalic ? 'italic bold' : 'bold';
       }
-      updateElement(textElement.id, { fontStyle: newStyle } as any);
+      updateElement(textElement.id, { fontStyle: newStyle });
     };
 
     const toggleItalic = () => {
@@ -87,12 +87,12 @@ export function TextFormattingSection() {
       } else {
         newStyle = currentIsBold ? 'italic bold' : 'italic';
       }
-      updateElement(textElement.id, { fontStyle: newStyle } as any);
+      updateElement(textElement.id, { fontStyle: newStyle });
     };
 
     const toggleUnderline = () => {
       const newDecoration = textElement.textDecoration === 'underline' ? '' : 'underline';
-      updateElement(textElement.id, { textDecoration: newDecoration } as any);
+      updateElement(textElement.id, { textDecoration: newDecoration });
     };
 
     // ===== KEYBOARD HANDLER =====
@@ -146,7 +146,7 @@ export function TextFormattingSection() {
     } else {
       newStyle = currentIsItalic ? 'italic bold' : 'bold';
     }
-    updateElement(textElement.id, { fontStyle: newStyle } as any);
+    updateElement(textElement.id, { fontStyle: newStyle });
   };
 
   /**
@@ -164,7 +164,7 @@ export function TextFormattingSection() {
     } else {
       newStyle = currentIsBold ? 'italic bold' : 'italic';
     }
-    updateElement(textElement.id, { fontStyle: newStyle } as any);
+    updateElement(textElement.id, { fontStyle: newStyle });
   };
 
   /**
@@ -172,12 +172,11 @@ export function TextFormattingSection() {
    */
   const toggleUnderline = () => {
     const newDecoration = textElement.textDecoration === 'underline' ? '' : 'underline';
-    updateElement(textElement.id, { textDecoration: newDecoration } as any);
+    updateElement(textElement.id, { textDecoration: newDecoration });
   };
 
   const handleFontChange = (font: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateElement(textElement.id, { fontFamily: font as FontFamily } as any);
+    updateElement(textElement.id, { fontFamily: font as FontFamily });
   };
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,9 +188,8 @@ export function TextFormattingSection() {
     // Parsovat a validovat
     const size = parseInt(value, 10);
 
-    // Aktualizovat pouze pokud je validní číslo v rozsahu
     if (!isNaN(size) && size >= 8 && size <= 200) {
-      updateElement(textElement.id, { fontSize: size } as any);
+      updateElement(textElement.id, { fontSize: size });
     }
   };
 
@@ -206,13 +204,11 @@ export function TextFormattingSection() {
   };
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateElement(textElement.id, { fill: e.target.value } as any);
+    updateElement(textElement.id, { fill: e.target.value });
   };
 
   const handleAlignChange = (align: TextAlign) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateElement(textElement.id, { align } as any);
+    updateElement(textElement.id, { align });
   };
 
   return (

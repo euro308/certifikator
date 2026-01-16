@@ -30,10 +30,16 @@ interface CanvasElementRendererProps {
  */
 export function CanvasElementRenderer({
     element,
+    isSelected,
     isEditing,
     isPanning,
+    onSelect,
+    onClick,
     onDblClick,
     onDragMove,
+    onDragEnd,
+    onTransform,
+    onTransformEnd,
 }: CanvasElementRendererProps) {
 
     // Společné props pro všechny Konva komponenty
@@ -50,12 +56,31 @@ export function CanvasElementRenderer({
         scaleY: 1,
         opacity: element.opacity,
         draggable: !element.locked && !isEditing && !isPanning,
-        visible: element.visible && !isEditing,
-// Skrýt při editaci (pro text)
+        visible: element.visible && !isEditing, // Skrýt při editaci (pro text)
 
-      // Event handlers
-      onDragMove: onDragMove,
-      hitStrokeWidth: 20,
+        // Event handlers
+        onClick: (e: Konva.KonvaEventObject<MouseEvent>) => onClick(element.id, e),
+        onTap: () => onSelect(element.id),
+        onDragMove: onDragMove,
+        onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => onDragEnd(element.id, e),
+        onTransform: (e: Konva.KonvaEventObject<Event>) => onTransform(element.id, e),
+        onTransformEnd: (e: Konva.KonvaEventObject<Event>) => onTransformEnd(element.id, e),
+
+        // Cursor handling
+        onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
+            if (!isPanning && !element.locked) {
+                const stage = e.target.getStage();
+                if (stage) stage.container().style.cursor = 'move';
+            }
+        },
+        onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
+            if (!isPanning) {
+                const stage = e.target.getStage();
+                if (stage) stage.container().style.cursor = 'default';
+            }
+        },
+        // Zvětšíme oblast pro kliknutí (hit detection) pro tenké čáry a tvary
+        hitStrokeWidth: 20,
     };
 
     // 1. TEXT ELEMENT
@@ -78,7 +103,7 @@ export function CanvasElementRenderer({
 
     // 2. PLACEHOLDER ELEMENT
     if (element.type === 'placeholder') {
-        const placeholderEl = element as any; // Temporary fix until types are fully aligned if needed
+        const placeholderEl = element;
         const displayText = placeholderEl.displayText;
 
         return (

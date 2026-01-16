@@ -60,7 +60,6 @@ export function EditorCanvas() {
         availableHeight / CANVAS_HEIGHT,
         1
     );
-    const displayScale = containerSize.width > 0 ? Math.round(autoScale * 100) : 0;
 
     // Zobrazení zoomu v procentech
     const zoomPercent = Math.round(zoom * 100);

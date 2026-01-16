@@ -10,7 +10,7 @@ import type {
   ShapeElement,
   ImageElement,
   ShapeType,
-  ElementUpdate,
+  AnyElementUpdate,
   PanState,
   TemplateExportData,
 } from './types/canvas-types';
@@ -35,7 +35,7 @@ interface EditorContextType {
   elements: CanvasElement[];
   setElements: (elements: CanvasElement[]) => void;
   addElement: (element: CanvasElement) => void;
-  updateElement: (id: string, updates: ElementUpdate) => void;
+  updateElement: (id: string, updates: AnyElementUpdate) => void;
   deleteElement: (id: string) => void;
   reorderElements: (fromIndex: number, toIndex: number) => void;
 
@@ -119,7 +119,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
 
 
   /** Aktualizuje vlastnosti prvku */
-  const updateElement = useCallback((id: string, updates: ElementUpdate) => {
+  const updateElement = useCallback((id: string, updates: AnyElementUpdate) => {
     setElements(prev =>
       prev.map(el => (el.id === id ? { ...el, ...updates } as CanvasElement : el))
     );
@@ -230,7 +230,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       finalX = centerPos.x;
       finalY = centerPos.y;
     }
-    else if(shapeType === 'triangle') {
+    else if (shapeType === 'triangle') {
       // Hrál jsem si s tím, dokud se to nedalo na center
       const centerPos = getCenteredPosition(0, 0);
       finalX = centerPos.x;

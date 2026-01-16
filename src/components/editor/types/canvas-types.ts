@@ -254,6 +254,17 @@ export const DEFAULT_IMAGE_ELEMENT: Omit<ImageElement, 'id' | 'x' | 'y' | 'name'
 export type ElementUpdate<T extends CanvasElement = CanvasElement> = Partial<Omit<T, 'id' | 'type'>>;
 
 /**
+ * Obecný typ pro aktualizaci libovolného prvku
+ * Použití: Když nevíme přesný typ prvku, ale chceme aktualizovat jeho vlastnosti
+ * Kombinuje všechny možné vlastnosti ze všech typů prvků
+ */
+export type AnyElementUpdate =
+    | ElementUpdate<TextElement>
+    | ElementUpdate<PlaceholderElement>
+    | ElementUpdate<ShapeElement>
+    | ElementUpdate<ImageElement>;
+
+/**
  * Parametry pro vytvoření nového prvku
  */
 export interface CreateElementParams {
