@@ -48,8 +48,8 @@ export default async function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 pt-1 pb-14">
-      <div className="flex justify-center px-6 py-8">
+    <main className="min-h-screen">
+      <div className="flex justify-center px-6">
         <div className="w-full max-w-7xl space-y-8">
           {/* Header */}
           <div>

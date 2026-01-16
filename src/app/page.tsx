@@ -52,6 +52,15 @@ export default async function Home() {
                 Přihlásit se
               </Link>
             </Button>
+
+            <Button
+              size="lg"
+              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Link href={"/dashboard"}>
+                Vstup do systému
+              </Link>
+            </Button>
           </div>
         </section>
 

@@ -135,8 +135,8 @@ export default function NastaveniUzivatele() {
   }
 
   return (
-    <main className="min-h-screen pt-2 pb-20">
-      <div className="mx-auto max-w-4xl px-6 space-y-4">
+    <main className="min-h-screen">
+      <div className="mx-auto px-6 space-y-4">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Nastavení uživatele</h1>
         <p className="text-muted-foreground">

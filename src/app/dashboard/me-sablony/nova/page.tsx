@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { api } from "@/trpc/react";
-import { EditorDialog } from "@/components/editor-dialog";
+import { EditorDialog } from "@/components/editor/editor-dialog";
 import { X, SquarePen } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +20,8 @@ export default function NovaSablona() {
   const mutation = api.templates.createTemplate.useMutation();
 
   const saveMockCanvas = () => {
-    console.log("Zatím prázdné");
+    console.log("Zavírám");
+    setCanvasData(canvasData);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

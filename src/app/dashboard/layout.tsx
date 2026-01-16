@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <NavbarInside />
-      <main className="flex-1 w-full pt-12 lg:pt-18">
+      <main className="flex-1 w-full pt-22 lg:pt-28 pb-10">
         {children}
       </main>
       <FooterInside />
