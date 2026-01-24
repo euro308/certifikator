@@ -20,6 +20,7 @@ interface CanvasElementRendererProps {
     onSelect: (id: string | null) => void;
     onClick: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void;
     onDblClick: (element: TextElement, e: Konva.KonvaEventObject<MouseEvent>) => void;
+    onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => void; // Přidáno
     onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => void;
     onDragEnd: (id: string, e: Konva.KonvaEventObject<DragEvent>) => void;
     onTransform: (id: string, e: Konva.KonvaEventObject<Event>) => void;
@@ -99,6 +100,7 @@ export function CanvasElementRenderer({
     onSelect,
     onClick,
     onDblClick,
+    onDragStart, // Přidáno
     onDragMove,
     onDragEnd,
     onTransform,
@@ -124,6 +126,7 @@ export function CanvasElementRenderer({
         // Event handlers
         onClick: (e: Konva.KonvaEventObject<MouseEvent>) => onClick(element.id, e),
         onTap: () => onSelect(element.id),
+        onDragStart: onDragStart, // Přidáno
         onDragMove: onDragMove,
         onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => onDragEnd(element.id, e),
         onTransform: (e: Konva.KonvaEventObject<Event>) => onTransform(element.id, e),

@@ -1,5 +1,5 @@
 // =============================================================================
-// SELECTION TRANSFORMER - Transformace vybraného prvku
+// SELECTION TRANSFORMER - Transformace vybraného prvku (nebo prvků)
 // =============================================================================
 
 "use client";
@@ -17,20 +17,21 @@ interface SelectionTransformerProps {
 }
 
 /**
- * Komponenta pro zobrazení transformeru kolem vybraného prvku.
- * Zajišťuje automatické připojení k vybranému nodu.
+ * Komponenta pro zobrazení transformeru kolem vybraných prvků.
+ * Zajišťuje automatické připojení k vybraným uzlům.
  */
 export function SelectionTransformer({ editingId, hideGuides, showGuides }: SelectionTransformerProps) {
   const transformerRef = useRef<Konva.Transformer>(null);
-  const { selectedId, elements, selectedElement } = useEditorContext();
+  const { selectedIds, elements, selectedElement, selectedId } = useEditorContext();
 
-  // Automatické připojení k vybranému prvku
+  // Automatické připojení k vybraným prvkům
   useEffect(() => {
     const transformer = transformerRef.current;
     if (!transformer) return;
 
-    // Pokud editujeme text, skryjeme transformer (používá se text editor)
-    if (editingId === selectedId) {
+    // Pokud editujeme text, skryjeme transformer
+    // (pouze pokud je vybrán právě jeden prvek a je to ten editovaný)
+    if (editingId && selectedIds.includes(editingId) && selectedIds.length === 1) {
       transformer.nodes([]);
       return;
     }
@@ -38,58 +39,74 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
     const stage = transformer.getStage();
     if (!stage) return;
 
-    if (selectedId) {
-      const selectedNode = stage.findOne(`#${selectedId}`);
-      if (selectedNode) {
-        transformer.nodes([selectedNode]);
-      } else {
-        transformer.nodes([]);
-      }
+    if (selectedIds.length > 0) {
+      const nodes: Konva.Node[] = [];
+      selectedIds.forEach((id) => {
+        const node = stage.findOne(`#${id}`);
+        if (node) {
+          nodes.push(node);
+        }
+      });
+      transformer.nodes(nodes);
     } else {
       transformer.nodes([]);
     }
-  }, [selectedId, editingId, elements]);
+  }, [selectedIds, editingId, elements]);
 
-  // Handler pro konec transformace (skrytí vodítek)
+  // Handler pro konec transformace
   const handleTransformEnd = () => {
     if (hideGuides) hideGuides();
   };
 
-  // Omezení anchorů pro text, placeholdery, čáry a šipky (pouze změna šířky)
+  // --- LOGIKA PRO ANCHORY ---
+  // Aplikuje se pouze pokud je vybrán JEDEN prvek.
+  // Pokud je vybráno více prvků, použijeme obecné nastavení.
+
+  const isSingleSelection = selectedIds.length === 1;
+
   const onlyMiddleAnchors =
-    selectedElement?.type === "text" ||
-    selectedElement?.type === "placeholder" ||
-    (selectedElement?.type === "shape" &&
-      selectedElement?.shapeType === "line") ||
-    (selectedElement?.type === "shape" &&
-      selectedElement?.shapeType === "arrow");
+    isSingleSelection &&
+    (selectedElement?.type === "text" ||
+      selectedElement?.type === "placeholder" ||
+      (selectedElement?.type === "shape" && selectedElement?.shapeType === "line") ||
+      (selectedElement?.type === "shape" && selectedElement?.shapeType === "arrow"));
 
   const allAnchors =
-    (selectedElement?.type === "shape" &&
-      selectedElement?.shapeType === "rect") ||
-    (selectedElement?.type === "shape" &&
-      selectedElement?.shapeType === "ellipse");
+    isSingleSelection &&
+    selectedElement?.type === "shape" &&
+    (selectedElement?.shapeType === "rect" || selectedElement?.shapeType === "ellipse");
 
-  // Standardně pouze 4 Anchors na krajích (platí pro čtverec, kruh, výseč, oblouk, prstenec, hvězda, pravidelný mnohoúhelník, trojúhelník)
+  // Default: pouze rohy (pro většinu tvarů nebo multi-select)
   let enabledAnchors = ["top-left", "top-right", "bottom-left", "bottom-right"];
+  let shouldKeepRatio = true;
 
-  // Pokud je text/placeholder/šipka/čára, povolíme pouze boční anchory.
-  if (onlyMiddleAnchors) {
-    enabledAnchors = ["middle-left", "middle-right"];
-  }
-
-  // Pokud je obdélník/elipsa, povolíme všechny anchory.
-  if (allAnchors) {
-    enabledAnchors = [
-      "top-left",
-      "top-center",
-      "top-right",
-      "middle-left",
-      "middle-right",
-      "bottom-left",
-      "bottom-center",
-      "bottom-right",
-    ];
+  if (isSingleSelection) {
+    if (onlyMiddleAnchors) {
+      enabledAnchors = ["middle-left", "middle-right"];
+      shouldKeepRatio = false; // Text a čáry měníme jen do šířky
+    } else if (allAnchors) {
+      enabledAnchors = [
+        "top-left", "top-center", "top-right",
+        "middle-left", "middle-right",
+        "bottom-left", "bottom-center", "bottom-right",
+      ];
+      shouldKeepRatio = false; // Obdélník/elipsa lze deformovat
+    } else {
+        // Ostatní tvary (kruh, hvězda...) - jen rohy a zachovat poměr
+        shouldKeepRatio = true;
+    }
+  } else {
+    // Multi-select: Povolit změnu velikosti všemi směry (rohy) a zachovat poměr?
+    // Obvykle u multi-selectu chceme umožnit volné škálování, pokud držíme Shift,
+    // ale Konva Transformer má 'keepRatio' natvrdo.
+    // Nastavíme false, aby šlo deformovat skupinu, pokud uživatel chce?
+    // Většina editorů (Figma) zachovává ratio defaultně, shiftem vypíná.
+    // Konva to má naopak (default false, shift true) nebo podle keepRatio.
+    // Zde necháme keepRatio = false (respektive default chování), aby šlo skupinu roztahovat.
+    shouldKeepRatio = false; 
+    
+    // Pro multi-select povolíme rohy
+    enabledAnchors = ["top-left", "top-right", "bottom-left", "bottom-right"];
   }
 
   return (
@@ -108,24 +125,27 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
       rotateAnchorOffset={25}
       rotateEnabled={true}
       ignoreStroke={true}
-      keepRatio={!onlyMiddleAnchors && !allAnchors}
+      
+      // Dynamické props
+      keepRatio={shouldKeepRatio}
       enabledAnchors={enabledAnchors}
+      
       onTransformEnd={handleTransformEnd}
       boundBoxFunc={(oldBox, newBox) => {
-        // Limit minimální velikosti
         if (newBox.width < 10 || newBox.height < 10) {
           return oldBox;
         }
         return newBox;
       }}
+      
+      // Snapování povolíme i pro multi select
       anchorDragBoundFunc={(oldPos, newPos) => {
         const transformer = transformerRef.current;
         if (!transformer) return newPos;
+        
+        // Snap pokud máme selectedIds a showGuides/hideGuides
+        if (selectedIds.length === 0 || !showGuides || !hideGuides) return newPos;
 
-        // Pokud nemáme funkce pro guides, neřešíme
-        if (!showGuides || !hideGuides || !selectedId) return newPos;
-
-        // Transformace do lokálních souřadnic (protože guides jsou lokální)
         const layer = transformer.getLayer();
         if (!layer) return newPos;
 
@@ -133,8 +153,8 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
         const invTransform = absTransform.copy().invert();
         const localPos = invTransform.point(newPos);
 
-        // Získat snap linky
-        const stops = getResizeSnapPositions(elements, selectedId);
+        // Zde předáváme pole ID, které chceme ignorovat (všechny vybrané)
+        const stops = getResizeSnapPositions(elements, selectedIds);
         const SNAP_THRESHOLD = 5;
         const activeGuides: SnapLine[] = [];
 
@@ -171,14 +191,12 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
           activeGuides.push({ orientation: 'H', position: bestSnapY, type: 'center' });
         }
 
-        // Zobrazení/skrytí vodítek
         if (activeGuides.length > 0) {
           showGuides(activeGuides);
         } else {
           hideGuides();
         }
 
-        // Návrat do absolutních souřadnic
         if (bestSnapX !== null || bestSnapY !== null) {
           return absTransform.point({ x: snappedX, y: snappedY });
         }

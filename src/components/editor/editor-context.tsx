@@ -32,12 +32,19 @@ interface EditorContextType {
   // Prvky na plátně
   elements: CanvasElement[];
   setElements: (elements: CanvasElement[]) => void;
-  addElement: (element: CanvasElement) => void;
+  addElement: (element: CanvasElement, shouldSelect?: boolean) => void;
   updateElement: (id: string, updates: AnyElementUpdate, saveHistory?: boolean) => void;
   deleteElement: (id: string) => void;
+  deleteSelectedElements: () => void; // New method for multi-delete
   reorderElements: (fromIndex: number, toIndex: number) => void;
 
-  // Výběr
+  // Výběr (Multi-select)
+  selectedIds: string[];
+  setSelectedIds: (ids: string[]) => void;
+  toggleSelection: (id: string) => void;
+  clearSelection: () => void;
+
+  // Zpětná kompatibilita pro UI (vrací hodnotu jen pokud je vybrán přesně 1 prvek)
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   selectedElement: CanvasElement | null;
@@ -86,37 +93,78 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
   // Stav prvků
   const [elements, setElements] = useState<CanvasElement[]>(initialData?.elements ?? []);
 
-  // Stav výběru
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Stav výběru (Multi-select)
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Stav zoomu a panningu
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<PanState>({ x: 0, y: 0 });
-
-  // Vybraný prvek (memoizovaný)
-  const selectedElement = useMemo(
-    () => elements.find(el => el.id === selectedId) ?? null,
-    [elements, selectedId]
-  );
 
   // Undo/Redo hook
   const { undo: undoHook, redo: redoHook, canUndo, canRedo, addToHistory } = useUndoRedo({
     initialElements: initialData?.elements ?? [],
   });
 
-  // Undo funkce
+  // ==========================================================================
+  // HELPERS PRO VÝBĚR (COMPUTED VALUES)
+  // ==========================================================================
+
+  // Zpětná kompatibilita: selectedId vrátí string jen pokud je vybrán právě jeden prvek.
+  // Jinak vrátí null (takže se skryjí sidebary).
+  const selectedId = useMemo(() => {
+    return selectedIds.length === 1 && selectedIds[0] ? selectedIds[0] : null;
+  }, [selectedIds]);
+
+  const selectedElement = useMemo(
+    () => {
+      if (selectedIds.length !== 1) return null;
+      return elements.find(el => el.id === selectedIds[0]) ?? null;
+    },
+    [elements, selectedIds]
+  );
+
+  // Wrapper pro nastavení jednoho ID (kompatibilita)
+  const setSelectedId = useCallback((id: string | null) => {
+    if (id === null) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds([id]);
+    }
+  }, []);
+
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds([]);
+  }, []);
+
+  // ==========================================================================
+  // UNDO / REDO
+  // ==========================================================================
+
   const undo = useCallback(() => {
     const previousElements = undoHook();
     if (previousElements) {
       setElements(previousElements);
+      // Po undo raději zrušíme výběr, abychom nevybírali neexistující prvky
+      // (Nebo bychom museli filtrovat selectedIds podle nových elements)
+      setSelectedIds([]);
     }
   }, [undoHook]);
 
-  // Redo funkce
   const redo = useCallback(() => {
     const nextElements = redoHook();
     if (nextElements) {
       setElements(nextElements);
+      setSelectedIds([]);
     }
   }, [redoHook]);
 
@@ -125,13 +173,15 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
   // ==========================================================================
 
   /** Přidá nový prvek */
-  const addElement = useCallback((element: CanvasElement) => {
+  const addElement = useCallback((element: CanvasElement, shouldSelect = false) => {
     setElements(prev => {
       const newElements = [...prev, element];
       addToHistory(newElements);
       return newElements;
     });
-    setSelectedId(element.id);
+    if (shouldSelect) {
+      setSelectedIds([element.id]);
+    }
   }, [addToHistory]);
 
   /** Aktualizuje vlastnosti prvku */
@@ -147,20 +197,32 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
     });
   }, [addToHistory]);
 
-  /** Smaže prvek */
+  /** Smaže konkrétní prvek (legacy) */
   const deleteElement = useCallback((id: string) => {
     setElements(prev => {
-      // Pokud prvek neexistuje, nic nedělej
       if (!prev.find(el => el.id === id)) return prev;
-
       const newElements = prev.filter(el => el.id !== id);
       addToHistory(newElements);
       return newElements;
     });
-    if (selectedId === id) {
-      setSelectedId(null);
-    }
-  }, [selectedId, addToHistory]);
+    // Pokud byl smazaný prvek ve výběru, odebereme ho
+    setSelectedIds(prev => prev.filter(itemId => itemId !== id));
+  }, [addToHistory]);
+
+  /** Smaže všechny vybrané prvky */
+  const deleteSelectedElements = useCallback(() => {
+    if (selectedIds.length === 0) return;
+
+    setElements(prev => {
+      const newElements = prev.filter(el => !selectedIds.includes(el.id));
+      // Pokud se nic nezměnilo (teoreticky nemožné), neukládáme historii
+      if (newElements.length === prev.length) return prev;
+      
+      addToHistory(newElements);
+      return newElements;
+    });
+    setSelectedIds([]);
+  }, [selectedIds, addToHistory]);
 
   /** Přeuspořádá prvky (pro vrstvy) */
   const reorderElements = useCallback((fromIndex: number, toIndex: number) => {
@@ -224,8 +286,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
   /** Vytvoří tvarový prvek */
   const createShapeElement = useCallback((shapeType: ShapeType) => {
     const id = generateId();
-    // Určení, zda je tvar definován středem (např. Kruh, Hvězda) nebo levým horním rohem (Obdélník)
-    // Tvary, které se vykreslují od středu:
+    // Určení, zda je tvar definován středem
     const isCenteredShape = [
       'circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon',
     ].includes(shapeType);
@@ -344,6 +405,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       ...DEFAULT_IMAGE_ELEMENT,
       id,
       x: position.x,
+
       y: position.y,
       width,
       height,
@@ -353,7 +415,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       name: `Obrázek ${elementCount}`,
     };
 
-    addElement(element);
+    addElement(element, false);
   }, [elements, addElement]);
 
   // ==========================================================================
@@ -408,9 +470,16 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
     addElement,
     updateElement,
     deleteElement,
+    deleteSelectedElements,
     reorderElements,
 
-    // Výběr
+    // Výběr (Multi-select)
+    selectedIds,
+    setSelectedIds,
+    toggleSelection,
+    clearSelection,
+    
+    // Zpětná kompatibilita
     selectedId,
     setSelectedId,
     selectedElement,

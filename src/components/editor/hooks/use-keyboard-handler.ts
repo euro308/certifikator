@@ -3,24 +3,28 @@ import { useEditorContext } from '../editor-context';
 
 export function useKeyboardHandler() {
   const {
-    selectedId,
-    deleteElement,
+    selectedIds, // Používáme pole ID
+    setSelectedIds,
+    deleteSelectedElements, // Používáme hromadné mazání
     updateElement,
-    selectedElement,
     addElement,
     undo,
     redo,
-    addToHistory, // Předpokládám, že toto voláte pro uložení stavu
+    addToHistory,
     elements
   } = useEditorContext();
 
-  // Ref pro aktuální element, abychom v event listeneru měli vždy čerstvá data
-  // a nemuseli listener neustále obnovovat.
-  const selectedElementRef = useRef(selectedElement);
+  // Refy pro přístup k čerstvým datům v event listeneru
+  const selectedIdsRef = useRef(selectedIds);
+  const elementsRef = useRef(elements);
 
   useEffect(() => {
-    selectedElementRef.current = selectedElement;
-  }, [selectedElement]);
+    selectedIdsRef.current = selectedIds;
+  }, [selectedIds]);
+
+  useEffect(() => {
+    elementsRef.current = elements;
+  }, [elements]);
 
   // Ref, abychom věděli, že jsme při tomto stisku klávesy provedli změnu (pro historii)
   const hasMovedRef = useRef(false);
@@ -38,11 +42,20 @@ export function useKeyboardHandler() {
         return;
       }
 
-      // --- POHYB ŠIPKAMI (Stejně jako v dokumentaci) ---
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        const currentElement = selectedElementRef.current;
+      const currentSelectedIds = selectedIdsRef.current;
+      const currentElements = elementsRef.current;
 
-        if (selectedId && currentElement) {
+      // --- CTRL + A (SELECT ALL) ---
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        const allIds = currentElements.map(el => el.id);
+        setSelectedIds(allIds);
+        return;
+      }
+
+      // --- POHYB ŠIPKAMI ---
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (currentSelectedIds.length > 0) {
           e.preventDefault();
 
           const step = e.shiftKey ? 10 : 1;
@@ -54,39 +67,48 @@ export function useKeyboardHandler() {
           if (e.key === 'ArrowUp') dy = -step;
           if (e.key === 'ArrowDown') dy = step;
 
-          // Okamžitý update (žádná animace, spoléháme na repeat rate klávesnice)
-          updateElement(selectedId, {
-            x: currentElement.x + dx,
-            y: currentElement.y + dy,
+          // Aktualizovat všechny vybrané prvky
+          currentSelectedIds.forEach(id => {
+            const el = currentElements.find(item => item.id === id);
+            if (el) {
+              updateElement(id, {
+                x: el.x + dx,
+                y: el.y + dy,
+              });
+            }
           });
 
-          // Poznačíme si, že došlo k pohybu (pro uložení historie po puštění klávesy)
+          // Poznačíme si, že došlo k pohybu
           hasMovedRef.current = true;
         }
       }
 
       // DELETE / BACKSPACE
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedId) {
+        if (currentSelectedIds.length > 0) {
           e.preventDefault();
-          deleteElement(selectedId);
+          deleteSelectedElements();
         }
       }
 
-      // CTRL+C (Duplicate)
+      // CTRL+C (Duplicate) - zatím pouze pro jeden prvek (pro zjednodušení)
+      // TODO: Implementovat multi-duplicate
       if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-        const currentElement = selectedElementRef.current;
-        if (selectedId && currentElement) {
-          e.preventDefault();
-          const newId = `el_${Date.now()}_copy`;
-          const copy = {
-            ...currentElement,
-            id: newId,
-            x: currentElement.x + 20,
-            y: currentElement.y + 20,
-            name: `${currentElement.name} (kopie)`,
-          };
-          addElement(copy);
+        if (currentSelectedIds.length === 1) {
+          const id = currentSelectedIds[0];
+          const el = currentElements.find(item => item.id === id);
+          if (el) {
+            e.preventDefault();
+            const newId = `el_${Date.now()}_copy`;
+            const copy = {
+              ...el,
+              id: newId,
+              x: el.x + 20,
+              y: el.y + 20,
+              name: `${el.name} (kopie)`,
+            };
+            addElement(copy);
+          }
         }
       }
 
@@ -100,22 +122,18 @@ export function useKeyboardHandler() {
         }
       }
     },
-    [selectedId, deleteElement, updateElement, addElement, undo, redo]
+    [setSelectedIds, deleteSelectedElements, updateElement, addElement, undo, redo] // dependencies are stable methods
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     // Pokud jsme pustili šipku a předtím proběhl pohyb, uložíme historii.
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       if (hasMovedRef.current) {
-        // Tady zavoláme uložení do historie.
-        // Ideální je zavolat to bez argumentů, pokud si Context sám sáhne pro aktuální stav,
-        // nebo tomu předat aktuální stav elementů.
-        if (addToHistory) addToHistory(elements);
-
+        if (addToHistory) addToHistory(elementsRef.current);
         hasMovedRef.current = false;
       }
     }
-  }, [addToHistory, elements]);
+  }, [addToHistory]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

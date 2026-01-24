@@ -196,11 +196,11 @@ export function getCenteredPosition(
 
 export function getResizeSnapPositions(
   elements: CanvasElement[],
-  skipId: string | null,
+  skipIds: string[],
   canvasWidth: number = CANVAS_WIDTH,
   canvasHeight: number = CANVAS_HEIGHT
 ) {
-  return getLineGuideStops(elements, skipId, canvasWidth, canvasHeight);
+  return getLineGuideStops(elements, skipIds, canvasWidth, canvasHeight);
 }
 
 // --- HLAVNÍ HOOK ---
@@ -230,7 +230,7 @@ export function useSnapToCenter({
       }
 
       // 1. Zjistit cíle (ostatní prvky + plátno)
-      const stops = getLineGuideStops(elements, activeId, canvasWidth, canvasHeight);
+      const stops = getLineGuideStops(elements, [activeId], canvasWidth, canvasHeight);
 
       // 2. Zjistit hrany hýbaného objektu (nyní bere v potaz i typ tvaru)
       const edges = getObjectSnappingEdges(bounds);

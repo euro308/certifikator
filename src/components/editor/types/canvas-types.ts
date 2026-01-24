@@ -181,7 +181,7 @@ export interface CenteringGuides {
 export const DEFAULT_TEXT_ELEMENT: Omit<TextElement, 'id' | 'x' | 'y' | 'name'> = {
     type: 'text',
     text: 'Nový text',
-    width: 101, // 101 přesně na text "Nový text"
+    width: 110, // 110 přesně na text "Nový text" v boldu
     height: 24,
     rotation: 0,
     opacity: 1,
