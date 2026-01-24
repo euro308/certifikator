@@ -24,9 +24,8 @@ export function useTemplateDraft() {
     const saveDraft = useCallback((data: TemplateExportData) => {
         try {
             localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
-            console.log('[Draft] Šablona uložena do localStorage');
-        } catch (error) {
-            console.error('[Draft] Chyba při ukládání:', error);
+        } catch {
+          alert("Uložení konceptu se nezdařilo!");
         }
     }, []);
 
@@ -38,12 +37,10 @@ export function useTemplateDraft() {
         try {
             const stored = localStorage.getItem(DRAFT_KEY);
             if (stored) {
-                console.log('[Draft] Šablona načtena z localStorage');
                 return JSON.parse(stored) as TemplateExportData;
             }
             return null;
-        } catch (error) {
-            console.error('[Draft] Chyba při načítání:', error);
+        } catch {
             return null;
         }
     }, []);
@@ -53,7 +50,6 @@ export function useTemplateDraft() {
      */
     const clearDraft = useCallback(() => {
         localStorage.removeItem(DRAFT_KEY);
-        console.log('[Draft] Šablona smazána z localStorage');
     }, []);
 
     /**

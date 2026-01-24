@@ -45,7 +45,6 @@ function ImageElementRenderer({ element, commonProps }: ImageElementRendererProp
     const crossOrigin = element.src.startsWith('data:') ? undefined : 'anonymous';
     const [image, status] = useImage(element.src, crossOrigin);
 
-    console.log("[ImageElementRenderer] Rendering image:", element.id, "status:", status, "src length:", element.src?.length);
 
     // Pokud se obrázek načítá, zobrazíme placeholder
     if (status === 'loading') {
@@ -62,7 +61,6 @@ function ImageElementRenderer({ element, commonProps }: ImageElementRendererProp
 
     // Pokud selhalo načítání
     if (status === 'failed') {
-        console.error("[ImageElementRenderer] Failed to load image", element.id);
         return (
             <Rect
                 {...commonProps}

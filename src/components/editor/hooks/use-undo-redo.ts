@@ -34,14 +34,12 @@ export function useUndoRedo({ initialElements = [], maxHistory = 50 }: UseUndoRe
     // Pro undo/redo to nevadí, ale musíme vědět, že current index v refu odpovídá délce-1
     setCurrentIndex(newHistory.length - 1);
 
-    console.log(`[UndoRedo] Added to history. Size: ${newHistory.length}, Index: ${newHistory.length - 1}`);
   }, [currentIndex, maxHistory]);
 
   const undo = useCallback(() => {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
-      console.log(`[UndoRedo] Undo to index: ${newIndex}`);
       return historyRef.current[newIndex];
     }
     return null;
@@ -51,7 +49,6 @@ export function useUndoRedo({ initialElements = [], maxHistory = 50 }: UseUndoRe
     if (currentIndex < historyRef.current.length - 1) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
-      console.log(`[UndoRedo] Redo to index: ${newIndex}`);
       return historyRef.current[newIndex];
     }
     return null;

@@ -203,7 +203,7 @@ export function ShapePropertiesSection() {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="space-y-4 border-t pt-4 pb-4">
+      <div className="space-y-4 border-t pt-4 pb-2">
         <CollapsibleTrigger asChild>
           <div className={"flex items-center justify-start gap-1"}>
             {isOpen ? (

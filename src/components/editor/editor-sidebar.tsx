@@ -31,21 +31,14 @@ export function EditorSidebar() {
           <AddElementSection />
           <AddShapeSection />
 
-          <div className="my-4 border-t" />
-
           {/* SEKCE: Formátování textu (zobrazí se při výběru textu) */}
           <TextFormattingSection />
-          <ShapePropertiesSection />
 
-          <div className="my-4 border-t" />
+          {/* SEKCE: Vlastnosti tvaru (zobrazí se při výběru tvaru) */}
+          <ShapePropertiesSection />
 
           {/* SEKCE: Vrstvy */}
           <LayersSection />
-
-          {/* Placeholder pro další sekce */}
-          <div className="pt-4 border-t text-center text-muted-foreground">
-            <p className="text-xs">(další nástroje budou doplněny)</p>
-          </div>
 
         </div>
       </ScrollArea>

@@ -45,14 +45,10 @@ export function AddElementSection() {
    * Zpracuje vybraný soubor a vytvoří ImageElement
    */
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[Image Upload] handleFileChange triggered");
     const file = event.target.files?.[0];
     if (!file) {
-      console.log("[Image Upload] No file selected");
       return;
     }
-
-    console.log("[Image Upload] File selected:", file.name, file.type, file.size);
 
     // Kontrola typu souboru
     if (!file.type.startsWith("image/")) {
@@ -64,24 +60,18 @@ export function AddElementSection() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
-      console.log("[Image Upload] FileReader loaded, base64 length:", base64?.length);
 
       // Získat rozměry obrázku
       const img = new window.Image();
       img.onload = () => {
-        console.log("[Image Upload] Image dimensions:", img.width, "x", img.height);
-        console.log("[Image Upload] Calling createImageElement...");
         createImageElement(base64, img.width, img.height);
-        console.log("[Image Upload] createImageElement called successfully");
       };
       img.onerror = (err) => {
-        console.error("[Image Upload] Image load error:", err);
         alert("Nepodařilo se načíst obrázek.");
       };
       img.src = base64;
     };
     reader.onerror = (err) => {
-      console.error("[Image Upload] FileReader error:", err);
       alert("Nepodařilo se přečíst soubor.");
     };
     reader.readAsDataURL(file);
