@@ -109,7 +109,6 @@ export function CanvasElementRenderer({
 
     // Společné props pro všechny Konva komponenty
     const commonProps = {
-        key: element.id,
         id: element.id,
         name: element.name,
         x: element.x,

@@ -228,13 +228,13 @@ export function useSnapToCenter({
   const [guides, setGuides] = useState<SnapLine[]>([]);
 
   const checkSnap = useCallback(
-    (bounds: ElementBounds, activeId: string): SnapResult => {
+    (bounds: ElementBounds, activeId: string | string[]): SnapResult => {
       if (!enabled) {
         return { x: bounds.x, y: bounds.y, guides: [] };
       }
 
       // 1. Zjistit cíle (ostatní prvky + plátno)
-      const stops = getLineGuideStops(elements, [activeId], canvasWidth, canvasHeight);
+      const stops = getLineGuideStops(elements, activeId, canvasWidth, canvasHeight);
 
       // 2. Zjistit hrany hýbaného objektu (nyní bere v potaz i typ tvaru)
       const edges = getObjectSnappingEdges(bounds);

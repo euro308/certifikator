@@ -139,7 +139,7 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
       }}
 
       // Snapování povolíme i pro multi select
-      anchorDragBoundFunc={(newPos) => {
+      anchorDragBoundFunc={(_oldPos, newPos) => {
         const transformer = transformerRef.current;
         if (!transformer) return newPos;
 

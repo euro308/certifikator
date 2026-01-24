@@ -503,7 +503,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     
     // checkSnap vrátí opravené x/y pro levý horní roh groupBounds
     // Do skipIds pošleme celou skupinu, aby se nechytala sama sebe
-    const snapResult = checkSnap(groupBounds, 'group-selection'); 
+    const snapResult = checkSnap(groupBounds, selectedIds); 
     
     // 4. Vypočítáme "Snap Delta" (rozdíl mezi snapped pozicí a hrubou pozicí)
     const snapDx = snapResult.x - minX;
