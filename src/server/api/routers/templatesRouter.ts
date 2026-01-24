@@ -47,7 +47,7 @@ export const templatesRouter = createTRPCRouter({
   createTemplate: protectedProcedure
     .input(
       z.object({
-        name: z.string(),
+        name: z.string().min(1),
         description: z.string().optional(),
         canvasData: z.any(),
         placeholders: z.array(z.string()), // Changed to string array as per editor
@@ -67,7 +67,6 @@ export const templatesRouter = createTRPCRouter({
             name: "Obecné",
             slug: "obecne",
             description: "Výchozí kategorie",
-            isVerified: true,
           })
           .returning();
       }

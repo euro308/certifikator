@@ -17,7 +17,7 @@ export function NavbarInside() {
         {/* Logo */}
         <Link
           href={"/"}
-          className="bg-gradient-primary bg-clip-text text-2xl sm:text-2xl lg:text-3xl font-bold text-transparent whitespace-nowrap"
+          className="bg-gradient-primary bg-clip-text text-2xl sm:text-2xl lg:text-3xl font-bold text-transparent whitespace-nowrap select-none"
         >
           Uživatelský panel
         </Link>

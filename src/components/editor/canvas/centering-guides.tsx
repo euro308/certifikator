@@ -1,43 +1,47 @@
-// =============================================================================
-// CENTERING GUIDES - Vodící čáry pro zarovnání na střed
-// =============================================================================
-
-'use client';
-
+import React from 'react';
 import { Line } from 'react-konva';
-import type { CenteringGuides as CenteringGuidesType } from '../types/canvas-types';
+import type { SnapLine } from "@/components/editor/hooks/use-snap-to-center";
 
 interface CenteringGuidesProps {
-    guides: CenteringGuidesType;
-    canvasWidth: number;
-    canvasHeight: number;
+  guides: SnapLine[];
+  canvasWidth: number;
+  canvasHeight: number;
+  lineColor?: string;
 }
 
-/**
- * Komponenta vykreslující vodící čáry (modré přerušované)
- * Zobrazuje se, když je draggovaný prvek blízko středu plátna
- */
-export function CenteringGuides({ guides, canvasWidth, canvasHeight }: CenteringGuidesProps) {
-    return (
-        <>
-            {guides.showVertical && (
-                <Line
-                    points={[guides.verticalX, 0, guides.verticalX, canvasHeight]}
-                    stroke="#3b82f6"
-                    strokeWidth={1}
-                    dash={[4, 4]}
-                    listening={false}
-                />
-            )}
-            {guides.showHorizontal && (
-                <Line
-                    points={[0, guides.horizontalY, canvasWidth, guides.horizontalY]}
-                    stroke="#3b82f6"
-                    strokeWidth={1}
-                    dash={[4, 4]}
-                    listening={false}
-                />
-            )}
-        </>
-    );
+export function CenteringGuides({
+                                  guides,
+                                  canvasWidth,
+                                  canvasHeight,
+                                  lineColor = 'rgb(0, 161, 255)', // Klasická "Konva/Figma" modrá
+                                }: CenteringGuidesProps) {
+  if (!guides || guides.length === 0) {
+    return null;
+  }
+
+  return (
+    <>
+      {guides.map((guide, i) => {
+        // Body čáry: [x1, y1, x2, y2]
+        // Pro Vertikální: X je fixní (position), Y jde od 0 do výšky plátna
+        // Pro Horizontální: Y je fixní (position), X jde od 0 do šířky plátna
+        const points =
+          guide.orientation === 'V'
+            ? [guide.position, 0, guide.position, canvasHeight]
+            : [0, guide.position, canvasWidth, guide.position];
+
+        return (
+          <Line
+            key={`${guide.orientation}-${i}`}
+            points={points}
+            stroke={lineColor}
+            strokeWidth={1}
+            dash={[4, 6]} // Přerušovaná čára
+            listening={false} // Aby neblokovala myš
+            perfectDrawEnabled={false} // Optimalizace výkonu
+          />
+        );
+      })}
+    </>
+  );
 }

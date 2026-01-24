@@ -1,121 +1,161 @@
-// =============================================================================
-// TEXT EDITOR - Komponenta pro editaci textu uvnitř Konva Stage
-// =============================================================================
-// Používá Html z react-konva-utils - přesně podle Konva dokumentace
+"use client";
 
-'use client';
-
-import { useRef, useEffect } from 'react';
-import { Html } from 'react-konva-utils';
-import type Konva from 'konva';
+import { useRef, useEffect } from "react";
+import { Html } from "react-konva-utils";
+import type Konva from "konva";
 
 interface TextEditorProps {
-    textNode: Konva.Text;
-    onClose: () => void;
-    onChange: (newText: string) => void;
-    initialValue?: string; // Volitelná počáteční hodnota (pro placeholdery)
+  textNode: Konva.Text;
+  onClose: () => void;
+  onChange: (newText: string, newHeight: number) => void;
+  initialValue?: string;
 }
 
-/**
- * Textarea komponenta pro editaci textu
- * Přesně podle Konva dokumentace
- */
-function TextArea({ textNode, onClose, onChange, initialValue }: TextEditorProps) {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+function TextArea({
+                    textNode,
+                    onClose,
+                    onChange,
+                    initialValue,
+                  }: TextEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => {
-        if (!textareaRef.current) return;
+  useEffect(() => {
+    if (!textareaRef.current) return;
 
-        const textarea = textareaRef.current;
-        const textPosition = textNode.position();
+    const textarea = textareaRef.current;
+    const textPosition = textNode.position();
+    const textWidth = textNode.width();
+    const fontSize = textNode.fontSize();
+    const lineHeight = textNode.lineHeight();
 
-        // Match styles with the text node
-        textarea.value = initialValue ?? textNode.text();
-        textarea.style.position = 'absolute';
-        textarea.style.top = `${textPosition.y}px`;
-        textarea.style.left = `${textPosition.x}px`;
-        textarea.style.width = `${textNode.width() - textNode.padding() * 2}px`;
-        textarea.style.height = `${textNode.height() - textNode.padding() * 2 + 5}px`;
-        textarea.style.fontSize = `${textNode.fontSize()}px`;
-        textarea.style.border = 'none';
-        textarea.style.padding = '0px';
-        textarea.style.margin = '0px';
-        textarea.style.overflow = 'hidden';
-        textarea.style.background = 'none';
-        textarea.style.outline = 'none';
-        textarea.style.resize = 'none';
-        textarea.style.lineHeight = String(textNode.lineHeight());
-        textarea.style.fontFamily = textNode.fontFamily();
-        textarea.style.transformOrigin = 'left top';
-        textarea.style.textAlign = textNode.align();
-        textarea.style.color = textNode.fill() as string;
+    // Nastavení hodnoty
+    textarea.value = initialValue ?? textNode.text();
 
-        const rotation = textNode.rotation();
-        let transform = '';
-        if (rotation) {
-            transform += `rotateZ(${rotation}deg)`;
-        }
-        textarea.style.transform = transform;
+    // Pozice a rozměry
+    textarea.style.position = "absolute";
+    textarea.style.top = `${textPosition.y}px`;
+    textarea.style.left = `${textPosition.x}px`;
+    textarea.style.width = `${textWidth}px`;
+    textarea.style.maxWidth = `${textWidth}px`;
 
-        textarea.style.height = 'auto';
-        textarea.style.height = `${textarea.scrollHeight + 3}px`;
+    // Fonty
+    textarea.style.fontSize = `${fontSize}px`;
+    textarea.style.fontFamily = textNode.fontFamily();
+    textarea.style.lineHeight = String(lineHeight);
+    textarea.style.textAlign = textNode.align();
+    textarea.style.color = textNode.fill() as string;
 
-        textarea.focus();
+    // Layout
+    textarea.style.padding = "0px";
+    textarea.style.margin = "0px";
+    textarea.style.border = "none";
+    textarea.style.outline = "none";
+    textarea.style.resize = "none";
+    textarea.style.background = "none";
 
-        const handleOutsideClick = (e: MouseEvent) => {
-            if (e.target !== textarea) {
-                onChange(textarea.value);
-                onClose();
-            }
-        };
+    // Word wrap
+    textarea.style.whiteSpace = "pre-wrap";
+    textarea.style.overflowWrap = "break-word";
 
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                e.stopPropagation();
-                onChange(textarea.value);
-                onClose();
-            }
-        };
+    // Scroll
+    textarea.style.overflow = "hidden"; // ← Hidden pro auto-resize
+    textarea.style.overflowY = "hidden";
 
-        const handleInput = () => {
-            const scale = textNode.getAbsoluteScale().x;
-            textarea.style.width = `${textNode.width() * scale}px`;
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight + textNode.fontSize()}px`;
-        };
+    // Transform
+    textarea.style.transformOrigin = "left top";
+    const rotation = textNode.rotation();
+    if (rotation) {
+      textarea.style.transform = `rotateZ(${rotation}deg)`;
+    }
 
-        textarea.addEventListener('keydown', handleKeyDown);
-        textarea.addEventListener('input', handleInput);
-        setTimeout(() => {
-            window.addEventListener('click', handleOutsideClick);
-        });
+    // ===== AUTO-RESIZE VÝŠKY =====
+    const updateHeight = () => {
+      textarea.style.height = 'auto';
+      const scrollHeight = textarea.scrollHeight;
 
-        return () => {
-            textarea.removeEventListener('keydown', handleKeyDown);
-            textarea.removeEventListener('input', handleInput);
-            window.removeEventListener('click', handleOutsideClick);
-        };
-    }, [textNode, onChange, onClose, initialValue]);
+      // ===== MINIMÁLNÍ VÝŠKA = 1 řádek =====
+      const minHeight = Math.ceil(fontSize * lineHeight);
+      const finalHeight = Math.max(scrollHeight, minHeight);
+      const totalHeight = finalHeight === textNode.fontSize() * 2 ? textNode.fontSize() : finalHeight;
 
-    return (
-        <textarea
-            ref={textareaRef}
-            style={{
-                minHeight: '1em',
-                position: 'absolute',
-            }}
-        />
-    );
+      textarea.style.height = `${totalHeight}px`;
+    };
+
+    // Počáteční výška
+    updateHeight();
+    textarea.focus();
+    textarea.select();
+
+    // ===== HANDLERS =====
+
+    const saveAndClose = () => {
+      textarea.style.height = 'auto';
+      const scrollHeight = textarea.scrollHeight;
+
+      // Minimální výška = 1 řádek
+      const minHeight = Math.ceil(fontSize * lineHeight);
+      const finalHeight = Math.max(scrollHeight, minHeight);
+      const totalHeight = finalHeight === textNode.fontSize() * 2 ? textNode.fontSize() : finalHeight;
+
+      onChange(textarea.value, totalHeight);
+      onClose();
+    };
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (e.target !== textarea) {
+        saveAndClose();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape - zavřít
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        saveAndClose();
+      }
+
+      // Ctrl+Enter - uložit a zavřít
+      if (e.key === "Enter" && e.ctrlKey) {
+        e.preventDefault();
+        saveAndClose();
+      }
+    };
+
+    const handleInput = () => {
+      updateHeight();
+    };
+
+    // Posluchače
+    textarea.addEventListener("keydown", handleKeyDown);
+    textarea.addEventListener("input", handleInput);
+
+    setTimeout(() => {
+      window.addEventListener("click", handleOutsideClick);
+    }, 100);
+
+    return () => {
+      textarea.removeEventListener("keydown", handleKeyDown);
+      textarea.removeEventListener("input", handleInput);
+      window.removeEventListener("click", handleOutsideClick);
+    };
+  }, [textNode, onChange, onClose, initialValue]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      style={{
+        minHeight: "1em",
+        position: "absolute",
+      }}
+    />
+  );
 }
 
-/**
- * TextEditor wrapper - používá Html z react-konva-utils
- */
 export function TextEditor(props: TextEditorProps) {
-    return (
-        <Html>
-            <TextArea {...props} />
-        </Html>
-    );
+  return (
+    <Html>
+      <TextArea {...props} />
+    </Html>
+  );
 }

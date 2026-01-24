@@ -181,8 +181,8 @@ export interface CenteringGuides {
 export const DEFAULT_TEXT_ELEMENT: Omit<TextElement, 'id' | 'x' | 'y' | 'name'> = {
     type: 'text',
     text: 'Nový text',
-    width: 200,
-    height: 50,
+    width: 101, // 101 přesně na text "Nový text"
+    height: 24,
     rotation: 0,
     opacity: 1,
     visible: true,
@@ -200,8 +200,8 @@ export const DEFAULT_TEXT_ELEMENT: Omit<TextElement, 'id' | 'x' | 'y' | 'name'> 
  */
 export const DEFAULT_PLACEHOLDER_ELEMENT: Omit<PlaceholderElement, 'id' | 'x' | 'y' | 'name' | 'placeholderKey' | 'displayText'> = {
     type: 'placeholder',
-    width: 200,
-    height: 50,
+    width: 143, // 143 přesně na text "Proměnná"
+    height: 25,
     rotation: 0,
     opacity: 1,
     visible: true,

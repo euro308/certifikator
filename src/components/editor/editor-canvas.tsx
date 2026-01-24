@@ -9,6 +9,7 @@
 import { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useEditorContext } from './editor-context';
+import { useKeyboardHandler } from "@/components/editor/hooks/use-keyboard-handler";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from './types/canvas-types';
 
 // Dynamický import Konva komponenty BEZ server-side renderování
@@ -32,6 +33,9 @@ export function EditorCanvas() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const { elements, zoom } = useEditorContext();
+
+    // Klávesové zkratky
+    useKeyboardHandler();
 
     // Měření velikosti kontejneru
     useEffect(() => {
@@ -71,7 +75,7 @@ export function EditorCanvas() {
             style={{ minHeight: '400px' }}
         >
             {/* Debug info */}
-            <div className="absolute top-2 right-2 text-xs text-gray-500 dark:text-gray-400 z-10 bg-white/80 dark:bg-black/50 px-2 py-1 rounded">
+            <div className="absolute top-2 right-2 text-xs text-gray-500 dark:text-gray-400 z-10 bg-white/80 dark:bg-black/50 px-2 py-1 rounded select-none">
                 Prvků: {elements.length} | Zoom: {zoomPercent}%
             </div>
 
@@ -81,16 +85,6 @@ export function EditorCanvas() {
                     containerWidth={containerSize.width}
                     containerHeight={containerSize.height}
                 />
-            )}
-
-            {/* Overlay pro prázdné plátno */}
-            {elements.length === 0 && containerSize.width > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                        <p className="text-lg font-medium">Plátno je prázdné</p>
-                        <p className="text-sm">Přidejte prvky pomocí panelu vlevo</p>
-                    </div>
-                </div>
             )}
         </div>
     );

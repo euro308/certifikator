@@ -36,7 +36,7 @@ export function UserButton() {
 
   if (isPending) {
     return (
-      <div className="flex items-center gap-3 p-2">
+      <div className="flex items-center gap-3 p-2 select-none">
         <Skeleton className="h-12 w-12 rounded-full" />
         <div className="flex flex-col gap-2">
           <Skeleton className="h-5 w-24" />
@@ -62,7 +62,7 @@ export function UserButton() {
 
       <DropdownMenu>
         <DropdownMenuTrigger className="outline-none cursor-pointer hover:bg-black/5 p-2 rounded-[0.5rem] transition">
-          <div className="flex items-center gap-3 transition-opacity cursor-pointer">
+          <div className="flex items-center gap-3 transition-opacity cursor-pointer select-none">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.image ?? undefined} alt={user.name || "User"} />
               <AvatarFallback className="bg-gradient-primary text-white font-semibold">

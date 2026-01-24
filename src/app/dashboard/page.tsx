@@ -130,7 +130,7 @@ export default async function Dashboard() {
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="rounded-full bg-green-100 p-2">
-                    <Award className="h-4 w-4 text-green-600" />
+                    <Award className="size-4 text-green-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">
@@ -142,7 +142,7 @@ export default async function Dashboard() {
 
                 <div className="flex items-start gap-3">
                   <div className="rounded-full bg-blue-100 p-2">
-                    <FileText className="h-4 w-4 text-blue-600" />
+                    <FileText className="size-4 text-blue-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">
@@ -154,7 +154,7 @@ export default async function Dashboard() {
 
                 <div className="flex items-start gap-3">
                   <div className="rounded-full bg-purple-100 p-2">
-                    <Users className="h-4 w-4 text-purple-600" />
+                    <Users className="size-4 text-purple-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">

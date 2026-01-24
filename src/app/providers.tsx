@@ -15,8 +15,8 @@ export function Providers({ children }: { children: ReactNode }) {
     <TRPCReactProvider>
       <AuthUIProvider
         authClient={authClient}
-        navigate={router.push}
-        replace={router.replace}
+        navigate={(to) => router.push(to)}
+        replace={(to) => router.replace(to)}
         onSessionChange={() => {
           // Clear router cache (protected routes)
           router.refresh();

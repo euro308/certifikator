@@ -3,11 +3,13 @@
 // =============================================================================
 
 import React from 'react';
-import { Text, Rect, Circle, Ellipse, Wedge, Line, Arrow, Arc, Ring, Star, RegularPolygon } from 'react-konva';
+import { Text, Rect, Circle, Ellipse, Wedge, Line, Arrow, Arc, Ring, Star, RegularPolygon, Image } from 'react-konva';
+import useImage from 'use-image';
 import type Konva from 'konva';
 import type {
     CanvasElement,
     TextElement,
+    ImageElement,
 } from '../types/canvas-types';
 
 interface CanvasElementRendererProps {
@@ -23,6 +25,67 @@ interface CanvasElementRendererProps {
     onTransform: (id: string, e: Konva.KonvaEventObject<Event>) => void;
     onTransformEnd: (id: string, e: Konva.KonvaEventObject<Event>) => void;
 }
+
+// =============================================================================
+// IMAGE ELEMENT COMPONENT - Separátní komponenta pro obrázky (kvůli useImage hook)
+// =============================================================================
+
+interface ImageElementRendererProps {
+    element: ImageElement;
+    commonProps: Record<string, unknown>;
+}
+
+/**
+ * Vykresluje obrázek na plátno
+ * Potřebuje separátní komponentu kvůli použití useImage hooku
+ */
+function ImageElementRenderer({ element, commonProps }: ImageElementRendererProps) {
+    // Rozhodnutí o crossOrigin: pro data URI "undefined" (jinak chyba v Chrome), pro URL "anonymous"
+    const crossOrigin = element.src.startsWith('data:') ? undefined : 'anonymous';
+    const [image, status] = useImage(element.src, crossOrigin);
+
+    console.log("[ImageElementRenderer] Rendering image:", element.id, "status:", status, "src length:", element.src?.length);
+
+    // Pokud se obrázek načítá, zobrazíme placeholder
+    if (status === 'loading') {
+        return (
+            <Rect
+                {...commonProps}
+                fill="#f5f5f5"
+                stroke="#ccc"
+                strokeWidth={1}
+                dash={[5, 5]}
+            />
+        );
+    }
+
+    // Pokud selhalo načítání
+    if (status === 'failed') {
+        console.error("[ImageElementRenderer] Failed to load image", element.id);
+        return (
+            <Rect
+                {...commonProps}
+                fill="#ffebeb"
+                stroke="#ff4d4d"
+                strokeWidth={2}
+            />
+        );
+    }
+
+    // Pokud je obrázek načtený
+    return (
+        <Image
+            {...commonProps}
+            image={image}
+            // Zajištění překreslení při změně src
+            key={`${element.id}-${element.src.slice(0, 20)}`}
+        />
+    );
+}
+
+// =============================================================================
+// MAIN CANVAS ELEMENT RENDERER
+// =============================================================================
 
 /**
  * Komponenta zodpovědná za vykreslení konkrétního prvku na plátno
@@ -96,6 +159,7 @@ export function CanvasElementRenderer({
                 textDecoration={textEl.textDecoration}
                 align={textEl.align}
                 fill={textEl.fill}
+                wrap="word"
                 onDblClick={(e) => onDblClick(textEl, e)}
             />
         );
@@ -116,6 +180,7 @@ export function CanvasElementRenderer({
                 textDecoration={placeholderEl.textDecoration}
                 align={placeholderEl.align}
                 fill={placeholderEl.fill}
+                wrap="word"
                 onDblClick={(e) => onDblClick(element as unknown as TextElement, e)}
             />
         );
@@ -164,7 +229,7 @@ export function CanvasElementRenderer({
                 return (
                     <Wedge
                         {...shapeProps}
-                        radius={shapeEl.width / 2}
+                        radius={shapeEl.outerRadius ?? 50}
                         angle={shapeEl.angle ?? 60}
                         x={shapeEl.x}
                         y={shapeEl.y}
@@ -250,5 +315,16 @@ export function CanvasElementRenderer({
                 );
         }
     }
+
+    // 4. IMAGE ELEMENT
+    if (element.type === 'image') {
+        return (
+            <ImageElementRenderer
+                element={element}
+                commonProps={commonProps}
+            />
+        );
+    }
+
     return null;
 }
