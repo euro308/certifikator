@@ -9,14 +9,14 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/server/better-auth/client";
 import { LoaderOverlay } from "@/components/loader-overlay";
 
-export default function Prihlaseni() {
+function PrihlaseniContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -185,5 +185,13 @@ export default function Prihlaseni() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Prihlaseni() {
+  return (
+    <Suspense fallback={<LoaderOverlay />}>
+      <PrihlaseniContent />
+    </Suspense>
   );
 }
