@@ -293,12 +293,36 @@ export function ShapePropertiesSection() {
 
             {/* Pointer properties - pouze pro Arrow */}
             {shape.shapeType === "arrow" && (
-              <>
-                {/* ... (no changes needed inside inputs, handlers are already connected to onBlur via previous replace, check if logic holds) */}
-                {/* Actually, previous replace only updated handlers definitions. I need to ensure onBlur calls them. */}
-                {/* In existing code, onBlur={handlePointerLengthBlur} was already there. My previous step UPDATED handlePointerLengthBlur to save history. */}
-                {/* So I only need to add onBlur/onValueCommit where missing. */}
-              </>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="arrow-pointer-width" className="text-xs">
+                    Šířka ukazatele
+                  </Label>
+                  <Input
+                    id="arrow-pointer-width"
+                    type="number"
+                    min={1}
+                    value={parseInt(arrowPointerWidth, 10)}
+                    onChange={handlePointerWidthChange}
+                    onBlur={handlePointerWidthBlur}
+                    className="h-8"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="arrow-pointer-length" className="text-xs">
+                    Délka ukazatele
+                  </Label>
+                  <Input
+                    id="arrow-pointer-length"
+                    type="number"
+                    min={1}
+                    value={parseInt(arrowPointerLength, 10)}
+                    onChange={handlePointerLengthChange}
+                    onBlur={handlePointerLengthBlur}
+                    className="h-8"
+                  />
+                </div>
+              </div>
             )}
 
             {/* Radius properties - Arc, Ring, Star */}

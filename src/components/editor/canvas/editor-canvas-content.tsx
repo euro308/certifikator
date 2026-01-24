@@ -40,7 +40,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   // Stav pro panning
   const [isPanning, setIsPanning] = useState(false);
   const lastPanPosition = useRef<{ x: number; y: number } | null>(null);
-  
+
   // Ref pro drag start pozice (pro multi-select move)
   const dragStartPosRef = useRef<Record<string, { x: number; y: number }>>({});
 
@@ -56,16 +56,16 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   });
 
   // Kontext editoru
-  const { 
-    elements, 
+  const {
+    elements,
     selectedIds, // Používáme selectedIds
-    setSelectedIds, 
+    setSelectedIds,
     toggleSelection,
-    updateElement, 
-    zoom, 
-    setZoom, 
-    pan, 
-    setPan 
+    updateElement,
+    zoom,
+    setZoom,
+    pan,
+    setPan
   } = useEditorContext();
 
   // Hook pro snapping
@@ -122,22 +122,22 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     // 2. Left mouse button on EMPTY space -> SELECTION RECT
     // Ignorujeme, pokud klikáme na transformer nebo prvek (to řeší handleElementClick/Drag)
     const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === 'background';
-    
+
     if (e.evt.button === 0 && clickedOnEmpty) {
       // Zrušíme výběr, pokud nedržíme Shift/Ctrl (standardní chování)
       // Ale pozor: handleStageClick se volá při "click", toto je "mousedown".
       // Pokud tady zrušíme výběr, uživatel neuvidí, že se něco děje, dokud nezačne táhnout.
-      // Raději to necháme na handleStageClick pro prosté kliknutí, 
+      // Raději to necháme na handleStageClick pro prosté kliknutí,
       // a zde pouze připravíme výběr.
-      
+
       const stage = stageRef.current;
       if (!stage) return;
-      
+
       // Získáme pointer relativně k Stage (v souřadnicích scény - Layeru)
       // Použijeme absolutní transformaci a její inverzi pro převod z screen coords do world coords
       const transform = stage.getAbsoluteTransform().copy().invert();
       const pos = transform.point(stage.getPointerPosition()!);
-      
+
       if (pos) {
         setIsSelecting(true);
         isSelectingRef.current = true;
@@ -169,10 +169,10 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     if (isSelecting) {
       const stage = stageRef.current;
       if (!stage) return;
-      
+
       const transform = stage.getAbsoluteTransform().copy().invert();
       const pos = transform.point(stage.getPointerPosition()!);
-      
+
       if (pos) {
         setSelectionRect(prev => ({
           ...prev,
@@ -204,12 +204,12 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
       // Pokud byl výběr velmi malý (jen kliknutí), neřešíme ho zde (řeší handleStageClick)
       const dist = Math.sqrt(
-        Math.pow(selectionRect.x2 - selectionRect.x1, 2) + 
+        Math.pow(selectionRect.x2 - selectionRect.x1, 2) +
         Math.pow(selectionRect.y2 - selectionRect.y1, 2)
       );
-      
+
       if (dist < 5) {
-        return; 
+        return;
       }
 
       // Vypočítat box výběru (normalizovaný na kladnou šířku/výšku)
@@ -222,27 +222,27 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
       const foundIds: string[] = [];
       const layer = stage.getLayers()[0];
-      
+
       if (layer) {
-          elements.forEach(el => {
-            const node = layer.findOne(`#${el.id}`);
-            if (node) {
-               // Získáme bounding box elementu relativně k layeru (stejný souřadný systém jako selBox)
-               const nodeRect = node.getClientRect({ relativeTo: layer });
-               
-               // Manuální kontrola průniku (AABB)
-               const hasIntersection = !(
-                 nodeRect.x > selBox.x + selBox.width ||
-                 nodeRect.x + nodeRect.width < selBox.x ||
-                 nodeRect.y > selBox.y + selBox.height ||
-                 nodeRect.y + nodeRect.height < selBox.y
-               );
-               
-               if (hasIntersection) {
-                 foundIds.push(el.id);
-               }
+        elements.forEach(el => {
+          const node = layer.findOne(`#${el.id}`);
+          if (node) {
+            // Získáme bounding box elementu relativně k layeru (stejný souřadný systém jako selBox)
+            const nodeRect = node.getClientRect({ relativeTo: layer });
+
+            // Manuální kontrola průniku (AABB)
+            const hasIntersection = !(
+              nodeRect.x > selBox.x + selBox.width ||
+              nodeRect.x + nodeRect.width < selBox.x ||
+              nodeRect.y > selBox.y + selBox.height ||
+              nodeRect.y + nodeRect.height < selBox.y
+            );
+
+            if (hasIntersection) {
+              foundIds.push(el.id);
             }
-          });
+          }
+        });
       }
 
       // Shift key logika pro přidání k výběru?
@@ -267,9 +267,9 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
         lastPanPosition.current = null;
       }
       if (isSelecting) {
-          setIsSelecting(false);
-          isSelectingRef.current = false;
-          setSelectionRect(prev => ({ ...prev, visible: false }));
+        setIsSelecting(false);
+        isSelectingRef.current = false;
+        setSelectionRect(prev => ({ ...prev, visible: false }));
       }
     };
     window.addEventListener('mouseup', handleGlobalMouseUp);
@@ -328,18 +328,18 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // Pro text a placeholder chceme měnit šířku (zalamování), ne font size (škálování)
     if (element.type === 'text' || element.type === 'placeholder') {
-        const scaleX = node.scaleX();
-        
-        // Pokud došlo ke změně scale (roztahování), aplikujeme to do width a resetujeme scale
-        if (scaleX !== 1) {
-            // Aplikujeme scale do width
-            const newWidth = Math.max(20, node.width() * scaleX);
-            node.width(newWidth);
-            
-            // Reset scale na 1
-            node.scaleX(1);
-            node.scaleY(1);
-        }
+      const scaleX = node.scaleX();
+
+      // Pokud došlo ke změně scale (roztahování), aplikujeme to do width a resetujeme scale
+      if (scaleX !== 1) {
+        // Aplikujeme scale do width
+        const newWidth = Math.max(20, node.width() * scaleX);
+        node.width(newWidth);
+
+        // Reset scale na 1
+        node.scaleX(1);
+        node.scaleY(1);
+      }
     }
   }, [elements]);
 
@@ -365,24 +365,24 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     if (element.type === 'text' || element.type === 'placeholder') {
       updates.width = Math.max(20, node.width() * scaleX);
       // Výška se u textu dopočítává automaticky nebo ji necháme
-      // updates.height = ... 
-    } 
+      // updates.height = ...
+    }
     else if (element.type === 'shape' && (element.shapeType === 'line' || element.shapeType === 'arrow')) {
-       // Pro čáry/šipky aplikujeme scale na body
-        const points = element.points ?? [0, 0, 100, 100];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (updates as any).points = points.map((p: number, i: number) => {
-          return i % 2 === 0 ? p * scaleX : p * scaleY;
-        });
+      // Pro čáry/šipky aplikujeme scale na body
+      const points = element.points ?? [0, 0, 100, 100];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      (updates as any).points = points.map((p: number, i: number) => {
+        return i % 2 === 0 ? p * scaleX : p * scaleY;
+      });
     }
     else if (element.type === 'image') {
-        updates.width = node.width() * scaleX;
-        updates.height = node.height() * scaleY;
+      updates.width = node.width() * scaleX;
+      updates.height = node.height() * scaleY;
     }
     else {
-        // Shapes
-        updates.width = node.width() * scaleX;
-        updates.height = node.height() * scaleY;
+      // Shapes
+      updates.width = node.width() * scaleX;
+      updates.height = node.height() * scaleY;
     }
 
     updateElement(id, updates);
@@ -396,7 +396,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     // Uložíme startovní pozice všech vybraných prvků
     const startPos: Record<string, { x: number; y: number }> = {};
     const layer = e.target.getLayer();
-    
+
     if (selectedIds.includes(id) && layer) {
       selectedIds.forEach(selId => {
         const node = layer.findOne(`#${selId}`);
@@ -407,7 +407,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     } else {
       // Pokud táhneme prvek, který není ve výběru (nemělo by se stát při správném UI),
       // tak uložíme jen ten jeden.
-       startPos[id] = { x: e.target.x(), y: e.target.y() };
+      startPos[id] = { x: e.target.x(), y: e.target.y() };
     }
     dragStartPosRef.current = startPos;
   };
@@ -419,21 +419,21 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // Pokud nemáme vybráno více prvků, použijeme jednoduchou logiku (stávající)
     if (selectedIds.length <= 1) {
-        const element = elements.find(el => el.id === id);
-        if (!element) return;
-        
-        const bounds: ElementBounds = {
-            x: node.x(),
-            y: node.y(),
-            width: node.width() * node.scaleX(),
-            height: node.height() * node.scaleY(),
-            rotation: node.rotation(),
-            type: element.type,
-            shapeType: element.type === 'shape' ? element.shapeType : undefined
-        };
-        const result = checkSnap(bounds, id);
-        node.position({ x: result.x, y: result.y });
-        return;
+      const element = elements.find(el => el.id === id);
+      if (!element) return;
+
+      const bounds: ElementBounds = {
+        x: node.x(),
+        y: node.y(),
+        width: node.width() * node.scaleX(),
+        height: node.height() * node.scaleY(),
+        rotation: node.rotation(),
+        type: element.type,
+        shapeType: element.type === 'shape' ? element.shapeType : undefined
+      };
+      const result = checkSnap(bounds, id);
+      node.position({ x: result.x, y: result.y });
+      return;
     }
 
     // --- MULTI-SELECT LOGIKA ---
@@ -444,7 +444,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     const currentX = node.x();
     const currentY = node.y();
-    
+
     // Hrubá delta (bez snapu)
     const dx = currentX - startPos.x;
     const dy = currentY - startPos.y;
@@ -456,29 +456,29 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     selectedIds.forEach(selId => {
       const original = dragStartPosRef.current[selId];
       if (!original) return;
-      
+
       const el = elements.find(item => item.id === selId);
       // Musíme najít Node pro získání šířky/výšky (kvůli scale)
       const n = layer.findOne(`#${selId}`);
-      
+
       if (el && n) {
         // Pozice po posunu
         const newX = original.x + dx;
         const newY = original.y + dy;
         const w = n.width() * n.scaleX();
         const h = n.height() * n.scaleY();
-        
+
         // Normalizace pro výpočet obálky
         // Pro centered shapes (circle) je x/y střed.
         let left = newX;
         let top = newY;
-        
-        const isCentered = el.type === 'shape' && 
-           ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(el.shapeType);
+
+        const isCentered = el.type === 'shape' &&
+          ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(el.shapeType);
 
         if (isCentered) {
-            left = newX - w / 2;
-            top = newY - h / 2;
+          left = newX - w / 2;
+          top = newY - h / 2;
         }
 
         minX = Math.min(minX, left);
@@ -491,37 +491,37 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     // 3. Zkontrolujeme Snap pro tento "Virtual Group Box"
     // Použijeme type casting pro obejití kontroly typu, protože group nemá standardní ElementType
     const groupBounds: ElementBounds = {
-        x: minX,
-        y: minY,
-        width: maxX - minX,
-        height: maxY - minY,
-        rotation: 0,
-        type: 'shape', // Fiktivní typ aby prošel typovou kontrolou
-        shapeType: 'rect'
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      rotation: 0,
+      type: 'shape', // Fiktivní typ aby prošel typovou kontrolou
+      shapeType: 'rect'
     };
-    
+
     // checkSnap vrátí opravené x/y pro levý horní roh groupBounds
     // Do skipIds pošleme celou skupinu, aby se nechytala sama sebe
-    const snapResult = checkSnap(groupBounds, selectedIds); 
-    
+    const snapResult = checkSnap(groupBounds, selectedIds);
+
     // 4. Vypočítáme "Snap Delta" (rozdíl mezi snapped pozicí a hrubou pozicí)
     const snapDx = snapResult.x - minX;
     const snapDy = snapResult.y - minY;
-    
+
     // Finální delta, kterou aplikujeme na všechny prvky
     const finalDx = dx + snapDx;
     const finalDy = dy + snapDy;
 
     // 5. Aplikujeme pohyb na všechny vybrané prvky (VČETNĚ toho taženého!)
     selectedIds.forEach(selId => {
-       const n = layer.findOne(`#${selId}`);
-       const original = dragStartPosRef.current[selId];
-       if (n && original) {
-           n.position({
-               x: original.x + finalDx,
-               y: original.y + finalDy
-           });
-       }
+      const n = layer.findOne(`#${selId}`);
+      const original = dragStartPosRef.current[selId];
+      if (n && original) {
+        n.position({
+          x: original.x + finalDx,
+          y: original.y + finalDy
+        });
+      }
     });
   };
 
@@ -532,22 +532,22 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // Pokud je vybráno více prvků, musíme aktualizovat všechny
     if (selectedIds.length > 1 && selectedIds.includes(id)) {
-        selectedIds.forEach(selId => {
-            const node = layer.findOne(`#${selId}`);
-            if (node) {
-                updateElement(selId, {
-                    x: node.x(),
-                    y: node.y(),
-                });
-            }
-        });
-    } else {
-        // Single select update
-        const node = e.target;
-        updateElement(id, {
+      selectedIds.forEach(selId => {
+        const node = layer.findOne(`#${selId}`);
+        if (node) {
+          updateElement(selId, {
             x: node.x(),
             y: node.y(),
-        });
+          });
+        }
+      });
+    } else {
+      // Single select update
+      const node = e.target;
+      updateElement(id, {
+        x: node.x(),
+        y: node.y(),
+      });
     }
   };
 
@@ -562,31 +562,31 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === 'background';
     if (clickedOnEmpty) {
-       // Deselect all
-       setSelectedIds([]);
+      // Deselect all
+      setSelectedIds([]);
     }
   };
 
   const handleElementClick = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
-    
+
     const isMultiKey = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
-    
+
     if (isMultiKey) {
-       toggleSelection(id);
+      toggleSelection(id);
     } else {
-       // Pokud kliknu na prvek, který je již součástí výběru (a výběr je větší než 1),
-       // nechci zrušit ostatní (abych mohl začít drag).
-       // Ale to řeší mousedown/drag start. Click je až po puštění (bez pohybu).
-       // Takže pokud kliknu (bez pohybu) na jeden z vybraných, měl bych vybrat JEN ten jeden?
-       // Standardní chování: 
-       // - Klik na nevybraný -> vybrat jen ten (zrušit ostatní).
-       // - Klik na vybraný (součást skupiny) -> vybrat jen ten (zrušit ostatní).
-       // - Shift+Klik -> toggle.
-       
-       // ALE: Pokud kliknu a táhnu (drag), click event se nespustí (jen dragEnd).
-       // Takže tady řešíme čistý klik.
-       setSelectedIds([id]);
+      // Pokud kliknu na prvek, který je již součástí výběru (a výběr je větší než 1),
+      // nechci zrušit ostatní (abych mohl začít drag).
+      // Ale to řeší mousedown/drag start. Click je až po puštění (bez pohybu).
+      // Takže pokud kliknu (bez pohybu) na jeden z vybraných, měl bych vybrat JEN ten jeden?
+      // Standardní chování:
+      // - Klik na nevybraný -> vybrat jen ten (zrušit ostatní).
+      // - Klik na vybraný (součást skupiny) -> vybrat jen ten (zrušit ostatní).
+      // - Shift+Klik -> toggle.
+
+      // ALE: Pokud kliknu a táhnu (drag), click event se nespustí (jen dragEnd).
+      // Takže tady řešíme čistý klik.
+      setSelectedIds([id]);
     }
   };
 
@@ -635,10 +635,10 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             isSelected={selectedIds.includes(element.id)}
             isEditing={editingId === element.id}
             isPanning={isPanning}
-            
+
             // Callbacky
             onSelect={(_id) => { /* handled by onClick directly now */ }}
-            onClick={handleElementClick}  
+            onClick={handleElementClick}
             onDblClick={handleTextDblClick}
             onDragStart={(e) => handleDragStart(element.id, e)} // Přidáno
             onDragMove={(e) => handleDragMove(element.id, e)}
@@ -675,7 +675,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
           showGuides={showGuides}
           hideGuides={hideGuides}
         />
-        
+
         {/* Selection Rectangle (vizuální reprezentace) */}
         <Rect
           visible={selectionRect.visible}

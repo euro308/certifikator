@@ -217,7 +217,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       const newElements = prev.filter(el => !selectedIds.includes(el.id));
       // Pokud se nic nezměnilo (teoreticky nemožné), neukládáme historii
       if (newElements.length === prev.length) return prev;
-      
+
       addToHistory(newElements);
       return newElements;
     });
@@ -332,7 +332,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
 
     // Počet prvků daného typu
     const specificShapeCount = elements.filter(
-        el => el.type === 'shape' && el.shapeType === shapeType
+      el => el.type === 'shape' && el.shapeType === shapeType
     ).length + 1;
 
     // Specifické vlastnosti pro různé tvary
@@ -478,7 +478,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
     setSelectedIds,
     toggleSelection,
     clearSelection,
-    
+
     // Zpětná kompatibilita
     selectedId,
     setSelectedId,
