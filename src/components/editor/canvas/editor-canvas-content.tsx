@@ -323,13 +323,26 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   // My musíme tyto změny promítnout do React state v onTransformEnd.
 
   const handleTransform = useCallback((id: string, e: Konva.KonvaEventObject<Event>) => {
-    // Pro text se dynamicky mění šířka (visual fix) - toto je spíše legacy pro single select text
-    // U multi-selectu transformer škáluje scaleX/Y
     const node = e.target;
-    if (node.name() === 'Text' && node.scaleX() !== 1) {
-       // Optional: live preview logic
+    const element = elements.find(el => el.id === id);
+    if (!element) return;
+
+    // Pro text a placeholder chceme měnit šířku (zalamování), ne font size (škálování)
+    if (element.type === 'text' || element.type === 'placeholder') {
+        const scaleX = node.scaleX();
+        
+        // Pokud došlo ke změně scale (roztahování), aplikujeme to do width a resetujeme scale
+        if (scaleX !== 1) {
+            // Aplikujeme scale do width
+            const newWidth = Math.max(20, node.width() * scaleX);
+            node.width(newWidth);
+            
+            // Reset scale na 1
+            node.scaleX(1);
+            node.scaleY(1);
+        }
     }
-  }, []);
+  }, [elements]);
 
   const handleTransformEnd = useCallback(() => {
     // Transformer triggeruje 'transformend' na samotných shapech, ne na transformeru?
