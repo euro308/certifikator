@@ -71,7 +71,7 @@ function getNormalizedBox(el: ElementBounds) {
 
 function getLineGuideStops(
   elements: CanvasElement[],
-  skipId: string | null,
+  skipId: string | string[] | null,
   canvasWidth: number,
   canvasHeight: number
 ) {
@@ -81,7 +81,11 @@ function getLineGuideStops(
 
   // 2. Ostatní elementy
   elements.forEach((el) => {
-    if (el.id === skipId) return;
+    if (Array.isArray(skipId)) {
+        if (skipId.includes(el.id)) return;
+    } else if (el.id === skipId) {
+        return;
+    }
 
     // Získáme normalizovaný box (vždy left-top a width-height)
     const box = getNormalizedBox(el);

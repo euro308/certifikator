@@ -22,7 +22,7 @@ interface SelectionTransformerProps {
  */
 export function SelectionTransformer({ editingId, hideGuides, showGuides }: SelectionTransformerProps) {
   const transformerRef = useRef<Konva.Transformer>(null);
-  const { selectedIds, elements, selectedElement, selectedId } = useEditorContext();
+  const { selectedIds, elements, selectedElement } = useEditorContext();
 
   // Automatické připojení k vybraným prvkům
   useEffect(() => {
@@ -78,7 +78,7 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
 
   // Default: pouze rohy (pro většinu tvarů nebo multi-select)
   let enabledAnchors = ["top-left", "top-right", "bottom-left", "bottom-right"];
-  let shouldKeepRatio = true;
+  let shouldKeepRatio: boolean;
 
   if (isSingleSelection) {
     if (onlyMiddleAnchors) {
@@ -125,11 +125,11 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
       rotateAnchorOffset={25}
       rotateEnabled={true}
       ignoreStroke={true}
-      
+
       // Dynamické props
       keepRatio={shouldKeepRatio}
       enabledAnchors={enabledAnchors}
-      
+
       onTransformEnd={handleTransformEnd}
       boundBoxFunc={(oldBox, newBox) => {
         if (newBox.width < 10 || newBox.height < 10) {
@@ -137,12 +137,12 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
         }
         return newBox;
       }}
-      
+
       // Snapování povolíme i pro multi select
-      anchorDragBoundFunc={(oldPos, newPos) => {
+      anchorDragBoundFunc={(newPos) => {
         const transformer = transformerRef.current;
         if (!transformer) return newPos;
-        
+
         // Snap pokud máme selectedIds a showGuides/hideGuides
         if (selectedIds.length === 0 || !showGuides || !hideGuides) return newPos;
 

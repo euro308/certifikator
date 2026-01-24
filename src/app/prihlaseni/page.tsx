@@ -57,11 +57,11 @@ export default function Prihlaseni() {
         return;
       }
 
-      // Úspěšná registrace - redirect
+      // Úspěšné přihlášení
       router.push("/dashboard");
-    } catch (err) {
-      setError("Něco se pokazilo");
-    } finally {
+    } catch {
+        setError("Něco se pokazilo");
+      } finally {
       setLoading(false);
     }
   }

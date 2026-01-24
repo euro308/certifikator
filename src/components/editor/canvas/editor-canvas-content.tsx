@@ -6,7 +6,7 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
-import Konva from 'konva';
+import type Konva from 'konva';
 import { useEditorContext } from '../editor-context';
 import { TextEditor } from './text-editor';
 import { CenteringGuides } from './centering-guides';
@@ -18,8 +18,8 @@ import {
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
   type TextElement,
-  type ShapeElement,
   type PlaceholderElement,
+  type AnyElementUpdate,
 } from "../types/canvas-types";
 
 interface EditorCanvasContentProps {
@@ -221,7 +221,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
       };
 
       const foundIds: string[] = [];
-      const layer = stage.findOne('Layer') as Konva.Layer;
+      const layer = stage.getLayers()[0];
       
       if (layer) {
           elements.forEach(el => {
@@ -344,22 +344,12 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     }
   }, [elements]);
 
-  const handleTransformEnd = useCallback(() => {
-    // Transformer triggeruje 'transformend' na samotných shapech, ne na transformeru?
-    // Ano, Konva posílá event na každý node zvlášť.
-    // Takže tento callback bude volán pro každý shape ve výběru.
-    // Musíme zjistit ID nodu a aktualizovat ho.
-    
-    // Ale pozor: CanvasElementRenderer předává `onTransformEnd={(e) => handleTransformEnd(element.id, e)}`
-    // Takže musíme upravit signaturu.
-  }, []); // Placeholder, see logic below
-
   const onShapeTransformEnd = useCallback((id: string, e: Konva.KonvaEventObject<Event>) => {
     const node = e.target;
     const element = elements.find(el => el.id === id);
     if (!element) return;
 
-    // Reset scale a update width/height/points
+    // Reset scale an update width/height/points
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
@@ -367,7 +357,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     node.scaleX(1);
     node.scaleY(1);
 
-    const updates: any = {
+    const updates: AnyElementUpdate = {
       x: node.x(),
       y: node.y(),
       rotation: node.rotation(),
@@ -380,8 +370,9 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     } 
     else if (element.type === 'shape' && (element.shapeType === 'line' || element.shapeType === 'arrow')) {
        // Pro čáry/šipky aplikujeme scale na body
-        const points = (element as ShapeElement).points ?? [0, 0, 100, 100];
-        updates.points = points.map((p: number, i: number) => {
+        const points = element.points ?? [0, 0, 100, 100];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (updates as any).points = points.map((p: number, i: number) => {
           return i % 2 === 0 ? p * scaleX : p * scaleY;
         });
     }
@@ -456,8 +447,8 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     const currentY = node.y();
     
     // Hrubá delta (bez snapu)
-    let dx = currentX - startPos.x;
-    let dy = currentY - startPos.y;
+    const dx = currentX - startPos.x;
+    const dy = currentY - startPos.y;
 
     // 2. Vypočítáme "Virtual Bounding Box" celé skupiny na nové pozici
     // Projdeme všechny vybrané prvky a zjistíme jejich (hypotetický) bounding box po aplikaci dx, dy
@@ -484,7 +475,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
         let top = newY;
         
         const isCentered = el.type === 'shape' && 
-           ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes((el as any).shapeType);
+           ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(el.shapeType);
 
         if (isCentered) {
             left = newX - w / 2;
@@ -499,14 +490,15 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     });
 
     // 3. Zkontrolujeme Snap pro tento "Virtual Group Box"
+    // Použijeme type casting pro obejití kontroly typu, protože group nemá standardní ElementType
     const groupBounds: ElementBounds = {
         x: minX,
         y: minY,
         width: maxX - minX,
         height: maxY - minY,
         rotation: 0,
-        type: 'group', // Fiktivní typ
-        shapeType: 'rect' // Chová se jako obdélník (left-top)
+        type: 'shape', // Fiktivní typ aby prošel typovou kontrolou
+        shapeType: 'rect'
     };
     
     // checkSnap vrátí opravené x/y pro levý horní roh groupBounds
@@ -646,8 +638,8 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             isPanning={isPanning}
             
             // Callbacky
-            onSelect={(id) => { /* handled by onClick directly now */ }}
-            onClick={handleElementClick} 
+            onSelect={(_id) => { /* handled by onClick directly now */ }}
+            onClick={handleElementClick}  
             onDblClick={handleTextDblClick}
             onDragStart={(e) => handleDragStart(element.id, e)} // Přidáno
             onDragMove={(e) => handleDragMove(element.id, e)}

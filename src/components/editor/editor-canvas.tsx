@@ -10,7 +10,6 @@ import { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useEditorContext } from './editor-context';
 import { useKeyboardHandler } from "@/components/editor/hooks/use-keyboard-handler";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from './types/canvas-types';
 
 // Dynamický import Konva komponenty BEZ server-side renderování
 const EditorCanvasContent = dynamic(
@@ -56,15 +55,7 @@ export function EditorCanvas() {
     }, []);
 
     // Výpočet auto-scale pro debug info
-    const padding = 40;
-    const availableWidth = containerSize.width - padding * 2;
-    const availableHeight = containerSize.height - padding * 2;
-    const autoScale = Math.min(
-        availableWidth / CANVAS_WIDTH,
-        availableHeight / CANVAS_HEIGHT,
-        1
-    );
-
+    
     // Zobrazení zoomu v procentech
     const zoomPercent = Math.round(zoom * 100);
 

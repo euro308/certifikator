@@ -94,7 +94,7 @@ function ImageElementRenderer({ element, commonProps }: ImageElementRendererProp
  */
 export function CanvasElementRenderer({
     element,
-    isSelected,
+    isSelected: _isSelected,
     isEditing,
     isPanning,
     onSelect,

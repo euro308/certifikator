@@ -44,11 +44,15 @@ export default function Registrace() {
         return;
       }
 
-      // Úspěšná registrace - redirect
-      router.push("/prihlaseni?success=true");
-    } catch (err) {
-      setError("Něco se pokazilo");
-    } finally {
+            // Úspěšná registrace - redirect
+
+            router.push("/prihlaseni?success=true");
+
+          } catch {
+
+            setError("Něco se pokazilo");
+
+          } finally {
       setLoading(false);
     }
   }

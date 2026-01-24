@@ -93,7 +93,7 @@ export default function NovaSablona() {
         previewImageUrl: "",
       },
       {
-        onSuccess: (data) => {
+        onSuccess: (_data) => {
           clearDraft();
           setHasUnsavedChanges(false);
           router.push("/dashboard/me-sablony");

@@ -1,7 +1,6 @@
 import {
   Field,
   FieldDescription,
-  FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
@@ -9,7 +8,6 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
 
 export default function ZapomenuteHeslo() {
   return (
