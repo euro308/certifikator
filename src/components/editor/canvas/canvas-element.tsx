@@ -78,6 +78,7 @@ function ImageElementRenderer({ element, commonProps }: ImageElementRendererProp
         <Image
             {...commonProps}
             image={image}
+            alt={element.id}
             // Zajištění překreslení při změně src
             key={`${element.id}-${element.src.slice(0, 20)}`}
         />

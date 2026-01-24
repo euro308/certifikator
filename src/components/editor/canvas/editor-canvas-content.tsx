@@ -4,22 +4,22 @@
 
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
-import { Stage, Layer, Rect } from 'react-konva';
-import type Konva from 'konva';
-import { useEditorContext } from '../editor-context';
-import { TextEditor } from './text-editor';
-import { CenteringGuides } from './centering-guides';
-import { SelectionTransformer } from './selection-transformer';
-import { CanvasElementRenderer } from './canvas-element';
-import { useSnapToCenter, type ElementBounds } from '../hooks/use-snap-to-center';
-import { useCanvasZoom } from '../hooks/use-canvas-zoom';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Layer, Rect, Stage } from "react-konva";
+import type Konva from "konva";
+import { useEditorContext } from "../editor-context";
+import { TextEditor } from "./text-editor";
+import { CenteringGuides } from "./centering-guides";
+import { SelectionTransformer } from "./selection-transformer";
+import { CanvasElementRenderer } from "./canvas-element";
+import { type ElementBounds, useSnapToCenter } from "../hooks/use-snap-to-center";
+import { useCanvasZoom } from "../hooks/use-canvas-zoom";
 import {
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-  type TextElement,
-  type PlaceholderElement,
   type AnyElementUpdate,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  type PlaceholderElement,
+  type TextElement
 } from "../types/canvas-types";
 
 interface EditorCanvasContentProps {
@@ -292,8 +292,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   // ==========================================================================
 
   const handleTextDblClick = useCallback((element: TextElement, e: Konva.KonvaEventObject<MouseEvent>) => {
-    const textNode = e.target as Konva.Text;
-    editingTextNodeRef.current = textNode;
+    editingTextNodeRef.current = e.target as Konva.Text;
     setEditingId(element.id);
   }, []);
 
