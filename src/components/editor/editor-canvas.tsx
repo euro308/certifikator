@@ -108,7 +108,7 @@ export function EditorCanvas() {
         y: el.y + 20,
         name: `${el.name} (kopie)`,
       };
-      addElement(copy);
+      addElement(copy, true);
     }
   };
 
