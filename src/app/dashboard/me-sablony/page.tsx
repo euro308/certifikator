@@ -19,17 +19,19 @@ export default async function MeSablony() {
   const userTemplates = await api.templates.getUserTemplates();
 
   return (
-    <div className="container mx-auto px-6">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="container mx-auto px-4 py-6 md:px-6">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Moje šablony</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+            Moje šablony
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm md:text-base">
             Přehled všech vámi vytvořených šablon.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full md:w-auto">
           <Link href="/dashboard/me-sablony/nova">
-            <Plus className="size-4" />
+            <Plus className="mr-2 size-4" />
             Vytvořit novou
           </Link>
         </Button>

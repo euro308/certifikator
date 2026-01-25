@@ -117,8 +117,8 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
       ) : (
         <div className="flex h-[75vh] min-h-full flex-col items-center rounded-lg border border-dashed pt-5 text-center">
           {/* NAVIGACE - SEARCH A SEŘAZENÍ */}
-          <div className="items-between mb-6 flex w-full justify-between pr-5 pl-5">
-            <InputGroup className="h-12 w-[55vw]">
+          <div className="mb-6 flex w-full flex-col gap-4 px-5 md:flex-row md:items-center md:justify-between">
+            <InputGroup className="h-12 w-full md:w-[400px] lg:w-[40vw]">
               <InputGroupInput
                 type="text"
                 value={searchValue}
@@ -130,8 +130,8 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
               </InputGroupAddon>
             </InputGroup>
 
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">
+            <div className="flex items-center justify-between gap-2 md:justify-end">
+              <span className="text-sm text-muted-foreground">
                 Seřadit podle:
               </span>
               <Select value={selectedSort} onValueChange={setSelectedSort}>
@@ -152,10 +152,10 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
           {/* LIST ŠABLON (Scrollable container with sticky header) */}
           <div className="flex w-full flex-1 flex-col overflow-hidden px-5 pb-5">
             <div className="flex-1 overflow-y-auto rounded-md border">
-              {/* Header */}
-              <div className="bg-background text-muted-foreground sticky top-0 z-10 grid grid-cols-[70px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-3 text-sm">
+              {/* Header - Hidden on Mobile */}
+              {/* Desktop grid layout: [Image, Name, Description, Created, Used, ID, Actions] */}
+              <div className="bg-background sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm text-muted-foreground md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
                 <div /> {/* Místo pro náhled */}
-                <span className="text-left">ID šablony</span>
                 <span
                   className={`text-left ${
                     selectedSort === "nameAToZ" || selectedSort === "nameZToA"
@@ -165,7 +165,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                 >
                   Název
                 </span>
-                <span className="text-left">Popis</span>
+                <span className="hidden text-left lg:block">Popis</span>
                 <span
                   className={`text-left ${
                     selectedSort === "creationDateNewest" ||
@@ -186,6 +186,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                 >
                   Využito
                 </span>
+                <span className="hidden text-left lg:block">ID šablony</span>
                 <div /> {/* Místo pro akce */}
               </div>
 
@@ -194,8 +195,9 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                 {filteredTemplates.map((template) => (
                   <div
                     key={template.id}
-                    className="hover:bg-muted/30 grid grid-cols-[70px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0"
+                    className="hover:bg-muted/30 grid grid-cols-[70px_1fr_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0 md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]"
                   >
+                    {/* 1. Preview Image */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {template.previewImageUrl ? (
                         <Img
@@ -204,35 +206,46 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="text-muted-foreground flex h-full items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
+                        <div className="text-muted-foreground flex h-full items-center justify-center p-1 text-center text-[10px] leading-tight uppercase cursor-default">
                           Bez náhledu
                         </div>
                       )}
                     </div>
-                    <span
-                      className="text-muted-foreground truncate font-mono text-[10px]"
-                      title={template.id}
-                    >
-                      {template.id}
-                    </span>
-                    <span
-                      className={`cursor-pointer truncate ${
-                        selectedSort === "nameAToZ" ||
-                        selectedSort === "nameZToA"
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground font-light"
-                      }`}
-                      onClick={() =>
-                        router.push(`/dashboard/me-sablony/${template.id}`)
-                      }
-                    >
-                      {template.name}
-                    </span>
-                    <span className="text-muted-foreground truncate text-sm">
+
+                    {/* 2. Name (All) + Mobile Meta */}
+                    <div className="flex flex-col gap-1 overflow-hidden">
+                      <span
+                        className={`truncate ${
+                          selectedSort === "nameAToZ" ||
+                          selectedSort === "nameZToA"
+                            ? "text-foreground font-medium"
+                            : "text-muted-foreground font-light"
+                        }`}
+                        title={template.name}
+                      >
+                        {template.name}
+                      </span>
+                      {/* Mobile Meta Info */}
+                      <div className="flex flex-col gap-0.5 text-xs text-muted-foreground md:hidden">
+                        <span>
+                          {new Date(template.createdAt).toLocaleDateString(
+                            "cs-CZ",
+                          )}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <TemplateUsageCounter templateId={template.id} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. Description (LG only) */}
+                    <span className="hidden truncate text-sm text-muted-foreground lg:block">
                       {template.description ?? "-"}
                     </span>
+
+                    {/* 4. Date (MD+) */}
                     <span
-                      className={`text-sm ${
+                      className={`hidden text-sm md:block ${
                         selectedSort === "creationDateNewest" ||
                         selectedSort === "creationDateOldest"
                           ? "text-foreground font-bold"
@@ -241,8 +254,10 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     >
                       {new Date(template.createdAt).toLocaleDateString("cs-CZ")}
                     </span>
+
+                    {/* 5. Usage (MD+) */}
                     <div
-                      className={`text-sm ${
+                      className={`hidden text-sm md:block ${
                         selectedSort === "usedCountMost" ||
                         selectedSort === "usedCountLeast"
                           ? "text-foreground font-bold"
@@ -251,6 +266,16 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     >
                       <TemplateUsageCounter templateId={template.id} />
                     </div>
+
+                    {/* 6. ID (LG only) - Moved to end */}
+                    <span
+                      className="hidden truncate font-mono text-[10px] text-muted-foreground lg:block"
+                      title={template.id}
+                    >
+                      {template.id}
+                    </span>
+
+                    {/* 7. Actions (All) */}
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}
