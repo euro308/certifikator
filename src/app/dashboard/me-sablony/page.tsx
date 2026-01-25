@@ -8,12 +8,6 @@ import { Plus } from "lucide-react";
 import { TemplateSummary } from "@/components/my-templates/template-summary";
 
 export default async function MeSablony() {
-  let searchValue = "";
-  const setSearchValue = (value: string) => {
-    searchValue = value;
-  }
-
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
