@@ -285,4 +285,5 @@ export interface TemplateExportData {
     canvasHeight: number;
     elements: CanvasElement[];
     placeholders: string[]; // Seznam klíčů placeholderů
+    previewImageUrl: string;
 }

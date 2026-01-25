@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 interface TemplateSummaryProps {
   userTemplates: {
@@ -59,6 +60,7 @@ const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
 export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
   const [searchValue, setSearchValue] = useState<string>("");
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
+  const router = useRouter();
 
   const filteredTemplates = userTemplates
     .filter(
@@ -81,7 +83,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
           );
         case "creationDateOldest":
           return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
         default:
           return 0;
@@ -129,7 +131,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
             </InputGroup>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 Seřadit podle:
               </span>
               <Select value={selectedSort} onValueChange={setSelectedSort}>
@@ -151,7 +153,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
           <div className="flex w-full flex-1 flex-col overflow-hidden px-5 pb-5">
             <div className="flex-1 overflow-y-auto rounded-md border">
               {/* Header */}
-              <div className="bg-background sticky top-0 z-10 grid grid-cols-[48px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-3 text-sm text-muted-foreground">
+              <div className="bg-background text-muted-foreground sticky top-0 z-10 grid grid-cols-[70px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-3 text-sm">
                 <div /> {/* Místo pro náhled */}
                 <span className="text-left">ID šablony</span>
                 <span
@@ -192,9 +194,9 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                 {filteredTemplates.map((template) => (
                   <div
                     key={template.id}
-                    className="hover:bg-muted/30 grid grid-cols-[48px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-4 text-left transition-colors last:border-0"
+                    className="hover:bg-muted/30 grid grid-cols-[70px_100px_1fr_1.5fr_100px_80px_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0"
                   >
-                    <div className="bg-muted relative h-12 w-12 flex-shrink-0 overflow-hidden rounded border">
+                    <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {template.previewImageUrl ? (
                         <Img
                           alt={template.name}
@@ -213,19 +215,46 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     >
                       {template.id}
                     </span>
-                    <span className="truncate font-medium">
+                    <span
+                      className={`cursor-pointer truncate ${
+                        selectedSort === "nameAToZ" ||
+                        selectedSort === "nameZToA"
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground font-light"
+                      }`}
+                      onClick={() =>
+                        router.push(`/dashboard/me-sablony/${template.id}`)
+                      }
+                    >
                       {template.name}
                     </span>
                     <span className="text-muted-foreground truncate text-sm">
-                      {template.description || "-"}
+                      {template.description ?? "-"}
                     </span>
-                    <span className="text-sm">
+                    <span
+                      className={`text-sm ${
+                        selectedSort === "creationDateNewest" ||
+                        selectedSort === "creationDateOldest"
+                          ? "text-foreground font-bold"
+                          : "text-muted-foreground"
+                      }`}
+                    >
                       {new Date(template.createdAt).toLocaleDateString("cs-CZ")}
                     </span>
-                    <div className="text-sm">
+                    <div
+                      className={`text-sm ${
+                        selectedSort === "usedCountMost" ||
+                        selectedSort === "usedCountLeast"
+                          ? "text-foreground font-bold"
+                          : "text-muted-foreground"
+                      }`}
+                    >
                       <TemplateUsageCounter templateId={template.id} />
                     </div>
-                    <div className="flex justify-end">
+                    <div
+                      className="flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -236,7 +265,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                             ...
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent side="bottom" align="end">
+                        <DropdownMenuContent side="bottom" align="start">
                           <DropdownMenuItem asChild>
                             <Link
                               href={`/dashboard/me-sablony/${template.id}`}

@@ -65,8 +65,46 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     zoom,
     setZoom,
     pan,
-    setPan
+    setPan,
+    setGetPreviewImageCallback,
   } = useEditorContext();
+
+  // Register preview image callback
+  useEffect(() => {
+    if (setGetPreviewImageCallback) {
+      setGetPreviewImageCallback(() => {
+        if (stageRef.current) {
+          // Uložíme aktuální stav (zoom/pan)
+          const oldScaleX = stageRef.current.scaleX();
+          const oldScaleY = stageRef.current.scaleY();
+          const oldX = stageRef.current.x();
+          const oldY = stageRef.current.y();
+          
+          // Resetujeme pohled, aby se vyexportovala celá šablona (ne jen viditelná část)
+          // a aby nebyla posunutá
+          stageRef.current.scale({ x: 1, y: 1 });
+          stageRef.current.position({ x: 0, y: 0 });
+          
+          const dataUrl = stageRef.current.toDataURL({
+            x: 0,
+            y: 0,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            pixelRatio: 0.5, // Menší rozlišení pro náhled
+            mimeType: 'image/jpeg',
+            quality: 0.8
+          });
+          
+          // Obnovíme původní pohled
+          stageRef.current.scale({ x: oldScaleX, y: oldScaleY });
+          stageRef.current.position({ x: oldX, y: oldY });
+          
+          return dataUrl;
+        }
+        return "";
+      });
+    }
+  }, [setGetPreviewImageCallback]);
 
   // Hook pro snapping
   const { checkSnap, guides, hideGuides, showGuides } = useSnapToCenter({ elements });

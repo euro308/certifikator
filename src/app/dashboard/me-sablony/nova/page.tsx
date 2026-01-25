@@ -90,7 +90,7 @@ export default function NovaSablona() {
         placeholders: canvasData.placeholders,
         description: templateDescription,
         canvasData: JSON.stringify(canvasData),
-        previewImageUrl: "",
+        previewImageUrl: canvasData.previewImageUrl ?? "",
       },
       {
         onSuccess: (_data) => {

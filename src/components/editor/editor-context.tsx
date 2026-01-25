@@ -1,27 +1,27 @@
 // editor/editor-context.tsx - Globální stav editoru šablon
 'use client';
 
-import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type {
+  AnyElementUpdate,
   CanvasElement,
-  TextElement,
+  ImageElement,
+  PanState,
   PlaceholderElement,
   ShapeElement,
-  ImageElement,
   ShapeType,
-  AnyElementUpdate,
-  PanState,
   TemplateExportData,
-} from './types/canvas-types';
+  TextElement
+} from "./types/canvas-types";
 import {
-  CANVAS_WIDTH,
   CANVAS_HEIGHT,
-  DEFAULT_TEXT_ELEMENT,
+  CANVAS_WIDTH,
+  DEFAULT_IMAGE_ELEMENT,
   DEFAULT_PLACEHOLDER_ELEMENT,
   DEFAULT_SHAPE_ELEMENT,
-  DEFAULT_IMAGE_ELEMENT,
-} from './types/canvas-types';
-import { getCenteredPosition } from './hooks/use-snap-to-center';
+  DEFAULT_TEXT_ELEMENT
+} from "./types/canvas-types";
+import { getCenteredPosition } from "./hooks/use-snap-to-center";
 import { useUndoRedo } from "./hooks/use-undo-redo";
 
 // =============================================================================
@@ -66,6 +66,7 @@ interface EditorContextType {
   saveTemplate: () => void;
   getExportData: () => TemplateExportData;
   getPlaceholders: () => string[];
+  setGetPreviewImageCallback: (callback: () => string) => void;
 
   // Undo/Redo
   undo: () => void;
@@ -99,6 +100,9 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
   // Stav zoomu a panningu
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<PanState>({ x: 0, y: 0 });
+
+  // Ref pro callback na získání obrázku
+  const getPreviewImageCallbackRef = useRef<(() => string) | null>(null);
 
   // Undo/Redo hook
   const { undo: undoHook, redo: redoHook, canUndo, canRedo, addToHistory } = useUndoRedo({
@@ -447,12 +451,28 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       canvasHeight: CANVAS_HEIGHT,
       elements,
       placeholders: getPlaceholders(),
+      previewImageUrl: "",
     };
   }, [elements, getPlaceholders]);
+
+  /** Callback setter pro získání obrázku */
+  const setGetPreviewImageCallback = useCallback((callback: () => string) => {
+    getPreviewImageCallbackRef.current = callback;
+  }, []);
 
   /** Uloží šablonu */
   const saveTemplate = useCallback(() => {
     const data = getExportData();
+    
+    // Pokud máme zaregistrovaný callback pro obrázek, vygenerujeme ho
+    if (getPreviewImageCallbackRef.current) {
+      try {
+        data.previewImageUrl = getPreviewImageCallbackRef.current();
+      } catch (e) {
+        console.error("Chyba při generování náhledu:", e);
+      }
+    }
+
     console.log('Ukládám šablonu:', data);
     if (onSave) {
       onSave(data);
@@ -501,6 +521,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
     saveTemplate,
     getExportData,
     getPlaceholders,
+    setGetPreviewImageCallback,
 
     // Undo/Redo
     undo,
