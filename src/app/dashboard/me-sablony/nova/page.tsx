@@ -107,13 +107,17 @@ export default function NovaSablona() {
   };
 
   return (
-    <main className="min-h-[80vh] pt-4 pb-4">
-      <div className="mx-auto max-w-4xl px-6">
-        <h1 className="mb-8 text-4xl font-bold text-gray-900">
+    <div className="container mx-auto max-w-4xl space-y-8 px-4 sm:px-6 lg:px-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           Vytvořit šablonu
         </h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          Vytvořte novou šablonu pro své certifikáty.
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-3">
             <h2 className="text-xl font-semibold text-gray-800">
               Název šablony
@@ -202,6 +206,5 @@ export default function NovaSablona() {
           </div>
         </form>
       </div>
-    </main>
   );
 }

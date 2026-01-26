@@ -48,21 +48,19 @@ export default async function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen">
-      <div className="flex justify-center px-6">
-        <div className="w-full max-w-7xl space-y-8">
-          {/* Header */}
-          <div>
-            <h1 className="mb-2 text-4xl font-bold text-gray-900 lg:text-5xl">
-              Vítejte zpět! 👋
-            </h1>
-            <p className="text-lg text-gray-600">
-              Zde je přehled vaší aktivity
-            </p>
-          </div>
+    <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+          Vítejte zpět! 👋
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Zde je přehled vaší aktivity
+        </p>
+      </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="transition-shadow hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-xl font-medium">
@@ -208,8 +206,6 @@ export default async function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
-    </main>
+    </div>
   );
 }

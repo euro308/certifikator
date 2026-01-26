@@ -83,7 +83,7 @@ export function BreadcrumbsByPathname() {
   }
 
   return (
-    <div className="mx-auto space-y-4 px-6 pb-4">
+    <div className="container mx-auto max-w-7xl space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbs.map((crumb, index) => {

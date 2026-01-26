@@ -19,11 +19,11 @@ export default async function MeCertifikaty() {
   const userCertificates = await api.certificates.getUserCertificates();
 
   return (
-    <div className="container mx-auto px-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Moje certifikáty</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Moje certifikáty</h1>
+          <p className="mt-2 text-lg text-muted-foreground">
             Přehled všech vámi vytvořených certifikátů.
           </p>
         </div>
