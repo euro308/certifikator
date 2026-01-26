@@ -11,14 +11,18 @@ import { EditorDialog } from "@/components/editor/editor-dialog";
 import Link from "next/link";
 import { useTemplateDraft } from "@/components/editor/hooks/use-template-draft";
 import type { TemplateExportData } from "@/components/editor/types/canvas-types";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 export default function UpravitSablonu() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const idSablony = searchParams.get("idSablony");
+  const utils = api.useUtils();
+  const params = useParams();
+  const idSablonyRaw = params.idSablony;
+  const idSablony = Array.isArray(idSablonyRaw)
+    ? idSablonyRaw[0]
+    : idSablonyRaw;
 
   const { saveDraft, loadDraft, clearDraft, hasDraft } = useTemplateDraft();
 
@@ -31,7 +35,6 @@ export default function UpravitSablonu() {
     { templateId: idSablony ?? "" },
     {
       enabled: !!idSablony,
-      refetchOnWindowFocus: false,
     },
   );
 
@@ -131,8 +134,30 @@ export default function UpravitSablonu() {
         onSuccess: () => {
           clearDraft();
           setHasUnsavedChanges(false);
-          toast.success("Šablona byla úspěšně upravena.");
-          router.push("/dashboard/me-sablony");
+          const toastId = toast.loading("Ukládám změny...");
+
+          void (async () => {
+            try {
+              // Mark as stale and force fetch to ensure data is ready before navigation
+              await utils.templates.getUserTemplates.invalidate();
+              if (idSablony) {
+                await utils.templates.getTemplateById.invalidate({
+                  templateId: idSablony,
+                });
+              }
+              await utils.templates.getUserTemplates.fetch();
+
+              toast.dismiss(toastId);
+              toast.success("Šablona byla úspěšně upravena.");
+              router.push("/dashboard/me-sablony");
+              router.refresh();
+            } catch (error) {
+              console.error("Failed to refresh templates:", error);
+              toast.dismiss(toastId);
+              // Fallback navigation
+              router.push("/dashboard/me-sablony");
+            }
+          })();
         },
         onError: (err) => {
           console.error(err);
@@ -147,7 +172,7 @@ export default function UpravitSablonu() {
   if (isLoading) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
-        <Spinner className="size-10 text-primary" />
+        <Spinner className="text-primary size-10" />
         <span className="ml-3 text-lg text-gray-600">Načítám šablonu...</span>
       </div>
     );
@@ -170,7 +195,7 @@ export default function UpravitSablonu() {
   }
 
   return (
-    <main className="min-h-[80vh] pb-10 pt-10">
+    <main className="min-h-[80vh] pt-4 pb-4">
       <div className="mx-auto max-w-4xl px-6">
         <h1 className="mb-8 text-4xl font-bold text-gray-900">
           Upravit šablonu

@@ -351,7 +351,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                         <DropdownMenuContent side="bottom" align="start">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/dashboard/me-sablony/upravit?idSablony=${template.id}`}
+                              href={`/dashboard/me-sablony/${template.id}/upravit`}
                               className="flex cursor-pointer gap-2"
                             >
                               <PencilLine className="size-4" />

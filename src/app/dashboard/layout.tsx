@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { NavbarInside } from "@/components/navbar-inside";
 import { FooterInside } from "@/components/footer-inside";
 import React from "react";
+import { BreadcrumbsByPathname } from "@/components/breadcrumbs-by-pathname";
 
 export default async function DashboardLayout({
                                                 children,
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen flex-col">
       <NavbarInside />
       <main className="flex-1 w-full pt-22 lg:pt-28 pb-10">
+        <BreadcrumbsByPathname/>
         {children}
       </main>
       <FooterInside />

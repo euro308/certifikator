@@ -107,7 +107,7 @@ export default function NovaSablona() {
   };
 
   return (
-    <main className="min-h-[80vh] pt-10 pb-10">
+    <main className="min-h-[80vh] pt-4 pb-4">
       <div className="mx-auto max-w-4xl px-6">
         <h1 className="mb-8 text-4xl font-bold text-gray-900">
           Vytvořit šablonu
