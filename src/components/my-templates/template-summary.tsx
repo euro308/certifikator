@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { PencilLine, Plus, Search, Trash } from "lucide-react";
+import React, { useState } from "react";
+import { Copy, PencilLine, Plus, Search, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -25,6 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TemplateSummaryProps {
   userTemplates: {
@@ -60,7 +71,32 @@ const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
 export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
   const [searchValue, setSearchValue] = useState<string>("");
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [currentTemplateId, setCurrentTemplateId] = useState<string>("");
   const router = useRouter();
+  const hideTemplateMutation = api.templates.hideTemplate.useMutation();
+
+  const hideTemplateFromUser = (templateId: string) => {
+    hideTemplateMutation.mutate(
+        {
+          id: templateId,
+        },
+        {
+          onSuccess: (_data) => {
+            setCurrentTemplateId("");
+          },
+          onError: (err) => {
+            console.log(err);
+          },
+        },
+      );
+  };
+
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Zabrání prokliku na detail šablony
+    await navigator.clipboard.writeText(id);
+    toast.success("ID šablony zkopírováno");
+  };
 
   const filteredTemplates = userTemplates
     .filter(
@@ -131,7 +167,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
             </InputGroup>
 
             <div className="flex items-center justify-between gap-2 md:justify-end">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 Seřadit podle:
               </span>
               <Select value={selectedSort} onValueChange={setSelectedSort}>
@@ -154,7 +190,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
             <div className="flex-1 overflow-y-auto rounded-md border">
               {/* Header - Hidden on Mobile */}
               {/* Desktop grid layout: [Image, Name, Description, Created, Used, ID, Actions] */}
-              <div className="bg-background sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm text-muted-foreground md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
+              <div className="bg-background text-muted-foreground sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
                 <div /> {/* Místo pro náhled */}
                 <span
                   className={`text-left ${
@@ -206,7 +242,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="text-muted-foreground flex h-full items-center justify-center p-1 text-center text-[10px] leading-tight uppercase cursor-default">
+                        <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
                           Bez náhledu
                         </div>
                       )}
@@ -215,18 +251,21 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     {/* 2. Name (All) + Mobile Meta */}
                     <div className="flex flex-col gap-1 overflow-hidden">
                       <span
-                        className={`truncate ${
+                        className={`cursor-pointer truncate ${
                           selectedSort === "nameAToZ" ||
                           selectedSort === "nameZToA"
                             ? "text-foreground font-medium"
                             : "text-muted-foreground font-light"
                         }`}
+                        onClick={() =>
+                          router.push(`/dashboard/me-sablony/${template.id}`)
+                        }
                         title={template.name}
                       >
                         {template.name}
                       </span>
                       {/* Mobile Meta Info */}
-                      <div className="flex flex-col gap-0.5 text-xs text-muted-foreground md:hidden">
+                      <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
                         <span>
                           {new Date(template.createdAt).toLocaleDateString(
                             "cs-CZ",
@@ -239,7 +278,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     </div>
 
                     {/* 3. Description (LG only) */}
-                    <span className="hidden truncate text-sm text-muted-foreground lg:block">
+                    <span className="text-muted-foreground hidden truncate text-sm lg:block">
                       {template.description ?? "-"}
                     </span>
 
@@ -267,13 +306,24 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                       <TemplateUsageCounter templateId={template.id} />
                     </div>
 
-                    {/* 6. ID (LG only) - Moved to end */}
-                    <span
-                      className="hidden truncate font-mono text-[10px] text-muted-foreground lg:block"
-                      title={template.id}
-                    >
-                      {template.id}
-                    </span>
+                    {/* 6. ID (LG only) - Moved to end with Copy Button */}
+                    <div className="group hidden items-center gap-2 lg:flex">
+                      <span
+                        className="text-muted-foreground truncate font-mono text-[10px] select-none"
+                        title={template.id}
+                      >
+                        {template.id.substring(0, 8)}...
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={(e) => handleCopyId(template.id, e)}
+                        title="Zkopírovat ID"
+                      >
+                        <Copy className="size-3" />
+                      </Button>
+                    </div>
 
                     {/* 7. Actions (All) */}
                     <div
@@ -293,15 +343,21 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                         <DropdownMenuContent side="bottom" align="start">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/dashboard/me-sablony/${template.id}`}
+                              href={`/dashboard/me-sablony/upravit?idSablony=${template.id}`}
                               className="flex cursor-pointer gap-2"
                             >
                               <PencilLine className="size-4" />
                               <span>Upravit šablonu</span>
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600">
-                            <Trash className="size-4" />
+                          <DropdownMenuItem
+                            className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+                            onClick={() => {
+                              setDeleteDialog(true);
+                              setCurrentTemplateId(template.id);
+                            }}
+                          >
+                            <Trash className="size-4" color="#e7000b" />
                             <span>Smazat šablonu</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -314,6 +370,25 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={deleteDialog}
+        onOpenChange={() => setDeleteDialog(!deleteDialog)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Opravdu chcete šablonu {currentTemplateId} smazat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Smazání neovlivní certifikáty, které byly
+              se šablonou vytvořeny.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCurrentTemplateId("")}>Jít zpět</AlertDialogCancel>
+            <AlertDialogAction onClick={() => hideTemplateFromUser(currentTemplateId)}>Smazat šablonu</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,28 +1,42 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { categories, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
-
 export const templatesRouter = createTRPCRouter({
   getUserTemplates: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.query.templates.findMany({
-      where: eq(templates.userId, ctx.session.user.id), // && eq(templates.deletedAt, null),
+      where: and(
+        eq(templates.userId, ctx.session.user.id),
+        // eq(templates.deletedAt, null),
+      ),
       orderBy: (templates, { desc }) => [desc(templates.createdAt)],
     });
   }),
 
+  getTemplateById: protectedProcedure
+    .input(z.object({ templateId: z.string() }))
+
+    .query(async ({ input }) => {
+      return db.query.templates.findFirst({
+        where: eq(templates.id, input.templateId),
+      });
+    }),
+
   getUserTemplateCount: publicProcedure
-    .input(z.object({
+    .input(
+      z.object({
         userId: z.string(),
       }),
     )
     .query(async ({ input }) => {
-      return db.$count(
-        templates,
-        eq(templates.userId, input.userId))
+      return db.$count(templates, eq(templates.userId, input.userId));
     }),
 
   pastWeeksChange: publicProcedure
@@ -71,20 +85,108 @@ export const templatesRouter = createTRPCRouter({
           .returning();
       }
 
-      if (!category) throw new TRPCError({message: "Failed.", code: "INTERNAL_SERVER_ERROR"});
+      if (!category)
+        throw new TRPCError({
+          message: "Failed.",
+          code: "INTERNAL_SERVER_ERROR",
+        });
 
-      const [newTemplate] = await db.insert(templates).values({
-        userId: ctx.session.user.id,
-        categoryId: category.id,
-        name: input.name,
-        description: input.description,
-        canvasData: input.canvasData,
-        placeholders: input.placeholders,
-        previewImageUrl: input.previewImageUrl,
-        isPublic: input.isPublic,
-        isVerified: true,
-      }).returning();
+      const [newTemplate] = await db
+        .insert(templates)
+        .values({
+          userId: ctx.session.user.id,
+          categoryId: category.id,
+          name: input.name,
+          description: input.description,
+          canvasData: input.canvasData,
+          placeholders: input.placeholders,
+          previewImageUrl: input.previewImageUrl,
+          isPublic: input.isPublic,
+          isVerified: true,
+        })
+        .returning();
 
       return newTemplate;
-    })
+    }),
+
+  updateTemplate: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1),
+        description: z.string().optional(),
+        canvasData: z.any(),
+        placeholders: z.array(z.string()),
+        previewImageUrl: z.string().optional(),
+        isPublic: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // 1. Verify ownership
+      const existingTemplate = await db.query.templates.findFirst({
+        where: and(
+          eq(templates.id, input.id),
+          eq(templates.userId, ctx.session.user.id),
+        ),
+      });
+
+      if (!existingTemplate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found or you do not have permission to edit it.",
+        });
+      }
+
+      // 2. Update
+      const [updatedTemplate] = await db
+        .update(templates)
+        .set({
+          name: input.name,
+          description: input.description,
+          canvasData: input.canvasData,
+          placeholders: input.placeholders,
+          previewImageUrl: input.previewImageUrl,
+          isPublic: input.isPublic,
+          updatedAt: new Date(),
+        })
+        .where(eq(templates.id, input.id))
+        .returning();
+
+      return updatedTemplate;
+    }),
+
+  hideTemplate: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // 1. Verify ownership
+      const existingTemplate = await db.query.templates.findFirst({
+        where: and(
+          eq(templates.id, input.id),
+          eq(templates.userId, ctx.session.user.id),
+        ),
+      });
+
+      if (!existingTemplate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found or you do not have permission to edit it.",
+        });
+      }
+
+      // 2. Update
+      const [hiddenTemplate] = await db
+        .update(templates)
+        .set({
+          updatedAt: new Date(),
+          deletedAt: new Date(),
+        })
+        .where(eq(templates.id, input.id))
+        .returning();
+
+      return hiddenTemplate;
+    }),
 });
