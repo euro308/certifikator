@@ -1,22 +1,23 @@
-import { auth } from "@/server/better-auth/config";
-import { headers } from "next/headers";
-import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
+"use client"
+
+import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { TemplateSummary } from "@/components/my-templates/template-summary";
 
-export default async function MeSablony() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export default function MeSablony() {
+  const { data: userTemplates, isLoading } = api.templates.getUserTemplates.useQuery();
 
-  if (!session) {
-    redirect("/prihlaseni");
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 md:px-6">
+        <div className="flex items-center justify-center h-64">
+          <span className="text-muted-foreground">Načítám šablony...</span>
+        </div>
+      </div>
+    );
   }
-
-  const userTemplates = await api.templates.getUserTemplates();
 
   return (
     <div className="container mx-auto px-4 py-6 md:px-6">
@@ -37,7 +38,7 @@ export default async function MeSablony() {
         </Button>
       </div>
 
-      <TemplateSummary userTemplates={userTemplates} />
+      <TemplateSummary userTemplates={userTemplates ?? []} />
     </div>
   );
 }

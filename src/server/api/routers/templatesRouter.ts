@@ -6,7 +6,7 @@ import {
 } from "@/server/api/trpc";
 import { categories, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, eq, gte } from "drizzle-orm";
+import { and, eq, gte, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const templatesRouter = createTRPCRouter({
@@ -14,7 +14,7 @@ export const templatesRouter = createTRPCRouter({
     return ctx.db.query.templates.findMany({
       where: and(
         eq(templates.userId, ctx.session.user.id),
-        // eq(templates.deletedAt, null),
+        isNull(templates.deletedAt),
       ),
       orderBy: (templates, { desc }) => [desc(templates.createdAt)],
     });
@@ -36,7 +36,10 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      return db.$count(templates, eq(templates.userId, input.userId));
+      return db.$count(
+        templates,
+        and(eq(templates.userId, input.userId), isNull(templates.deletedAt)),
+      );
     }),
 
   pastWeeksChange: publicProcedure
@@ -54,6 +57,7 @@ export const templatesRouter = createTRPCRouter({
         and(
           eq(templates.userId, input.userId),
           gte(templates.createdAt, weekAgo),
+          isNull(templates.deletedAt),
         ),
       );
     }),
