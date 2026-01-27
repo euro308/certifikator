@@ -66,12 +66,12 @@ export function AddElementSection() {
       img.onload = () => {
         createImageElement(base64, img.width, img.height);
       };
-      img.onerror = (err) => {
+      img.onerror = () => {
         alert("Nepodařilo se načíst obrázek.");
       };
       img.src = base64;
     };
-    reader.onerror = (err) => {
+    reader.onerror = () => {
       alert("Nepodařilo se přečíst soubor.");
     };
     reader.readAsDataURL(file);
@@ -118,7 +118,8 @@ export function AddElementSection() {
               className="justify-start gap-2"
               onClick={handleAddImageClick}
             >
-              <Image className="size-4" />
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              <Image className="size-4"/>
               Přidat obrázek
             </Button>
 

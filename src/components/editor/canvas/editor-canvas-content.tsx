@@ -90,9 +90,8 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             y: 0,
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
-            pixelRatio: 0.5, // Menší rozlišení pro náhled
+            pixelRatio: 1,
             mimeType: 'image/jpeg',
-            quality: 0.8
           });
           
           // Obnovíme původní pohled

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Copy, PencilLine, Plus, Search, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import {
   InputGroup,
   InputGroupAddon,
@@ -16,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Img } from "@react-email/img";
 import { api } from "@/trpc/react";
 import {
   DropdownMenu,
@@ -244,10 +244,12 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     {/* 1. Preview Image */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {template.previewImageUrl ? (
-                        <Img
+                        <Image
                           alt={template.name}
                           src={template.previewImageUrl}
-                          className="h-full w-full object-cover"
+                          className="object-cover"
+                          fill
+                          sizes="70px"
                         />
                       ) : (
                         <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">

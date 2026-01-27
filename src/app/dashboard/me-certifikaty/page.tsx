@@ -4,6 +4,7 @@ import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -61,7 +62,7 @@ export default async function MeCertifikaty() {
                   <span className={"text-[0.75rem]"}>{cert.id}</span>
                 </div>
                 </div>
-                <img className="w-42 h-24 max-w-sm rounded-xl bg-gray-200 object-cover md:w-40 md:h-24" alt={`certificate-${cert.id}`}/>
+                <Image className="w-42 h-24 max-w-sm rounded-xl bg-gray-200 object-cover md:w-40 md:h-24" alt={`certificate-${cert.id}`} src={null}/>
               </CardHeader>
               <CardContent>
                   <div className="flex justify-between">
