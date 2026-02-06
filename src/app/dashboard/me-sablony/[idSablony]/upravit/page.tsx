@@ -11,7 +11,7 @@ import { EditorDialog } from "@/components/editor/editor-dialog";
 import Link from "next/link";
 import { useTemplateDraft } from "@/components/editor/hooks/use-template-draft";
 import type { TemplateExportData } from "@/components/editor/types/canvas-types";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
@@ -24,6 +24,7 @@ export default function UpravitSablonu() {
     ? idSablonyRaw[0]
     : idSablonyRaw;
 
+  const searchParams = useSearchParams();
   const { saveDraft, loadDraft, clearDraft, hasDraft } = useTemplateDraft();
 
   // Fetch template data
@@ -77,7 +78,6 @@ export default function UpravitSablonu() {
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -150,7 +150,11 @@ export default function UpravitSablonu() {
 
               toast.dismiss(toastId);
               toast.success("Šablona byla úspěšně upravena.");
-              router.push("/dashboard/me-sablony");
+              if (searchParams.get("returnToList") === "true") {
+                router.push("/dashboard/me-sablony");
+              } else {
+                router.push(`/dashboard/me-sablony/${idSablony}`);
+              }
               router.refresh();
             } catch (error) {
               console.error("Failed to refresh templates:", error);
@@ -298,7 +302,11 @@ export default function UpravitSablonu() {
                 }
               }}
             >
-              <Link href="/dashboard/me-sablony">Zrušit</Link>
+              {searchParams.get("returnToList") === "true" ? (
+                <Link href="/dashboard/me-sablony">Zrušit</Link>
+              ) : (
+                <Link href={`/dashboard/me-sablony/${idSablony}`}>Zrušit</Link>
+              )}
             </Button>
           </div>
         </form>

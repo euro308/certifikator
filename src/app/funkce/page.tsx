@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { NavbarOutside } from "@/components/navbar-outside";
 import { FooterOutside } from "@/components/footer-outside";
 
@@ -36,7 +37,11 @@ export default function Funkce() {
                 přímo na plátně.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce1"
+              src={null}
+            />
           </div>
 
           {/* Funkce 2 */}
@@ -61,7 +66,11 @@ export default function Funkce() {
                 pár kliknutí.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce2"
+              src={null}
+            />
           </div>
 
           {/* Funkce 3 */}
@@ -85,7 +94,11 @@ export default function Funkce() {
                 se postará o doručení každému účastníku zvlášť.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce3"
+              src={null}
+            />
           </div>
 
           {/* Funkce 4 */}
@@ -101,7 +114,11 @@ export default function Funkce() {
                 Certifikátor zobrazí informaci o platnosti certifikátu.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce4"
+              src={null}
+            />
           </div>
 
           {/* Funkce 5 */}
@@ -119,7 +136,11 @@ export default function Funkce() {
                 uživatelům Certifikátoru.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce5"
+              src={null}
+            />
           </div>
 
           {/* Funkce 6 */}
@@ -136,7 +157,11 @@ export default function Funkce() {
                 systémech.
               </span>
             </div>
-            <img className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64" />
+            <Image
+              className="h-48 w-full max-w-sm rounded-xl bg-gray-200 object-cover md:h-64"
+              alt="funkce6"
+              src={null}
+            />
           </div>
         </div>
       </div>

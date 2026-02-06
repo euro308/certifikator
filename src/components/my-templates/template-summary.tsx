@@ -26,15 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteTemplateDialog } from "@/components/my-templates/delete-template-dialog";
 
 interface TemplateSummaryProps {
   userTemplates: {
@@ -84,7 +76,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
       {
         onSuccess: (_data) => {
           setDeleteDialog(false);
-          toast.loading("Šablona se maže...")
+          toast.loading("Šablona se maže...");
 
           void utils.templates.getUserTemplates.invalidate().then(() => {
             toast.dismiss();
@@ -353,7 +345,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                         <DropdownMenuContent side="bottom" align="start">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/dashboard/me-sablony/${template.id}/upravit`}
+                              href={`/dashboard/me-sablony/${template.id}/upravit?returnToList=true`}
                               className="flex cursor-pointer gap-2"
                             >
                               <PencilLine className="size-4" />
@@ -381,31 +373,13 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
         </div>
       )}
 
-      <AlertDialog
+      <DeleteTemplateDialog
         open={deleteDialog}
         onOpenChange={() => setDeleteDialog(!deleteDialog)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Opravdu chcete šablonu smazat?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tato akce je nevratná. Smazání neovlivní certifikáty, které byly
-              se šablonou vytvořeny.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setCurrentTemplateId("")}>
-              Jít zpět
-            </AlertDialogCancel>
-            <Button
-              onClick={() => hideTemplateFromUser(currentTemplateId)}
-              disabled={hideTemplateMutation.isPending}
-            >
-              {hideTemplateMutation.isPending ? "Mažu..." : "Smazat šablonu"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={() => hideTemplateFromUser(currentTemplateId)}
+        onCancel={() => setCurrentTemplateId("")}
+        isDeleting={hideTemplateMutation.isPending}
+      />
     </>
   );
 }
