@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DeleteTemplateDialog } from "@/components/my-templates/delete-template-dialog";
+import { DeleteDialog } from "@/components/delete-dialog";
 import { toast } from "sonner";
 
 export default function DetailSablony() {
@@ -244,7 +244,8 @@ export default function DetailSablony() {
       </div>
     </div>
 
-  <DeleteTemplateDialog
+  <DeleteDialog
+    type={"template"}
     open={deleteDialog}
     onOpenChange={setDeleteDialog}
     onConfirm={hideTemplateFromUser}

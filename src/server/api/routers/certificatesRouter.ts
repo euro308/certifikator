@@ -4,9 +4,10 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { certificates } from "@/server/db/schema";
+import { certificates, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 export const certificatesRouter = createTRPCRouter({
   getUserCertificateCount: publicProcedure
@@ -59,5 +60,36 @@ export const certificatesRouter = createTRPCRouter({
           eq(certificates.templateId, input.templateId)
         )
       );
+    }),
+
+  deleteCertificate: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // 1. Verify ownership
+      const existingCertificate = await db.query.certificates.findFirst({
+        where: and(
+          eq(certificates.id, input.id),
+          eq(certificates.userId, ctx.session.user.id),
+        ),
+      });
+
+      if (!existingCertificate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Certificate not found or you do not have permission to edit it.",
+        });
+      }
+
+      // 2. Update
+      const [deletedCertificate] = await db
+        .delete(certificates)
+        .where(eq(certificates.id, input.id))
+        .returning();
+
+      return deletedCertificate;
     }),
 });

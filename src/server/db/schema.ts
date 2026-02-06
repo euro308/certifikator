@@ -149,8 +149,8 @@ export const templates = createTable("templates", {
 
 export const certificates = createTable("certificates", {
     id: uuid("id").primaryKey().defaultRandom(),
-    templateId: uuid("template_id").references(() => templates.id, {
-      onDelete: "set null",
+    templateId: uuid("template_id").notNull().references(() => templates.id, {
+      onDelete: "cascade",
     }),
     categoryId: uuid("category_id")
       .notNull()
