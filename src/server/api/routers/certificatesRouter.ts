@@ -4,7 +4,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { certificates, templates } from "@/server/db/schema";
+import { certificates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
