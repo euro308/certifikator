@@ -32,7 +32,6 @@ import { toast } from "sonner";
 
 export default function DetailSablony() {
   const params = useParams();
-  useRouter();
   const idSablonyRaw = params.idSablony;
   const idSablony = Array.isArray(idSablonyRaw)
     ? idSablonyRaw[0]
@@ -51,29 +50,32 @@ export default function DetailSablony() {
   );
 
   const [deleteDialog, setDeleteDialog] = useState(false);
-  const [currentTemplateId, setCurrentTemplateId] = useState<string>(idSablony!);
   const router = useRouter();
   const utils = api.useUtils();
   const hideTemplateMutation = api.templates.hideTemplate.useMutation();
 
-  const hideTemplateFromUser = (templateId: string) => {
+  const hideTemplateFromUser = () => {
+    if (!idSablony) return;
+    
+    const toastId = toast.loading("Šablona se maže...");
+    
     hideTemplateMutation.mutate(
       {
-        id: templateId,
+        id: idSablony,
       },
       {
         onSuccess: (_data) => {
           setDeleteDialog(false);
-          toast.loading("Šablona se maže...");
 
           void utils.templates.getUserTemplates.invalidate().then(() => {
-            toast.dismiss();
+            toast.dismiss(toastId);
             toast.success("Šablona byla úspěšně smazána");
             router.push("/dashboard/me-sablony");
           });
         },
         onError: (err) => {
           console.log(err);
+          toast.dismiss(toastId);
           toast.error("Chyba při mazání šablony");
         },
       },
@@ -244,9 +246,9 @@ export default function DetailSablony() {
 
   <DeleteTemplateDialog
     open={deleteDialog}
-    onOpenChange={() => setDeleteDialog(!deleteDialog)}
-    onConfirm={() => hideTemplateFromUser(currentTemplateId)}
-    onCancel={() => setCurrentTemplateId(idSablony!)}
+    onOpenChange={setDeleteDialog}
+    onConfirm={hideTemplateFromUser}
+    onCancel={() => setDeleteDialog(false)}
     isDeleting={hideTemplateMutation.isPending}
   />
   </>
