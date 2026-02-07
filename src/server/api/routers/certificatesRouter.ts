@@ -62,6 +62,34 @@ export const certificatesRouter = createTRPCRouter({
       );
     }),
 
+  createCertificate: protectedProcedure
+    .input(
+      z.object({
+        templateId: z.string(),
+        recipientName: z.string().min(1),
+        recipientEmail: z.string().min(1),
+        recipientData: z.any(),
+        certificateUrl: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      const [newCertificate] = await db
+        .insert(certificates)
+        .values({
+          templateId: input.templateId,
+          userId: ctx.session.user.id,
+          recipientName: input.recipientName,
+          recipientEmail: input.recipientEmail,
+          recipientData: input.recipientData,
+          certificateUrl: input.certificateUrl,
+          validationToken: "",
+        })
+        .returning();
+
+      return newCertificate;
+    }),
+
   deleteCertificate: protectedProcedure
     .input(
       z.object({

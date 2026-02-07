@@ -4,7 +4,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { categories, templates } from "@/server/db/schema";
+import { templates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -74,32 +74,10 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Find a default category or create one to satisfy the Foreign Key constraint
-      // This allows us to "ignore" categories in the UI for now.
-      let category = await db.query.categories.findFirst();
-
-      if (!category) {
-        [category] = await ctx.db
-          .insert(categories)
-          .values({
-            name: "Obecné",
-            slug: "obecne",
-            description: "Výchozí kategorie",
-          })
-          .returning();
-      }
-
-      if (!category)
-        throw new TRPCError({
-          message: "Failed.",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-
       const [newTemplate] = await db
         .insert(templates)
         .values({
           userId: ctx.session.user.id,
-          categoryId: category.id,
           name: input.name,
           description: input.description,
           canvasData: input.canvasData,
