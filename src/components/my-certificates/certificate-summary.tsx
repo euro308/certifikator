@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, PencilLine, Plus, Search, Trash } from "lucide-react";
+import { Copy, Plus, Search, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,13 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/trpc/react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
 
@@ -51,7 +44,6 @@ export function CertificateSummary({
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [currentCertificateId, setCurrentCertificateId] = useState<string>("");
-  const router = useRouter();
   const utils = api.useUtils();
   const deleteCertificateMutation =
     api.certificates.deleteCertificate.useMutation();
@@ -235,7 +227,8 @@ export function CertificateSummary({
                     {/* 1. Preview Image */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {certificate.certificateUrl ? (
-                        <div/>
+                        <div />
+                      ) : (
                         /*
                         <Image
                           alt={certificate.recipientName}
@@ -245,7 +238,6 @@ export function CertificateSummary({
                           sizes="70px"
                         />
                          */
-                      ) : (
                         <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
                           Bez náhledu
                         </div>
@@ -254,17 +246,14 @@ export function CertificateSummary({
 
                     {/* 2. Name (All) + Mobile Meta */}
                     <div className="flex flex-col gap-1 overflow-hidden">
-                      <span
-                        className={"cursor-pointer truncate"}
-                        onClick={() =>
-                          router.push(
-                            `/dashboard/me-certifikaty/${certificate.id}`,
-                          )
-                        }
-                        title={certificate.recipientName}
+                      <Link
+                        href={`/dashboard/me-certifikaty/${certificate.id}`}
                       >
-                        {certificate.recipientName}
-                      </span>
+                        <span className={"cursor-pointer truncate"}>
+                          {certificate.recipientName}
+                        </span>
+                      </Link>
+
                       {/* Mobile Meta Info */}
                       <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
                         <span>
@@ -276,16 +265,12 @@ export function CertificateSummary({
                     </div>
 
                     {/* 3. E-mail (MD+) */}
-                    <span
-                      className={"text-left"}
-                    >
+                    <span className={"text-left"}>
                       {certificate.recipientEmail}
                     </span>
 
                     {/* 4. Date (MD+) */}
-                    <span
-                      className={"hidden text-sm md:block"}
-                    >
+                    <span className={"hidden text-sm md:block"}>
                       {new Date(certificate.createdAt).toLocaleDateString(
                         "cs-CZ",
                       )}
@@ -335,43 +320,22 @@ export function CertificateSummary({
                       </Button>
                     </div>
 
-                    {/* 7. Actions (All) */}
+                    {/* 7. Delete Button */}
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            ...
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side="bottom" align="start">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href={`/dashboard/me-certifikaty/${certificate.id}/upravit?returnToList=true`}
-                              className="flex cursor-pointer gap-2"
-                            >
-                              <PencilLine className="size-4" />
-                              <span>Upravit certifikát</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
-                            onClick={() => {
-                              setDeleteDialog(true);
-                              setCurrentCertificateId(certificate.id);
-                            }}
-                          >
-                            <Trash className="size-4" color="#e7000b" />
-                            <span>Smazat certifikát</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => {
+                          setDeleteDialog(true);
+                          setCurrentCertificateId(certificate.id);
+                        }
+                        }
+                      >
+                        <Trash className="size-4" color="#e7000b"/>
+                      </Button>
                     </div>
                   </div>
                 ))}

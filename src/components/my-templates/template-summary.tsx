@@ -24,7 +24,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
 
@@ -64,7 +63,6 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [currentTemplateId, setCurrentTemplateId] = useState<string>("");
-  const router = useRouter();
   const utils = api.useUtils();
   const hideTemplateMutation = api.templates.hideTemplate.useMutation();
 
@@ -252,20 +250,18 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
 
                     {/* 2. Name (All) + Mobile Meta */}
                     <div className="flex flex-col gap-1 overflow-hidden">
-                      <span
-                        className={`cursor-pointer truncate ${
-                          selectedSort === "nameAToZ" ||
-                          selectedSort === "nameZToA"
-                            ? "text-foreground font-medium"
-                            : "text-muted-foreground font-light"
-                        }`}
-                        onClick={() =>
-                          router.push(`/dashboard/me-sablony/${template.id}`)
-                        }
-                        title={template.name}
-                      >
-                        {template.name}
-                      </span>
+                      <Link href={`/dashboard/me-sablony/${template.id}`}>
+                        <span
+                          className={`cursor-pointer truncate ${
+                            selectedSort === "nameAToZ" ||
+                            selectedSort === "nameZToA"
+                              ? "text-foreground font-medium"
+                              : "text-muted-foreground font-light"
+                          }`}
+                        >
+                          {template.name}
+                        </span>
+                      </Link>
                       {/* Mobile Meta Info */}
                       <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
                         <span>

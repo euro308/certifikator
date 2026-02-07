@@ -29,7 +29,7 @@ export function DeleteDialog({type, open, onOpenChange, onConfirm, onCancel, isD
           <AlertDialogHeader>
             <AlertDialogTitle>Opravdu chcete certifikát smazat?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tato akce je nevratná. Smazáním certifikátu jej zneplatní a nebude možné jej nadále verifikovat pomocí tajného klíče..
+              Tato akce je nevratná. Smazáním certifikátu jej zneplatníte a nebude jej možné nadále verifikovat pomocí tajného klíče.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
