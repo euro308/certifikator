@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { api } from "@/trpc/react";
 import * as XLSX from "xlsx";
 import {
@@ -23,32 +23,126 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Loader2,
-  FileSpreadsheet,
-  ArrowRight,
-  Upload,
-  CheckCircle2,
   FileText,
   Users,
+  Save,
+  ChevronLeft,
+  ChevronRight,
+  Upload,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import type { CanvasElement, PlaceholderElement } from "@/components/editor/types/canvas-types";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+// Dynamický import s SSR: false - TOTO JE KLÍČOVÉ PRO KONVU
+const CertificatePreviewStage = dynamic(
+  () =>
+    import("@/components/certificate-preview/certificate-preview-stage").then(
+      (mod) => mod.CertificatePreviewStage,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[200px] w-full animate-pulse rounded-lg bg-gray-100" />
+    ),
+  },
+);
 
 type GenerationMode = "bulk" | "single";
 
+interface GeneratedCertificate {
+  recipientName: string;
+  recipientEmail: string;
+  recipientData: unknown;
+  canvasData: CanvasElement[];
+  templateId: string;
+  certificateUrl: string;
+}
+
+const ITEMS_PER_PAGE = 6; // 3x2 grid
+
+const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setWidth(entry.contentRect.width);
+        }
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="w-full flex justify-center">
+      {width > 0 ? (
+        <CertificatePreviewStage elements={elements} width={width} />
+      ) : (
+        <div className="h-[200px] w-full animate-pulse rounded-lg bg-gray-100" />
+      )}
+    </div>
+  );
+};
+
 export default function NovyCertifikatPage() {
+  const router = useRouter();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [mode, setMode] = useState<GenerationMode>("bulk");
 
   // State pro Hromadné generování (Excel)
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
-  const [excelData, setExcelData] = useState<unknown[]>([]);
+  const [excelData, setExcelData] = useState<any[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [nameColumn, setNameColumn] = useState<string>("");
+  const [emailColumn, setEmailColumn] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State pro Jednotlivý certifikát
   const [singleData, setSingleData] = useState<Record<string, string>>({});
+  const [singleName, setSingleName] = useState<string>("");
+  const [singleEmail, setSingleEmail] = useState<string>("");
+  
+  // Generated Data & Pagination
+  const [generatedCertificates, setGeneratedCertificates] = useState<GeneratedCertificate[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
+  const displayedCertificates = generatedCertificates.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page on new generation
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [generatedCertificates]);
+
+  // TRPC Mutations
+  const createBatch = api.certificates.createBatch.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Úspěšně vytvořeno ${data.length} certifikátů.`);
+      router.push("/dashboard/me-certifikaty");
+    },
+    onError: (err) => {
+      toast.error("Chyba při ukládání certifikátů: " + err.message);
+      setIsSaving(false);
+    },
+  });
 
   // Načtení uživatelových šablon
   const { data: templates, isLoading: templatesLoading } =
@@ -56,45 +150,27 @@ export default function NovyCertifikatPage() {
 
   // Najít vybranou šablonu
   const selectedTemplate = templates?.find((t) => t.id === selectedTemplateId);
-  // Placeholdery šablony (přetypování, protože v DB je to jsonb)
+  // Placeholdery šablony
   const placeholders = (selectedTemplate?.placeholders as string[]) || [];
 
   const handleTemplateSelect = (value: string) => {
     setSelectedTemplateId(value);
-    // Reset stavů při změně šablony
     setMapping({});
     setSingleData({});
-    setStep(1); // Zůstat na kroku 1, ale povolit přechod
+    setStep(1);
+    setGeneratedCertificates([]);
   };
 
-  const correctPlaceholderText = () => {
-    if (placeholders.length == 1) {
-      return "1 proměnná";
-    } else if (placeholders.length > 1 && placeholders.length <= 4) {
-      return `${placeholders.length} proměnné`;
-    } else {
-      return `${placeholders.length} proměnných`;
-    }
+  const correctPlaceholderText = (number: number) => {
+    if (number === 1) return "1 proměnná";
+    if (number > 1 && number <= 4) return `${number} proměnné`;
+    return `${number} proměnných`;
   };
 
-  const correctGenerateCertificatesText = () => {
-    if (excelData.length == 1) {
-      return "Generovat certifikát";
-    } else if (excelData.length > 1 && excelData.length <= 4) {
-      return `Generovat ${excelData.length} certifikáty`;
-    } else {
-      return `Generovat ${excelData.length} certifikátů`;
-    }
-  };
-
-  const sendCorrectSuccessToast = (data: unknown[]) => {
-    if (data.length == 1) {
-      toast.success(`Načten ${data.length} záznam`);
-    } else if (data.length > 1 && data.length <= 4) {
-      toast.success(`Načteny ${data.length} záznamy`);
-    } else {
-      toast.success(`Načteno ${data.length} záznamů`);
-    }
+  const correctCertificatesText = (number: number) => {
+    if (number == 1) return "certifikát";
+    if (number > 1 && number <= 4) return `${number} certifikáty`;
+    return `${number} certifikátů`;
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,8 +188,6 @@ export default function NovyCertifikatPage() {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-
-        // Načtení dat jako JSON
         const data = XLSX.utils.sheet_to_json(ws);
 
         if (data.length === 0) {
@@ -121,36 +195,36 @@ export default function NovyCertifikatPage() {
           return;
         }
 
-        // Získání hlaviček z prvního řádku dat
         const headers = Object.keys(data[0] as object);
-
         setExcelHeaders(headers);
         setExcelData(data);
 
-        // Inteligentní automapping (pokud se názvy shodují)
+        // Automapping placeholders
         const newMapping: Record<string, string> = {};
         placeholders.forEach((p) => {
-          // Zkus najít přesnou shodu nebo shodu bez diakritiky/case-insensitive
           const match = headers.find(
-            (h) =>
-              h.toLowerCase() === p.toLowerCase() ||
-              h.toLowerCase().includes(p.toLowerCase()),
+            (h) => h.toLowerCase() === p.toLowerCase() || h.toLowerCase().includes(p.toLowerCase())
           );
-          if (match) {
-            newMapping[p] = match;
-          }
+          if (match) newMapping[p] = match;
         });
         setMapping(newMapping);
+        
+        // Automapping system fields
+        const nameMatch = headers.find(h => h.toLowerCase().includes("jméno") || h.toLowerCase().includes("name"));
+        if (nameMatch) setNameColumn(nameMatch);
 
-        sendCorrectSuccessToast(data);
+        const emailMatch = headers.find(h => h.toLowerCase().includes("email") || h.toLowerCase().includes("e-mail"));
+        if (emailMatch) setEmailColumn(emailMatch);
+
+        if (data.length == 1) toast.success(`Načten ${data.length} záznam`);
+        else if (data.length > 1 && data.length <= 4) toast.success(`Načteny ${data.length} záznamy`);
+        else toast.success(`Načteno ${data.length} záznamů`);
+
       } catch (err) {
         console.error(err);
-        toast.error(
-          "Chyba při čtení souboru. Ujistěte se, že jde o validní Excel.",
-        );
+        toast.error("Chyba při čtení souboru. Ujistěte se, že jde o validní Excel.");
       }
     };
-
     reader.readAsBinaryString(file);
   };
 
@@ -162,14 +236,199 @@ export default function NovyCertifikatPage() {
     setMapping((prev) => ({ ...prev, [placeholder]: column }));
   };
 
-  // Validace, zda je vše připraveno ke generování
-  const isBulkReady =
-    excelData.length > 0 && placeholders.every((p) => mapping[p]); // Všechny placeholdery musí být namapované
+  // Validace
+  const isBulkReady = excelData.length > 0 && placeholders.every((p) => mapping[p]);
+  const isSingleReady = placeholders.every((p) => singleData[p] && singleData[p].trim() !== "") && singleName.trim() !== "";
 
-  const isSingleReady = placeholders.every(
-    (p) => singleData[p] && singleData[p].trim() !== "",
-  );
+  // Generování
+  const generateCertificates = () => {
+    if (!selectedTemplate) return;
 
+    // Bezpečné získání elementů (oprava chyby s forEach is not a function)
+    const rawCanvasData = selectedTemplate.canvasData as unknown;
+    let templateElements: CanvasElement[] = [];
+
+    if (Array.isArray(rawCanvasData)) {
+      templateElements = rawCanvasData as CanvasElement[];
+    } else if (typeof rawCanvasData === 'object' && rawCanvasData !== null && 'elements' in rawCanvasData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      templateElements = (rawCanvasData as any).elements as CanvasElement[];
+    } else {
+      console.error("Neplatný formát dat šablony:", rawCanvasData);
+      toast.error("Chyba dat šablony: Nepodařilo se načíst prvky.");
+      return;
+    }
+
+    const newCertificates: GeneratedCertificate[] = [];
+
+    if (mode === "bulk") {
+      excelData.forEach((row) => {
+        // Deep clone elements
+        const elementsCopy = JSON.parse(JSON.stringify(templateElements));
+        
+        // Replace placeholders
+        elementsCopy.forEach((el: any) => {
+            if (el.type === "placeholder") {
+                const pKey = (el as PlaceholderElement).placeholderKey;
+                const colName = mapping[pKey];
+                
+                if (colName && row[colName] !== undefined) {
+                    const value = String(row[colName]);
+                    el.displayText = value;
+                }
+            }
+        });
+
+        newCertificates.push({
+          recipientName: nameColumn ? String(row[nameColumn] || "") : "Neznámý příjemce",
+          recipientEmail: emailColumn ? String(row[emailColumn] || "") : "",
+          recipientData: row, 
+          canvasData: elementsCopy,
+          templateId: selectedTemplate.id,
+          certificateUrl: "pending", 
+        });
+      });
+    } else {
+        // Single mode
+        const elementsCopy = JSON.parse(JSON.stringify(templateElements));
+        elementsCopy.forEach((el: any) => {
+            if (el.type === "placeholder") {
+                const pKey = (el as PlaceholderElement).placeholderKey;
+                const val = singleData[pKey];
+                if (val) {
+                    el.displayText = val;
+                }
+            }
+        });
+
+        newCertificates.push({
+            recipientName: singleName,
+            recipientEmail: singleEmail,
+            recipientData: singleData,
+            canvasData: elementsCopy,
+            templateId: selectedTemplate.id,
+            certificateUrl: "pending",
+        });
+    }
+
+    setGeneratedCertificates(newCertificates);
+    setStep(3);
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    createBatch.mutate(generatedCertificates.map(cert => ({
+        templateId: cert.templateId,
+        recipientName: cert.recipientName,
+        recipientEmail: cert.recipientEmail,
+        recipientData: cert.recipientData,
+        certificateUrl: cert.certificateUrl
+    })));
+  };
+
+  // ===== RENDER =====
+
+  // Pokud jsme ve kroku 3, zobrazíme úplně jiný layout
+  if (step === 3) {
+    return (
+      <div className="container mx-auto max-w-[1400px] space-y-6 px-4 py-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              {generatedCertificates.length === 1
+                ? "Náhled certifikátu"
+                : "Náhled certifikátů"}
+            </h1>
+            <p className="text-muted-foreground">
+              Zkontolujte {correctCertificatesText(generatedCertificates.length)} před
+              uložením.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setStep(2)}>
+              Zpět na úpravu dat
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="min-w-[140px]"
+            >
+              {isSaving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Uložit vše
+            </Button>
+          </div>
+        </div>
+
+        {/* Grid certifikátů */}
+        <div
+          className={`grid gap-6 ${
+            displayedCertificates.length === 1
+              ? "mx-auto max-w-3xl grid-cols-1"
+              : displayedCertificates.length === 2
+                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
+          {displayedCertificates.map((cert, i) => (
+            <div
+              key={i}
+              className="flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
+            >
+              <div className="border-b bg-gray-50/50 p-3">
+                <h3
+                  className="truncate text-sm font-semibold"
+                  title={cert.recipientName}
+                >
+                  {cert.recipientName}
+                </h3>
+                <p
+                  className="text-muted-foreground truncate text-xs"
+                  title={cert.recipientEmail}
+                >
+                  {cert.recipientEmail || "Bez emailu"}
+                </p>
+              </div>
+              <div className="flex flex-1 items-center justify-center bg-white p-2">
+                {/* Preview Stage - AutoSized */}
+                <AutoSizedPreview elements={cert.canvasData} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-center gap-4 py-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium">
+              Strana {currentPage} z {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Layout pro Krok 1 a 2
   return (
     <div className="container mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       <div>
@@ -177,12 +436,12 @@ export default function NovyCertifikatPage() {
           Vytvořit nové certifikáty
         </h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Vyberte šablonu a zadejte data pro vygenerování certifikátů.
+          Krok {step} z 3: {step === 1 ? "Výběr šablony" : "Zadání dat"}
         </p>
       </div>
 
       {/* KROK 1: Výběr šablony */}
-      <Card className={step === 1 ? "border-primary/50 shadow-md" : ""}>
+      <Card className={step === 1 ? "border-primary/50 shadow-md" : "hidden"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm">
@@ -194,7 +453,7 @@ export default function NovyCertifikatPage() {
             Zvolte šablonu, kterou chcete použít.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1 space-y-2">
               <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -203,7 +462,7 @@ export default function NovyCertifikatPage() {
               <Select
                 value={selectedTemplateId}
                 onValueChange={handleTemplateSelect}
-                disabled={templatesLoading || step !== 1}
+                disabled={templatesLoading}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue
@@ -241,15 +500,13 @@ export default function NovyCertifikatPage() {
               </Select>
             </div>
 
-            {step === 1 && (
-              <Button
+            <Button
                 disabled={!selectedTemplateId}
                 onClick={() => setStep(2)}
                 className="w-full sm:w-auto"
-              >
+            >
                 Pokračovat <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
+            </Button>
           </div>
 
           {selectedTemplate && (
@@ -276,7 +533,7 @@ export default function NovyCertifikatPage() {
                   </p>
                   <div className="mt-2 flex gap-2">
                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
-                      {correctPlaceholderText()}
+                      {correctPlaceholderText(placeholders.length)}
                     </span>
                   </div>
                 </div>
@@ -287,11 +544,7 @@ export default function NovyCertifikatPage() {
       </Card>
 
       {/* KROK 2: Zadání dat */}
-      <div
-        className={
-          step === 2 ? "block" : "pointer-events-none hidden opacity-50"
-        }
-      >
+      <div className={step === 2 ? "block" : "hidden"}>
         <Tabs
           defaultValue="bulk"
           value={mode}
@@ -328,14 +581,12 @@ export default function NovyCertifikatPage() {
                 {/* 1. Nahrání souboru */}
                 <div
                   onClick={() => {
-                    // Kliknutí funguje jen když není soubor nahrán (aby šlo kliknout na tlačítko Smazat)
                     if (!excelFile) {
                       fileInputRef.current?.click();
                     }
                   }}
                   className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-10 text-center transition-colors ${!excelFile ? "hover:border-primary/50 cursor-pointer hover:bg-gray-50" : "bg-white"} `}
                 >
-                  {/* Skrytý Input */}
                   <Input
                     ref={fileInputRef}
                     type="file"
@@ -355,13 +606,14 @@ export default function NovyCertifikatPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setExcelFile(null);
-                          setExcelData([]);
-                          setExcelHeaders([]);
-                          setMapping({});
-                          if (fileInputRef.current)
-                            fileInputRef.current.value = "";
+                        onClick={(e) => {
+                           e.stopPropagation(); 
+                           setExcelFile(null);
+                           setExcelData([]);
+                           setExcelHeaders([]);
+                           setMapping({});
+                           if (fileInputRef.current)
+                             fileInputRef.current.value = "";
                         }}
                         className="text-red-500 hover:bg-red-50 hover:text-red-700"
                       >
@@ -385,19 +637,36 @@ export default function NovyCertifikatPage() {
 
                 {/* 2. Mapování sloupců */}
                 {excelHeaders.length > 0 && (
-                  <div className="space-y-4 border-t pt-4">
+                  <div className="space-y-6 border-t pt-4">
+                    {/* Systémové sloupce */}
+                    <div className="space-y-4 border rounded-lg p-4 bg-gray-50/50">
+                        <h3 className="font-semibold text-gray-900">Systémové sloupce (Doporučené)</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Sloupec se Jménem příjemce</Label>
+                                <Select value={nameColumn} onValueChange={setNameColumn}>
+                                    <SelectTrigger><SelectValue placeholder="Nevybráno" /></SelectTrigger>
+                                    <SelectContent>{excelHeaders.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Sloupec s Emailem</Label>
+                                <Select value={emailColumn} onValueChange={setEmailColumn}>
+                                    <SelectTrigger><SelectValue placeholder="Nevybráno" /></SelectTrigger>
+                                    <SelectContent>{excelHeaders.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+
                     <h3 className="text-lg font-semibold">
-                      Mapování proměnných
+                      Mapování proměnných šablony
                     </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Přiřaďte sloupce z Excelu k proměnným v šabloně.
-                    </p>
 
                     <div className="max-w-3xl space-y-3">
                       {placeholders.length === 0 ? (
                         <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-600">
-                          Tato šablona nemá žádné proměnné. Certifikáty budou
-                          všechny stejné.
+                          Tato šablona nemá žádné proměnné.
                         </p>
                       ) : (
                         placeholders.map((placeholder) => (
@@ -444,14 +713,30 @@ export default function NovyCertifikatPage() {
                   <Button variant="outline" onClick={() => setStep(1)}>
                     Zpět k výběru
                   </Button>
-                  <Button disabled={!isBulkReady} size="lg">
-                    {correctGenerateCertificatesText()}
+                  <Button disabled={!isBulkReady} size="lg" onClick={generateCertificates}>
+                    Generovat {correctCertificatesText(excelData.length)}
                   </Button>
                 </div>
               </TabsContent>
 
               <TabsContent value="single" className="mt-0 space-y-6">
+                {/* Single System Inputs */}
+                <div className="space-y-4 border rounded-lg p-4 bg-gray-50/50">
+                   <h3 className="font-semibold">Systémové údaje</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <Label>Jméno příjemce *</Label>
+                         <Input value={singleName} onChange={e => setSingleName(e.target.value)} placeholder="Jan Novák" />
+                      </div>
+                      <div className="space-y-2">
+                         <Label>Email příjemce</Label>
+                         <Input value={singleEmail} onChange={e => setSingleEmail(e.target.value)} placeholder="jan@novak.cz" />
+                      </div>
+                   </div>
+                </div>
+
                 <div className="max-w-3xl space-y-4">
+                  <h3 className="font-semibold">Proměnné šablony</h3>
                   {placeholders.map((placeholder) => (
                     <div
                       key={placeholder}
@@ -479,7 +764,7 @@ export default function NovyCertifikatPage() {
                   <Button variant="outline" onClick={() => setStep(1)}>
                     Zpět k výběru
                   </Button>
-                  <Button disabled={!isSingleReady} size="lg">
+                  <Button disabled={!isSingleReady} size="lg" onClick={generateCertificates}>
                     Generovat certifikát
                   </Button>
                 </div>
