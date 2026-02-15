@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import {
-  CanvasElement,
+  type CanvasElement,
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
 } from "@/components/editor/types/canvas-types";

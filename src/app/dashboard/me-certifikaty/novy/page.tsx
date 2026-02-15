@@ -1,40 +1,28 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/trpc/react";
 import * as XLSX from "xlsx";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Loader2,
-  FileText,
-  Users,
-  Save,
+  ArrowRight,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  Loader2,
+  Save,
   Upload,
-  CheckCircle2,
-  ArrowRight,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import type { CanvasElement, PlaceholderElement } from "@/components/editor/types/canvas-types";
+import type { CanvasElement } from "@/components/editor/types/canvas-types";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
@@ -104,7 +92,7 @@ export default function NovyCertifikatPage() {
   // State pro Hromadné generování (Excel)
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
-  const [excelData, setExcelData] = useState<any[]>([]);
+  const [excelData, setExcelData] = useState<Record<string, unknown>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [nameColumn, setNameColumn] = useState<string>("");
   const [emailColumn, setEmailColumn] = useState<string>("");
@@ -134,11 +122,11 @@ export default function NovyCertifikatPage() {
 
   // TRPC Mutations
   const createBatch = api.certificates.createBatch.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: unknown[]) => {
       toast.success(`Úspěšně vytvořeno ${data.length} certifikátů.`);
       router.push("/dashboard/me-certifikaty");
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       toast.error("Chyba při ukládání certifikátů: " + err.message);
       setIsSaving(false);
     },
@@ -187,8 +175,13 @@ export default function NovyCertifikatPage() {
       try {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
+        if (!wsname) {
+             toast.error("Soubor neobsahuje žádné listy");
+             return;
+        }
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
+        if (!ws) return;
+        const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
 
         if (data.length === 0) {
           toast.error("Soubor je prázdný");
@@ -245,14 +238,13 @@ export default function NovyCertifikatPage() {
     if (!selectedTemplate) return;
 
     // Bezpečné získání elementů (oprava chyby s forEach is not a function)
-    const rawCanvasData = selectedTemplate.canvasData as unknown;
+    const rawCanvasData = selectedTemplate.canvasData;
     let templateElements: CanvasElement[] = [];
 
     if (Array.isArray(rawCanvasData)) {
       templateElements = rawCanvasData as CanvasElement[];
     } else if (typeof rawCanvasData === 'object' && rawCanvasData !== null && 'elements' in rawCanvasData) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      templateElements = (rawCanvasData as any).elements as CanvasElement[];
+      templateElements = (rawCanvasData as { elements: CanvasElement[] }).elements;
     } else {
       console.error("Neplatný formát dat šablony:", rawCanvasData);
       toast.error("Chyba dat šablony: Nepodařilo se načíst prvky.");
@@ -264,36 +256,43 @@ export default function NovyCertifikatPage() {
     if (mode === "bulk") {
       excelData.forEach((row) => {
         // Deep clone elements
-        const elementsCopy = JSON.parse(JSON.stringify(templateElements));
+        const elementsCopy = JSON.parse(JSON.stringify(templateElements)) as CanvasElement[];
         
         // Replace placeholders
-        elementsCopy.forEach((el: any) => {
+        elementsCopy.forEach((el) => {
             if (el.type === "placeholder") {
-                const pKey = (el as PlaceholderElement).placeholderKey;
+                const pKey = (el).placeholderKey;
                 const colName = mapping[pKey];
                 
                 if (colName && row[colName] !== undefined) {
-                    const value = String(row[colName]);
-                    el.displayText = value;
+                    const val = row[colName];
+                    
+                    el.displayText =
+                      typeof val === "string" || typeof val === "number"
+                        ? String(val)
+                        : "";
                 }
             }
         });
 
+        const rName = nameColumn ? row[nameColumn] : undefined;
+        const rEmail = emailColumn ? row[emailColumn] : undefined;
+
         newCertificates.push({
-          recipientName: nameColumn ? String(row[nameColumn] || "") : "Neznámý příjemce",
-          recipientEmail: emailColumn ? String(row[emailColumn] || "") : "",
+          recipientName: (typeof rName === 'string' || typeof rName === 'number') ? String(rName) : "Neznámý příjemce",
+          recipientEmail: (typeof rEmail === 'string' || typeof rEmail === 'number') ? String(rEmail) : "",
           recipientData: row, 
           canvasData: elementsCopy,
           templateId: selectedTemplate.id,
-          certificateUrl: "pending", 
+          certificateUrl: "pending", //
         });
       });
     } else {
         // Single mode
-        const elementsCopy = JSON.parse(JSON.stringify(templateElements));
-        elementsCopy.forEach((el: any) => {
+        const elementsCopy = JSON.parse(JSON.stringify(templateElements)) as CanvasElement[];
+        elementsCopy.forEach((el) => {
             if (el.type === "placeholder") {
-                const pKey = (el as PlaceholderElement).placeholderKey;
+                const pKey = (el).placeholderKey;
                 const val = singleData[pKey];
                 if (val) {
                     el.displayText = val;

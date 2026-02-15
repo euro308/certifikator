@@ -35,7 +35,6 @@ interface TemplateSummaryProps {
     updatedAt: Date;
     userId: string;
     description: string | null;
-    categoryId: string;
     canvasData: unknown;
     placeholders: unknown;
     previewImageUrl: string | null;

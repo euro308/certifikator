@@ -26,7 +26,6 @@ interface CertificateSummaryProps {
     id: string;
     createdAt: Date;
     userId: string;
-    categoryId: string;
     templateId: string;
     recipientName: string;
     recipientEmail: string;
