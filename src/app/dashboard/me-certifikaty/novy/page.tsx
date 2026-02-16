@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import {
@@ -130,6 +131,9 @@ export default function NovyCertifikatPage() {
   const [generatedCertificates, setGeneratedCertificates] = useState<
     GeneratedCertificate[]
   >([]);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
+    new Set(),
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -143,6 +147,24 @@ export default function NovyCertifikatPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
+  const correctPlaceholderText = (number: number) => {
+    if (number === 1) return "1 proměnná";
+    if (number > 1 && number <= 4) return `${number} proměnné`;
+    return `${number} proměnných`;
+  };
+
+  const correctCertificatesText = (number: number) => {
+    if (number == 1) return "certifikát";
+    if (number > 1 && number <= 4) return `${number} certifikáty`;
+    return `${number} certifikátů`;
+  };
+
+  const correctSuccessToastText = (number: number) => {
+    if (number == 1) return "vytvořen 1 certifikát.";
+    if (number > 1 && number <= 4) return `vytvořeny ${number} certifikáty`;
+    return `vytvořeno ${number} certifikátů`;
+  };
 
   // Reset stránka na nové generaci
   useEffect(() => {
@@ -162,7 +184,7 @@ export default function NovyCertifikatPage() {
   // TRPC mutace
   const createBatch = api.certificates.createBatch.useMutation({
     onSuccess: (data: unknown[]) => {
-      toast.success(`Úspěšně vytvořeno ${data.length} certifikátů.`);
+      toast.success(`Úspěšně ${correctSuccessToastText(data.length)}`);
       router.push("/dashboard/me-certifikaty");
     },
     onError: (err: { message: string }) => {
@@ -186,18 +208,6 @@ export default function NovyCertifikatPage() {
     setSingleData({});
     setStep(1);
     setGeneratedCertificates([]);
-  };
-
-  const correctPlaceholderText = (number: number) => {
-    if (number === 1) return "1 proměnná";
-    if (number > 1 && number <= 4) return `${number} proměnné`;
-    return `${number} proměnných`;
-  };
-
-  const correctCertificatesText = (number: number) => {
-    if (number == 1) return "certifikát";
-    if (number > 1 && number <= 4) return `${number} certifikáty`;
-    return `${number} certifikátů`;
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,6 +390,7 @@ export default function NovyCertifikatPage() {
     }
 
     setGeneratedCertificates(newCertificates);
+    setSelectedIndices(new Set(newCertificates.map((_, i) => i)));
     setStep(3);
   };
 
@@ -396,21 +407,52 @@ export default function NovyCertifikatPage() {
       setGenerationIndex((prev) => prev + 1);
     } else {
       setIsGeneratingImages(false);
-      toast.success("Všechny náhledy byly vygenerovány.");
+    }
+  };
+
+  const setItemSelected = (index: number, selected: boolean) => {
+    setSelectedIndices((prev) => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(index);
+      } else {
+        next.delete(index);
+      }
+      return next;
+    });
+  };
+
+  const setAllSelected = (selected: boolean) => {
+    if (selected) {
+      setSelectedIndices(new Set(generatedCertificates.map((_, i) => i)));
+    } else {
+      setSelectedIndices(new Set());
     }
   };
 
   const handleSave = () => {
-    if (isGeneratingImages) {
+    const selectedCerts = generatedCertificates.filter((_, i) =>
+      selectedIndices.has(i),
+    );
+
+    if (selectedCerts.length === 0) {
+      toast.error("Musíte vybrat alespoň jeden certifikát k uložení.");
+      return;
+    }
+
+    const pendingSelected = selectedCerts.filter(
+      (c) => c.certificateUrl === "pending",
+    );
+    if (pendingSelected.length > 0) {
       toast.warning(
-        `Probíhá generování náhledů (${generationIndex + 1}/${generatedCertificates.length}). Čekejte prosím.`,
+        `Některé vybrané certifikáty ještě nemají vygenerovaný náhled. Počkejte prosím na dokončení.`,
       );
       return;
     }
 
     setIsSaving(true);
     createBatch.mutate(
-      generatedCertificates.map((cert) => ({
+      selectedCerts.map((cert) => ({
         templateId: cert.templateId,
         recipientName: cert.recipientName,
         recipientEmail: cert.recipientEmail,
@@ -443,29 +485,42 @@ export default function NovyCertifikatPage() {
                 : "Náhled certifikátů"}
             </h1>
             <p className="text-muted-foreground">
-              Zkontolujte{" "}
-              {correctCertificatesText(generatedCertificates.length)} před
-              uložením.{" "}
-              {isGeneratingImages &&
-                `(Generuji náhled ${generationIndex + 1}/${generatedCertificates.length}...)`}
+              Vybráno {selectedIndices.size} z {generatedCertificates.length}{" "}
+              {generatedCertificates.length > 1 ? "certifikátů" : "certifikátu"}
+              .
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(2)}>
-              Zpět na úpravu dat
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="min-w-[140px]"
-            >
-              {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Uložit vše
-            </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm">
+              <Checkbox
+                id="select-all"
+                checked={
+                  selectedIndices.size === generatedCertificates.length &&
+                  generatedCertificates.length > 0
+                }
+                onCheckedChange={(v) => setAllSelected(!!v)}
+              />
+              <Label htmlFor="select-all" className="cursor-pointer text-sm">
+                Vybrat vše
+              </Label>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep(2)}>
+                Zpět na úpravu dat
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving || selectedIndices.size === 0}
+                className="min-w-[160px]"
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Uložit vybrané ({selectedIndices.size})
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -479,33 +534,48 @@ export default function NovyCertifikatPage() {
                 : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
           }`}
         >
-          {displayedCertificates.map((cert, i) => (
-            <div
-              key={i}
-              className="flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
-            >
-              <div className="border-b bg-gray-50/50 p-3">
-                <h3
-                  className="truncate text-sm font-semibold"
-                  title={cert.recipientName}
-                >
-                  {cert.recipientName}
-                </h3>
-                <p
-                  className="text-muted-foreground truncate text-xs"
-                  title={cert.recipientEmail}
-                >
-                  {cert.recipientEmail || "Bez emailu"}
-                </p>
-              </div>
-              <div className="flex flex-1 items-center justify-center bg-white p-2">
-                {/* Preview Stage - AutoSized */}
-                <AutoSizedPreview elements={cert.canvasData} />
-              </div>
-            </div>
-          ))}
-        </div>
+          {displayedCertificates.map((cert, i) => {
+            const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
+            const isSelected = selectedIndices.has(globalIndex);
 
+            return (
+              <div
+                key={i}
+                className={`flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${!isSelected ? "opacity-60 grayscale-[0.5]" : ""}`}
+              >
+                <div className="flex items-center gap-3 border-b bg-gray-50/50 p-3">
+                  <Checkbox
+                    id={`cert-${globalIndex}`}
+                    checked={isSelected}
+                    onCheckedChange={(v) => setItemSelected(globalIndex, !!v)}
+                  />
+                  <div
+                    className="min-w-0 flex-1 cursor-pointer"
+                    onClick={() => setItemSelected(globalIndex, !isSelected)}
+                  >
+                    {" "}
+                    <h3
+                      className="truncate text-sm font-semibold"
+                      title={cert.recipientName}
+                    >
+                      {cert.recipientName}
+                    </h3>
+                    <p
+                      className="text-muted-foreground truncate text-xs"
+                      title={cert.recipientEmail}
+                    >
+                      {cert.recipientEmail || "Bez emailu"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-1 items-center justify-center bg-white p-2">
+                  {/* Preview Stage - AutoSized */}
+                  <AutoSizedPreview elements={cert.canvasData} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
         {/* Ovládání stránkování */}
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-center gap-4 py-4">
@@ -624,6 +694,8 @@ export default function NovyCertifikatPage() {
                       src={selectedTemplate.previewImageUrl}
                       alt={selectedTemplate.name}
                       className="h-full w-full object-cover"
+                      fill
+                      sizes="70px"
                     />
                   </div>
                 ) : (
@@ -840,7 +912,7 @@ export default function NovyCertifikatPage() {
 
                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
                   <Button variant="outline" onClick={() => setStep(1)}>
-                    Zpět k výběru
+                    Zpět k výběru šablony
                   </Button>
                   <Button
                     disabled={!isBulkReady}
