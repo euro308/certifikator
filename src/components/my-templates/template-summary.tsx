@@ -96,14 +96,21 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
   };
 
   const filteredTemplates = userTemplates
-    .filter(
-      (template) =>
-        template.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        template.id.toLowerCase().includes(searchValue.toLowerCase()) ||
+    .filter((template) => {
+      const searchLower = searchValue.toLowerCase();
+      const createdDate = new Date(template.createdAt).toLocaleDateString(
+        "cs-CZ",
+      );
+
+      return (
+        template.name.toLowerCase().includes(searchLower) || // Jméno
+        template.id.toLowerCase().includes(searchLower) || // ID šablony
         (template.description?.toLowerCase() ?? "").includes(
           searchValue.toLowerCase(),
-        ),
-    )
+        ) || // Popis
+        createdDate.includes(searchValue) // Datum vytvoření
+      );
+    })
     .sort((a, b) => {
       switch (selectedSort) {
         case "nameAToZ":
@@ -116,7 +123,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
           );
         case "creationDateOldest":
           return (
-            new Date(a.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
         default:
           return 0;
@@ -128,8 +135,6 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
     { label: "Název šablony: Z až A", value: "nameZToA" },
     { label: "Datum vytvoření: nejnovější", value: "creationDateNewest" },
     { label: "Datum vytvoření: nejstarší", value: "creationDateOldest" },
-    { label: "Počet využití: sestupně", value: "usedCountMost" },
-    { label: "Počet využití: vzestupně", value: "usedCountLeast" },
   ];
 
   return (
@@ -155,7 +160,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
               <InputGroupInput
                 type="text"
                 value={searchValue}
-                placeholder="Vyhledat šablonu"
+                placeholder="Vyhledat šablonu podle jejího jména, ID, popisu, data vytvoření, ..."
                 onChange={(e) => setSearchValue(e.target.value)}
               />
               <InputGroupAddon>
