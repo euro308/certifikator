@@ -64,7 +64,7 @@ export const certificatesRouter = createTRPCRouter({
         templateId: z.string(),
         recipientName: z.string().min(1),
         recipientEmail: z.string().min(1),
-        recipientData: z.any(),
+        recipientData: z.record(z.unknown()),
         certificateUrl: z.string(),
       }),
     )
@@ -93,7 +93,7 @@ export const certificatesRouter = createTRPCRouter({
           templateId: z.string(),
           recipientName: z.string().min(1),
           recipientEmail: z.string().min(1),
-          recipientData: z.any(),
+          recipientData: z.record(z.unknown()),
           certificateUrl: z.string(),
         })
       )

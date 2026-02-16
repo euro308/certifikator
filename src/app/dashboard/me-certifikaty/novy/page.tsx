@@ -69,7 +69,7 @@ type GenerationMode = "bulk" | "single";
 interface GeneratedCertificate {
   recipientName: string;
   recipientEmail: string;
-  recipientData: unknown;
+  recipientData: Record<string, unknown>;
   canvasData: CanvasElement[];
   templateId: string;
   certificateUrl: string;

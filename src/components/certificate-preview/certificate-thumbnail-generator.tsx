@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
+import type Konva from "konva";
 import {
   type CanvasElement,
   CANVAS_HEIGHT,
@@ -19,7 +20,7 @@ export function CertificateThumbnailGenerator({
   elements,
   onGenerate,
 }: CertificateThumbnailGeneratorProps) {
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // 1. Preload images to ensure they are ready for capture
@@ -28,8 +29,8 @@ export function CertificateThumbnailGenerator({
     
     const loadImages = async () => {
       const imageElements = elements.filter(
-        (el) => el.type === "image"
-      ) as ImageElement[];
+        (el): el is ImageElement => el.type === "image"
+      );
       
       if (imageElements.length === 0) {
         if (isMounted) setImagesLoaded(true);
@@ -50,7 +51,7 @@ export function CertificateThumbnailGenerator({
       if (isMounted) setImagesLoaded(true);
     };
 
-    loadImages();
+    void loadImages();
     
     return () => { isMounted = false; };
   }, [elements]);

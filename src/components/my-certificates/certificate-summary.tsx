@@ -78,16 +78,22 @@ export function CertificateSummary({
   };
 
   const filteredCertificates = userCertificates
-    .filter(
-      (certificate) =>
-        certificate.recipientName
-          .toLowerCase()
-          .includes(searchValue.toLowerCase()) ||
-        certificate.id.toLowerCase().includes(searchValue.toLowerCase()) ||
+    .filter((certificate) => {
+      const searchLower = searchValue.toLowerCase();
+      const createdDate = new Date(certificate.createdAt).toLocaleDateString(
+        "cs-CZ",
+      );
+
+      return (
+        certificate.recipientName.toLowerCase().includes(searchLower) || // Jméno
+        certificate.id.toLowerCase().includes(searchLower) || // ID certifikátu
         (certificate.recipientEmail.toLowerCase() ?? "").includes(
-          searchValue.toLowerCase(),
-        ),
-    )
+          searchLower,
+        ) || // E-mail
+        certificate.templateId.toLowerCase().includes(searchLower) || // ID šablony
+        createdDate.includes(searchValue) // Datum vytvoření
+      );
+    })
     .sort((a, b) => {
       switch (selectedSort) {
         case "nameAToZ":
@@ -100,7 +106,7 @@ export function CertificateSummary({
           );
         case "creationDateOldest":
           return (
-            new Date(a.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
         case "emailAToZ":
           return a.recipientEmail.localeCompare(b.recipientEmail);
@@ -147,7 +153,7 @@ export function CertificateSummary({
               <InputGroupInput
                 type="text"
                 value={searchValue}
-                placeholder="Vyhledat certifikát"
+                placeholder="Vyhledat certifikát podle jeho držitele, e-mailové adresy, data vytvoření, ..."
                 onChange={(e) => setSearchValue(e.target.value)}
               />
               <InputGroupAddon>
@@ -327,10 +333,9 @@ export function CertificateSummary({
                         onClick={() => {
                           setDeleteDialog(true);
                           setCurrentCertificateId(certificate.id);
-                        }
-                        }
+                        }}
                       >
-                        <Trash className="size-4" color="#e7000b"/>
+                        <Trash className="size-4" color="#e7000b" />
                       </Button>
                     </div>
                   </div>

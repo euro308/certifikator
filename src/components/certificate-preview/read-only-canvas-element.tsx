@@ -13,7 +13,7 @@ import {
   Ring,
   Star,
   RegularPolygon,
-  Image,
+  Image as KonvaImage,
 } from "react-konva";
 import useImage from "use-image";
 import type {
@@ -43,7 +43,7 @@ function ReadOnlyImageElement({
   if (status === "failed") return null;
 
   return (
-    <Image
+    <KonvaImage
       {...commonProps}
       image={image}
     />
