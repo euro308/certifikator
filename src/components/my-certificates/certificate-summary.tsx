@@ -226,9 +226,6 @@ export function CertificateSummary({
                     {/* 1. Preview Image */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {certificate.certificateUrl ? (
-                        <div />
-                      ) : (
-                        /*
                         <Image
                           alt={certificate.recipientName}
                           src={certificate.certificateUrl}
@@ -236,7 +233,7 @@ export function CertificateSummary({
                           fill
                           sizes="70px"
                         />
-                         */
+                      ) : (
                         <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
                           Bez náhledu
                         </div>

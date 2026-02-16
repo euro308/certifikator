@@ -3,12 +3,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/trpc/react";
 import * as XLSX from "xlsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
 import {
   ArrowRight,
   CheckCircle2,
@@ -18,7 +31,7 @@ import {
   Loader2,
   Save,
   Upload,
-  Users
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -26,7 +39,7 @@ import type { CanvasElement } from "@/components/editor/types/canvas-types";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
-// Dynamický import s SSR: false - TOTO JE KLÍČOVÉ PRO KONVU
+// Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
   () =>
     import("@/components/certificate-preview/certificate-preview-stage").then(
@@ -37,6 +50,16 @@ const CertificatePreviewStage = dynamic(
     loading: () => (
       <div className="h-[200px] w-full animate-pulse rounded-lg bg-gray-100" />
     ),
+  },
+);
+
+const CertificateThumbnailGenerator = dynamic(
+  () =>
+    import(
+      "@/components/certificate-preview/certificate-thumbnail-generator"
+    ).then((mod) => mod.CertificateThumbnailGenerator),
+  {
+    ssr: false,
   },
 );
 
@@ -51,7 +74,7 @@ interface GeneratedCertificate {
   certificateUrl: string;
 }
 
-const ITEMS_PER_PAGE = 6; // 3x2 grid
+const ITEMS_PER_PAGE = 6; // 3x2 pole
 
 const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,7 +96,7 @@ const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full flex justify-center">
+    <div ref={containerRef} className="flex w-full justify-center">
       {width > 0 ? (
         <CertificatePreviewStage elements={elements} width={width} />
       ) : (
@@ -89,7 +112,7 @@ export default function NovyCertifikatPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [mode, setMode] = useState<GenerationMode>("bulk");
 
-  // State pro Hromadné generování (Excel)
+  // State pro hromadné generování (Excel)
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
   const [excelData, setExcelData] = useState<Record<string, unknown>[]>([]);
@@ -98,29 +121,45 @@ export default function NovyCertifikatPage() {
   const [emailColumn, setEmailColumn] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // State pro Jednotlivý certifikát
+  // State pro jeden certifikát
   const [singleData, setSingleData] = useState<Record<string, string>>({});
   const [singleName, setSingleName] = useState<string>("");
   const [singleEmail, setSingleEmail] = useState<string>("");
-  
-  // Generated Data & Pagination
-  const [generatedCertificates, setGeneratedCertificates] = useState<GeneratedCertificate[]>([]);
+
+  // generované data & stránkování
+  const [generatedCertificates, setGeneratedCertificates] = useState<
+    GeneratedCertificate[]
+  >([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Pagination Logic
+  // State pro generování obrázku
+  const [generationIndex, setGenerationIndex] = useState(0);
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+
+  // logika stránkování
   const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
   const displayedCertificates = generatedCertificates.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
-  // Reset page on new generation
+  // Reset stránka na nové generaci
   useEffect(() => {
     setCurrentPage(1);
   }, [generatedCertificates]);
 
-  // TRPC Mutations
+  // Reset generace na novém kroku
+  useEffect(() => {
+    if (step === 3 && generatedCertificates.length > 0) {
+      setGenerationIndex(0);
+      setIsGeneratingImages(true);
+    } else {
+      setIsGeneratingImages(false);
+    }
+  }, [step, generatedCertificates.length]);
+
+  // TRPC mutace
   const createBatch = api.certificates.createBatch.useMutation({
     onSuccess: (data: unknown[]) => {
       toast.success(`Úspěšně vytvořeno ${data.length} certifikátů.`);
@@ -176,8 +215,8 @@ export default function NovyCertifikatPage() {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         if (!wsname) {
-             toast.error("Soubor neobsahuje žádné listy");
-             return;
+          toast.error("Soubor neobsahuje žádné listy");
+          return;
         }
         const ws = wb.Sheets[wsname];
         if (!ws) return;
@@ -192,30 +231,42 @@ export default function NovyCertifikatPage() {
         setExcelHeaders(headers);
         setExcelData(data);
 
-        // Automapping placeholders
+        // Automatické mapování placeholderů
         const newMapping: Record<string, string> = {};
         placeholders.forEach((p) => {
           const match = headers.find(
-            (h) => h.toLowerCase() === p.toLowerCase() || h.toLowerCase().includes(p.toLowerCase())
+            (h) =>
+              h.toLowerCase() === p.toLowerCase() ||
+              h.toLowerCase().includes(p.toLowerCase()),
           );
           if (match) newMapping[p] = match;
         });
         setMapping(newMapping);
-        
-        // Automapping system fields
-        const nameMatch = headers.find(h => h.toLowerCase().includes("jméno") || h.toLowerCase().includes("name"));
+
+        // Automatické mapování systémových informací (pro DB)
+        const nameMatch = headers.find(
+          (h) =>
+            h.toLowerCase().includes("jméno") ||
+            h.toLowerCase().includes("name"),
+        );
         if (nameMatch) setNameColumn(nameMatch);
 
-        const emailMatch = headers.find(h => h.toLowerCase().includes("email") || h.toLowerCase().includes("e-mail"));
+        const emailMatch = headers.find(
+          (h) =>
+            h.toLowerCase().includes("email") ||
+            h.toLowerCase().includes("e-mail"),
+        );
         if (emailMatch) setEmailColumn(emailMatch);
 
         if (data.length == 1) toast.success(`Načten ${data.length} záznam`);
-        else if (data.length > 1 && data.length <= 4) toast.success(`Načteny ${data.length} záznamy`);
+        else if (data.length > 1 && data.length <= 4)
+          toast.success(`Načteny ${data.length} záznamy`);
         else toast.success(`Načteno ${data.length} záznamů`);
-
       } catch (err) {
         console.error(err);
-        toast.error("Chyba při čtení souboru. Ujistěte se, že jde o validní Excel.");
+        toast.error(
+          "Chyba při čtení souboru. Ujistěte se, že jde o validní Excel.",
+        );
       }
     };
     reader.readAsBinaryString(file);
@@ -230,21 +281,29 @@ export default function NovyCertifikatPage() {
   };
 
   // Validace
-  const isBulkReady = excelData.length > 0 && placeholders.every((p) => mapping[p]);
-  const isSingleReady = placeholders.every((p) => singleData[p] && singleData[p].trim() !== "") && singleName.trim() !== "";
+  const isBulkReady =
+    excelData.length > 0 && placeholders.every((p) => mapping[p]);
+  const isSingleReady =
+    placeholders.every((p) => singleData[p] && singleData[p].trim() !== "") &&
+    singleName.trim() !== "";
 
   // Generování
   const generateCertificates = () => {
     if (!selectedTemplate) return;
 
-    // Bezpečné získání elementů (oprava chyby s forEach is not a function)
+    // Získání elementů
     const rawCanvasData = selectedTemplate.canvasData;
     let templateElements: CanvasElement[] = [];
 
     if (Array.isArray(rawCanvasData)) {
       templateElements = rawCanvasData as CanvasElement[];
-    } else if (typeof rawCanvasData === 'object' && rawCanvasData !== null && 'elements' in rawCanvasData) {
-      templateElements = (rawCanvasData as { elements: CanvasElement[] }).elements;
+    } else if (
+      typeof rawCanvasData === "object" &&
+      rawCanvasData !== null &&
+      "elements" in rawCanvasData
+    ) {
+      templateElements = (rawCanvasData as { elements: CanvasElement[] })
+        .elements;
     } else {
       console.error("Neplatný formát dat šablony:", rawCanvasData);
       toast.error("Chyba dat šablony: Nepodařilo se načíst prvky.");
@@ -255,74 +314,110 @@ export default function NovyCertifikatPage() {
 
     if (mode === "bulk") {
       excelData.forEach((row) => {
-        // Deep clone elements
-        const elementsCopy = JSON.parse(JSON.stringify(templateElements)) as CanvasElement[];
-        
-        // Replace placeholders
+        // Deep clone elementů
+        const elementsCopy = JSON.parse(
+          JSON.stringify(templateElements),
+        ) as CanvasElement[];
+
+        // Nahrazení placeholderů
         elementsCopy.forEach((el) => {
-            if (el.type === "placeholder") {
-                const pKey = (el).placeholderKey;
-                const colName = mapping[pKey];
-                
-                if (colName && row[colName] !== undefined) {
-                    const val = row[colName];
-                    
-                    el.displayText =
-                      typeof val === "string" || typeof val === "number"
-                        ? String(val)
-                        : "";
-                }
+          if (el.type === "placeholder") {
+            const pKey = el.placeholderKey;
+            const colName = mapping[pKey];
+
+            if (colName && row[colName] !== undefined) {
+              const val = row[colName];
+
+              el.displayText =
+                typeof val === "string" || typeof val === "number"
+                  ? String(val)
+                  : "";
             }
+          }
         });
 
         const rName = nameColumn ? row[nameColumn] : undefined;
         const rEmail = emailColumn ? row[emailColumn] : undefined;
 
         newCertificates.push({
-          recipientName: (typeof rName === 'string' || typeof rName === 'number') ? String(rName) : "Neznámý příjemce",
-          recipientEmail: (typeof rEmail === 'string' || typeof rEmail === 'number') ? String(rEmail) : "",
-          recipientData: row, 
+          recipientName:
+            typeof rName === "string" || typeof rName === "number"
+              ? String(rName)
+              : "Neznámý příjemce",
+          recipientEmail:
+            typeof rEmail === "string" || typeof rEmail === "number"
+              ? String(rEmail)
+              : "",
+          recipientData: row,
           canvasData: elementsCopy,
           templateId: selectedTemplate.id,
-          certificateUrl: "pending", //
+          certificateUrl: "pending",
         });
       });
     } else {
-        // Single mode
-        const elementsCopy = JSON.parse(JSON.stringify(templateElements)) as CanvasElement[];
-        elementsCopy.forEach((el) => {
-            if (el.type === "placeholder") {
-                const pKey = (el).placeholderKey;
-                const val = singleData[pKey];
-                if (val) {
-                    el.displayText = val;
-                }
-            }
-        });
+      // Pro jeden certifikát
+      const elementsCopy = JSON.parse(
+        JSON.stringify(templateElements),
+      ) as CanvasElement[];
+      elementsCopy.forEach((el) => {
+        if (el.type === "placeholder") {
+          const pKey = el.placeholderKey;
+          const val = singleData[pKey];
+          if (val) {
+            el.displayText = val;
+          }
+        }
+      });
 
-        newCertificates.push({
-            recipientName: singleName,
-            recipientEmail: singleEmail,
-            recipientData: singleData,
-            canvasData: elementsCopy,
-            templateId: selectedTemplate.id,
-            certificateUrl: "pending",
-        });
+      newCertificates.push({
+        recipientName: singleName,
+        recipientEmail: singleEmail,
+        recipientData: singleData,
+        canvasData: elementsCopy,
+        templateId: selectedTemplate.id,
+        certificateUrl: "pending",
+      });
     }
 
     setGeneratedCertificates(newCertificates);
     setStep(3);
   };
 
+  const handleThumbnailGenerated = (dataUrl: string) => {
+    setGeneratedCertificates((prev) => {
+      const newCerts = [...prev];
+      if (newCerts[generationIndex]) {
+        newCerts[generationIndex].certificateUrl = dataUrl || "pending";
+      }
+      return newCerts;
+    });
+
+    if (generationIndex < generatedCertificates.length - 1) {
+      setGenerationIndex((prev) => prev + 1);
+    } else {
+      setIsGeneratingImages(false);
+      toast.success("Všechny náhledy byly vygenerovány.");
+    }
+  };
+
   const handleSave = () => {
+    if (isGeneratingImages) {
+      toast.warning(
+        `Probíhá generování náhledů (${generationIndex + 1}/${generatedCertificates.length}). Čekejte prosím.`,
+      );
+      return;
+    }
+
     setIsSaving(true);
-    createBatch.mutate(generatedCertificates.map(cert => ({
+    createBatch.mutate(
+      generatedCertificates.map((cert) => ({
         templateId: cert.templateId,
         recipientName: cert.recipientName,
         recipientEmail: cert.recipientEmail,
         recipientData: cert.recipientData,
-        certificateUrl: cert.certificateUrl
-    })));
+        certificateUrl: cert.certificateUrl,
+      })),
+    );
   };
 
   // ===== RENDER =====
@@ -331,6 +426,15 @@ export default function NovyCertifikatPage() {
   if (step === 3) {
     return (
       <div className="container mx-auto max-w-[1400px] space-y-6 px-4 py-8">
+        {/* Skrytý generátor */}
+        {isGeneratingImages && generatedCertificates[generationIndex] && (
+          <CertificateThumbnailGenerator
+            key={generationIndex}
+            elements={generatedCertificates[generationIndex].canvasData}
+            onGenerate={handleThumbnailGenerated}
+          />
+        )}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
@@ -339,8 +443,11 @@ export default function NovyCertifikatPage() {
                 : "Náhled certifikátů"}
             </h1>
             <p className="text-muted-foreground">
-              Zkontolujte {correctCertificatesText(generatedCertificates.length)} před
-              uložením.
+              Zkontolujte{" "}
+              {correctCertificatesText(generatedCertificates.length)} před
+              uložením.{" "}
+              {isGeneratingImages &&
+                `(Generuji náhled ${generationIndex + 1}/${generatedCertificates.length}...)`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -399,7 +506,7 @@ export default function NovyCertifikatPage() {
           ))}
         </div>
 
-        {/* Pagination Controls */}
+        {/* Ovládání stránkování */}
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-center gap-4 py-4">
             <Button
@@ -500,11 +607,11 @@ export default function NovyCertifikatPage() {
             </div>
 
             <Button
-                disabled={!selectedTemplateId}
-                onClick={() => setStep(2)}
-                className="w-full sm:w-auto"
+              disabled={!selectedTemplateId}
+              onClick={() => setStep(2)}
+              className="w-full sm:w-auto"
             >
-                Pokračovat <ArrowRight className="ml-2 h-4 w-4" />
+              Pokračovat <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
 
@@ -513,8 +620,7 @@ export default function NovyCertifikatPage() {
               <div className="flex gap-4">
                 {selectedTemplate.previewImageUrl ? (
                   <div className="relative aspect-[1.414] w-32 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={selectedTemplate.previewImageUrl}
                       alt={selectedTemplate.name}
                       className="h-full w-full object-cover"
@@ -606,13 +712,13 @@ export default function NovyCertifikatPage() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                           e.stopPropagation(); 
-                           setExcelFile(null);
-                           setExcelData([]);
-                           setExcelHeaders([]);
-                           setMapping({});
-                           if (fileInputRef.current)
-                             fileInputRef.current.value = "";
+                          e.stopPropagation();
+                          setExcelFile(null);
+                          setExcelData([]);
+                          setExcelHeaders([]);
+                          setMapping({});
+                          if (fileInputRef.current)
+                            fileInputRef.current.value = "";
                         }}
                         className="text-red-500 hover:bg-red-50 hover:text-red-700"
                       >
@@ -638,24 +744,48 @@ export default function NovyCertifikatPage() {
                 {excelHeaders.length > 0 && (
                   <div className="space-y-6 border-t pt-4">
                     {/* Systémové sloupce */}
-                    <div className="space-y-4 border rounded-lg p-4 bg-gray-50/50">
-                        <h3 className="font-semibold text-gray-900">Systémové sloupce (Doporučené)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Sloupec se Jménem příjemce</Label>
-                                <Select value={nameColumn} onValueChange={setNameColumn}>
-                                    <SelectTrigger><SelectValue placeholder="Nevybráno" /></SelectTrigger>
-                                    <SelectContent>{excelHeaders.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Sloupec s Emailem</Label>
-                                <Select value={emailColumn} onValueChange={setEmailColumn}>
-                                    <SelectTrigger><SelectValue placeholder="Nevybráno" /></SelectTrigger>
-                                    <SelectContent>{excelHeaders.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
+                    <div className="space-y-4 rounded-lg border bg-gray-50/50 p-4">
+                      <h3 className="font-semibold text-gray-900">
+                        Systémové sloupce (Doporučené)
+                      </h3>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Sloupec se Jménem příjemce</Label>
+                          <Select
+                            value={nameColumn}
+                            onValueChange={setNameColumn}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Nevybráno" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {excelHeaders.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
+                        <div className="space-y-2">
+                          <Label>Sloupec s Emailem</Label>
+                          <Select
+                            value={emailColumn}
+                            onValueChange={setEmailColumn}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Nevybráno" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {excelHeaders.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
 
                     <h3 className="text-lg font-semibold">
@@ -712,26 +842,38 @@ export default function NovyCertifikatPage() {
                   <Button variant="outline" onClick={() => setStep(1)}>
                     Zpět k výběru
                   </Button>
-                  <Button disabled={!isBulkReady} size="lg" onClick={generateCertificates}>
+                  <Button
+                    disabled={!isBulkReady}
+                    size="lg"
+                    onClick={generateCertificates}
+                  >
                     Generovat {correctCertificatesText(excelData.length)}
                   </Button>
                 </div>
               </TabsContent>
 
               <TabsContent value="single" className="mt-0 space-y-6">
-                {/* Single System Inputs */}
-                <div className="space-y-4 border rounded-lg p-4 bg-gray-50/50">
-                   <h3 className="font-semibold">Systémové údaje</h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                         <Label>Jméno příjemce *</Label>
-                         <Input value={singleName} onChange={e => setSingleName(e.target.value)} placeholder="Jan Novák" />
-                      </div>
-                      <div className="space-y-2">
-                         <Label>Email příjemce</Label>
-                         <Input value={singleEmail} onChange={e => setSingleEmail(e.target.value)} placeholder="jan@novak.cz" />
-                      </div>
-                   </div>
+                {/* Single systémové inputy */}
+                <div className="space-y-4 rounded-lg border bg-gray-50/50 p-4">
+                  <h3 className="font-semibold">Systémové údaje</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Jméno příjemce *</Label>
+                      <Input
+                        value={singleName}
+                        onChange={(e) => setSingleName(e.target.value)}
+                        placeholder="Jan Novák"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email příjemce</Label>
+                      <Input
+                        value={singleEmail}
+                        onChange={(e) => setSingleEmail(e.target.value)}
+                        placeholder="jan@novak.cz"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="max-w-3xl space-y-4">
@@ -763,7 +905,11 @@ export default function NovyCertifikatPage() {
                   <Button variant="outline" onClick={() => setStep(1)}>
                     Zpět k výběru
                   </Button>
-                  <Button disabled={!isSingleReady} size="lg" onClick={generateCertificates}>
+                  <Button
+                    disabled={!isSingleReady}
+                    size="lg"
+                    onClick={generateCertificates}
+                  >
                     Generovat certifikát
                   </Button>
                 </div>
