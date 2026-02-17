@@ -78,7 +78,9 @@ export const verification = createTable("verification", {
   ),
 });
 
-export const templates = createTable("templates", {
+export const templates = createTable(
+  "templates",
+  {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id")
       .notNull()
@@ -113,11 +115,15 @@ export const templates = createTable("templates", {
   }),
 );
 
-export const certificates = createTable("certificates", {
+export const certificates = createTable(
+  "certificates",
+  {
     id: uuid("id").primaryKey().defaultRandom(),
-    templateId: uuid("template_id").notNull().references(() => templates.id, {
-      onDelete: "cascade",
-    }),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => templates.id, {
+        onDelete: "cascade",
+      }),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -125,9 +131,7 @@ export const certificates = createTable("certificates", {
     recipientEmail: text("recipient_email").notNull(),
     recipientData: jsonb("recipient_data").notNull(),
     certificateUrl: text("certificate_url").notNull(),
-    validationToken: text("validation_token")
-      .notNull()
-      .unique(),
+    validationToken: text("validation_token").notNull().unique(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -149,6 +153,18 @@ export const certificates = createTable("certificates", {
     sentAtIdx: index("certificates_sent_at_idx").on(table.sentAt),
   }),
 );
+
+export const passwordResets = createTable("password_resets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
@@ -184,5 +200,6 @@ export const schema = {
   account,
   verification,
   templates,
-  certificates
+  certificates,
+  passwordResets
 };
