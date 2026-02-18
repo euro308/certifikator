@@ -92,7 +92,7 @@ export default function NastaveniUzivatele() {
     e.preventDefault();
     
     if (newPassword !== confirmPassword) {
-      toast.error("Nová hesla se neshodují");
+      toast.error("Hesla se neshodují");
       return;
     }
 

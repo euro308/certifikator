@@ -18,6 +18,7 @@ export default function ZapomenuteHeslo() {
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const resetMutation = api.emails.requestPasswordResetEmail.useMutation({
     onError: () => {
@@ -26,13 +27,15 @@ export default function ZapomenuteHeslo() {
 
     onSettled: () => {
       setLoading(false);
-    }
+      setShowSuccessMessage(true);
+    },
   });
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setShowSuccessMessage(false);
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
 
@@ -41,7 +44,6 @@ export default function ZapomenuteHeslo() {
 
   return (
     <main className="flex min-h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-red-50 via-white to-rose-50 px-4 py-12">
-
       {loading && <LoaderOverlay />}
 
       <h1 className="mb-8 text-5xl font-extrabold tracking-tight lg:text-6xl">
@@ -83,8 +85,16 @@ export default function ZapomenuteHeslo() {
           </FieldSet>
 
           {error && (
-            <div className="mt-6 rounded-lg bg-red-100 p-3 lg:p-4 text-sm lg:text-base text-red-600">
+            <div className="mt-6 rounded-lg bg-red-100 p-3 text-sm text-red-600 lg:p-4 lg:text-base">
               {error}
+            </div>
+          )}
+
+          {showSuccessMessage && (
+            <div className="mt-6 rounded-lg border border-green-300 bg-green-100 p-3 text-sm text-green-700 lg:p-4 lg:text-base">
+              <span>
+                E-mail byl odeslán! Zkontroluje také spam.
+              </span>
             </div>
           )}
 
