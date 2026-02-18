@@ -20,7 +20,7 @@ export default function ZapomenuteHeslo() {
   const [loading, setLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const resetMutation = api.emails.requestPasswordResetEmail.useMutation({
+  const resetMutation = api.emails.requestPasswordReset.useMutation({
     onError: () => {
       setError("Vyskytla se chyba při odesílání e-mailu");
     },
@@ -61,7 +61,7 @@ export default function ZapomenuteHeslo() {
               </span>
             </FieldLegend>
             <FieldDescription className="text-[0.95rem] text-gray-600">
-              Resetujte si heslo pomocí odkazu zaslaného na Vaši e-mailovou
+              Obnovte si heslo pomocí odkazu zaslaného na Vaši e-mailovou
               adresu
             </FieldDescription>
 

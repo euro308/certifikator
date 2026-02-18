@@ -3,6 +3,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { db } from "@/server/db";
 import { localization } from "better-auth-localization";
+import { Resend } from "resend";
+import { EmailTemplate } from "@/components/email-template";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -10,18 +12,23 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      void resend.emails.send({
+        from: "Certifikátor <info@certifikator.eu>",
+        to: [user.email],
+        subject: "Obnovení vašeho hesla",
+        react: EmailTemplate({
+          emailType: "FORGOT_PASSWORD",
+          resetLink: url,
+        }),
+      });
+    },
   },
   user: {
     changeEmail: {
       enabled: true,
     },
-  },
-  // TODO: Implement actual email sending
-  emailVerification: {
-     sendOnSignUp: true,
-     sendVerificationEmail: async ({ user, url }) => {
-       console.log("Sending verification email to:", user.email, "URL:", url);
-     },
   },
   plugins: [
     localization({

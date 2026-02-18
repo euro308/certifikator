@@ -10,14 +10,12 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { LoaderOverlay } from "@/components/loader-overlay";
 import { Eye, EyeOff } from "lucide-react";
-import { api } from "@/trpc/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authClient } from "@/server/better-auth/client";
-import { router } from "next/client";
 
 export default function ResetHesla() {
   const [firstPassword, setFirstPassword] = useState<string>("");
@@ -25,60 +23,10 @@ export default function ResetHesla() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [tokenNotFound, setTokenNotFound] = useState(false);
-  const [tokenExpired, setTokenExpired] = useState(false);
+  
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [token, setToken] = useState("");
-
-  useEffect(() => {
-    if (!searchParams.get("token")) {
-      setTokenNotFound(true);
-    }
-    if(searchParams.get("token")) {
-      setToken(searchParams.get("token")!);
-    }
-  }, [searchParams]);
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Hesla se neshodují");
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      toast.error("Heslo musí mít alespoň 8 znaků");
-      return;
-    }
-
-    setIsChangingPassword(true);
-
-    try {
-      await authClient.changePassword(
-        {
-          currentPassword,
-          newPassword,
-          revokeOtherSessions: true,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Heslo bylo úspěšně změněno");
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-          },
-          onError: (ctx) => {
-            toast.error(ctx.error.message || "Nepodařilo se změnit heslo");
-          },
-        },
-      );
-    } catch {
-      toast.error("Došlo k neočekávané chybě");
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
+  const tokenFromUrl = searchParams.get("token") ?? "";
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -89,43 +37,36 @@ export default function ResetHesla() {
       return;
     }
 
-    if (firstPassword.length < 8 || secondPassword.length < 8) {
+    if (firstPassword.length < 8) {
       setError("Heslo musí mít alespoň 8 znaků");
       return;
     }
 
     setLoading(true);
-    const { data: result, isError } =
-      api.passwordResets.checkForValidToken.useQuery({ token: token });
 
-    if (!result || isError || result.expiresAt < new Date()) {
+    try {
+      await authClient.resetPassword({
+        newPassword: firstPassword,
+        token: tokenFromUrl,
+      }, {
+        onSuccess: () => {
+          toast.success("Heslo bylo úspěšně změněno");
+          router.push("/prihlaseni");
+        },
+        onError: (ctx) => {
+          setLoading(false);
+          setError(ctx.error.message || "Nepodařilo se obnovit heslo. Token může být neplatný.");
+        }
+      });
+    } catch {
       setLoading(false);
-      setError(
-        "Token je neplatný! Zkuste si znovu zažádat o resetování hesla.",
-      );
-      return;
+      setError("Nastala neočekávaná chyba!");
     }
-
-    await authClient.resetPassword({
-      newPassword: firstPassword,
-    }, {
-      onSuccess: () => {
-        setLoading(false);
-        router.push("/prihlaseni");
-      },
-      onError: () => {
-        setLoading(false);
-        setError("Nastala chyba!")
-        return;
-      }
-    });
-
-    setLoading(false);
   };
 
   return (
     <main className="flex min-h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-red-50 via-white to-rose-50 px-4 py-12">
-      {(loading) && <LoaderOverlay />}
+      {loading && <LoaderOverlay />}
 
       <h1 className="mb-8 text-5xl font-extrabold tracking-tight lg:text-6xl">
         <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -133,12 +74,22 @@ export default function ResetHesla() {
         </span>
       </h1>
 
-      {tokenNotFound ?
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
-          <span>Oops! Odkaz je neplatný. Pro vrácení na hlavní stránku využijte tento{" "}
-          <Link href={"/"} className={"underline bg-gradient-primary bg-clip-text text-transparent"}>odkaz.</Link>
-          </span>
-        </div>  : (
+      {!tokenFromUrl ? (
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl text-center">
+          <div className="mb-4 text-red-500">
+             <h2 className="text-xl font-bold mb-2">Odkaz je neplatný nebo vypršel</h2>
+             <p className="text-gray-600">Pro obnovu hesla si prosím zažádejte o nový odkaz.</p>
+          </div>
+          <Link href="/zapomenute-heslo" className="text-[#E65758] font-semibold underline">
+            Zažádat o nový odkaz
+          </Link>
+          <div className="mt-4">
+            <Link href="/" className="text-sm text-gray-500 hover:underline">
+              Zpět na hlavní stránku
+            </Link>
+          </div>
+        </div>
+      ) : (
         <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
           <form onSubmit={onSubmit}>
             <FieldSet>
@@ -148,13 +99,13 @@ export default function ResetHesla() {
                 </span>
               </FieldLegend>
               <FieldDescription className="text-[0.95rem] text-gray-600">
-                Zde si obnovte heslo ke svému účtu
+                Zde si nastavte své nové heslo.
               </FieldDescription>
 
               <Field>
                 <FieldLabel
                   htmlFor="firstPassword"
-                  className="mb-[-0.3rem] text-[0.95rem] font-medium text-gray-700"
+                  className="mb-1 text-[0.95rem] font-medium text-gray-700"
                 >
                   Nové heslo
                 </FieldLabel>
@@ -171,13 +122,13 @@ export default function ResetHesla() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 bg-transparent p-0 hover:cursor-pointer hover:bg-transparent lg:h-10 lg:w-10 xl:h-12 xl:w-12"
+                    className="absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 p-0 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-500 lg:h-6 lg:w-6" />
+                      <EyeOff className="h-5 w-5 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-500 lg:h-6 lg:w-6" />
+                      <Eye className="h-5 w-5 text-gray-400" />
                     )}
                   </Button>
                 </div>
@@ -186,9 +137,9 @@ export default function ResetHesla() {
               <Field>
                 <FieldLabel
                   htmlFor="secondPassword"
-                  className="mb-[-0.3rem] text-[0.95rem] font-medium text-gray-700"
+                  className="mb-1 text-[0.95rem] font-medium text-gray-700"
                 >
-                  Nové heslo podruhé
+                  Potvrzení nového hesla
                 </FieldLabel>
                 <Input
                   id="secondPassword"
@@ -203,7 +154,7 @@ export default function ResetHesla() {
             </FieldSet>
 
             {error && (
-              <div className="mt-6 rounded-lg bg-red-100 p-3 text-sm text-red-600 lg:p-4 lg:text-base">
+              <div className="mt-6 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
                 {error}
               </div>
             )}
@@ -211,18 +162,24 @@ export default function ResetHesla() {
             <Button
               type="submit"
               disabled={loading}
-              className="bg-gradient-primary mt-6 h-10 w-full text-base font-semibold text-white hover:opacity-90 hover:shadow-lg"
+              className="bg-gradient-primary mt-6 h-12 w-full text-base font-semibold text-white hover:opacity-90 shadow-sm"
             >
-              {loading ? "Obnovuji..." : "Obnovit heslo"}
+              {loading ? (
+                <>
+                  Obnovuji...
+                </>
+              ) : (
+                "Obnovit heslo"
+              )}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <Link
               href="/prihlaseni"
-              className="text-[0.95rem] font-medium text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium text-gray-500 hover:text-gray-900 hover:underline"
             >
-              Jít zpět
+              Zpět na přihlášení
             </Link>
           </div>
         </div>

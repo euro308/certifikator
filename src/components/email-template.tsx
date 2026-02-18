@@ -1,68 +1,136 @@
 import * as React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 interface EmailTemplateProps {
-  emailType: 'FORGOT_PASSWORD' | "CERTIFICATE_SENT" | 'TEMPLATE_TAKEN_DOWN',
+  emailType: "FORGOT_PASSWORD" | "CERTIFICATE_SENT" | "TEMPLATE_TAKEN_DOWN";
   header?: string;
   content?: string;
   resetLink?: string;
 }
 
+/**
+ * Poznámka: E-mailoví klienti nepodporují Tailwind ani externí CSS.
+ * Používáme proto čisté HTML tabulky (pro layout) a inline styly.
+ */
 export function EmailTemplate({
   emailType,
   header,
   content,
   resetLink,
 }: EmailTemplateProps) {
+  const mainStyle: React.CSSProperties = {
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    backgroundColor: "#ffffff",
+    color: "#1a1a1a",
+    padding: "20px 20px",
+    lineHeight: "1.6",
+  };
+
+  const containerStyle: React.CSSProperties = {
+    maxWidth: "600px",
+    margin: "0",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: "32px",
+    fontWeight: "bold",
+    marginBottom: "12px",
+    backgroundImage: "linear-gradient(to right, #ED765E, #FEA858)",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    color: "transparent",
+  };
+
+  const h3Style: React.CSSProperties = {
+    fontSize: "20px",
+    fontWeight: "600",
+    margin: "10px 0 10px 0",
+  };
+
+  const pStyle: React.CSSProperties = {
+    margin: "0 0 16px 0",
+    fontSize: "16px",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    display: "inline-block",
+    backgroundColor: "#ED765E",
+    backgroundImage: "linear-gradient(to right, #ED765E, #FEA858)",
+    color: "#ffffff",
+    padding: "12px 24px",
+    borderRadius: "8px",
+    textDecoration: "none",
+    fontWeight: "600",
+    marginTop: "8px",
+    marginBottom: "8px",
+  };
+
+  const footerStyle: React.CSSProperties = {
+    marginTop: "40px",
+    paddingTop: "20px",
+    borderTop: "1px solid #eeeeee",
+    fontSize: "14px",
+    color: "#666666",
+  };
+
+  const italicStyle: React.CSSProperties = {
+    fontStyle: "italic",
+    display: "block",
+    marginTop: "20px",
+    fontSize: "14px",
+    color: "#888888",
+  };
+
   return (
-    <div>
-      <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">
-        <span className="bg-gradient-primary bg-clip-text text-transparent">Certifikátor</span>
-      </h1>
+    <div style={mainStyle}>
+      <div style={containerStyle}>
+        <h1 style={titleStyle}>Certifikátor</h1>
 
-      {emailType === "FORGOT_PASSWORD" && (
-        <>
-        <p>
-          <h3>Zapomněli jste heslo?</h3>
-        </p>
+        {emailType === "FORGOT_PASSWORD" && (
+          <>
+            <h3 style={h3Style}>Zapomněli jste heslo?</h3>
+            <p style={pStyle}>
+              To se stane každému. Obdrželi jsme žádost pro obnovení hesla k
+              Vašemu účtu na platformě Certifikátor.
+            </p>
+            <p style={pStyle}>
+              Kliknutím na tlačítko níže si můžete nastavit nové heslo:
+            </p>
+            <a href={resetLink} style={buttonStyle}>
+              Nastavit nové heslo
+            </a>
+            <span style={italicStyle}>
+              Tento odkaz je platný pouze 1 hodinu. Pokud jste o resetování
+              hesla nežádali, můžete tento e-mail bezpečně ignorovat. Vaše heslo
+              zůstane nezměněno.
+            </span>
+          </>
+        )}
 
-        <p>
-          <span>To se stane každému. Obdrželi jsme žádost o resetování hesla pro váš účet na platformě Certifikátor.</span>
-          <span>Kliknutím na tlačítko níže si můžete nastavit nové heslo:</span>
-          <Button asChild>
-            <Link href={resetLink!}>Nastavit nové heslo</Link> {/* !, protože link vždy bude existovat */}
-          </Button>
-          <span className="italic">Tento odkaz je platný pouze 1 hodinu. Pokud jste o resetování hesla nežádali, můžete tento e-mail bezpečně ignorovat. Vaše heslo zůstane nezměněno.</span>
+        {emailType === "CERTIFICATE_SENT" && (
+          <>
+            <h3 style={h3Style}>{header}</h3>
+            <p style={pStyle}>{content}</p>
+          </>
+        )}
 
-          <span>S pozdravem,</span>
-          <span>Tým Certifikátor</span>
-        </p>
-        </>
-      )}
+        {emailType === "TEMPLATE_TAKEN_DOWN" && (
+          <>
+            <h3 style={h3Style}>Vaše šablona byla stažena</h3>
+            <p style={pStyle}>
+              Informujeme vás, že Vaše šablona byla stažena z veřejné galerie.
+            </p>
+          </>
+        )}
 
-      {emailType === "CERTIFICATE_SENT" && (
-        <>
-        <p>
-          <h3>{header}</h3>
-        </p>
-
-        <p>
-          <span>{content}</span>
-
-          <span>S pozdravem,</span>
-          <span>Tým Certifikátor</span>
-        </p>
-        </>
-      )}
-
-      {emailType === "TEMPLATE_TAKEN_DOWN" && (
-        <>
-          <p>
-            <h3></h3>
+        <div style={footerStyle}>
+          <p style={pStyle}>
+            S pozdravem,
+            <br />
+            <strong>Tým Certifikátor</strong>
           </p>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

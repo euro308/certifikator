@@ -154,18 +154,6 @@ export const certificates = createTable(
   }),
 );
 
-export const passwordResets = createTable("password_resets", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
-
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
@@ -201,5 +189,4 @@ export const schema = {
   verification,
   templates,
   certificates,
-  passwordResets
 };
