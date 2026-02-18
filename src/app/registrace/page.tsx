@@ -81,7 +81,7 @@ export default function Registrace() {
                   htmlFor="username"
                   className="mb-[-0.3rem] text-[0.95rem] font-medium text-gray-700 lg:text-base xl:text-lg"
                 >
-                  Přezdívka
+                  Jméno či přezdívka
                 </FieldLabel>
                 <Input
                   id="name"

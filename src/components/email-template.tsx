@@ -5,6 +5,9 @@ interface EmailTemplateProps {
   header?: string;
   content?: string;
   resetLink?: string;
+  templateName?: string;
+  templateId?: string;
+  reason?: string;
 }
 
 /**
@@ -16,6 +19,9 @@ export function EmailTemplate({
   header,
   content,
   resetLink,
+  templateName,
+  templateId,
+  reason,
 }: EmailTemplateProps) {
   const mainStyle: React.CSSProperties = {
     fontFamily:
@@ -116,9 +122,22 @@ export function EmailTemplate({
 
         {emailType === "TEMPLATE_TAKEN_DOWN" && (
           <>
-            <h3 style={h3Style}>Vaše šablona byla stažena</h3>
+            <h3 style={h3Style}>Vaše šablona byla stažena z galerie</h3>
             <p style={pStyle}>
-              Informujeme vás, že Vaše šablona byla stažena z veřejné galerie.
+              Dobrý den, informujeme Vás, že Vaše šablona <strong>{templateName}</strong> (ID šablony: {templateId}) byla stažena z veřejné galerie systému Certifikátor.
+            </p>
+            <div style={{
+              backgroundColor: "#f9fafb",
+              borderLeft: "4px solid #ED765E",
+              padding: "16px",
+              margin: "10px 0",
+              borderRadius: "4px"
+            }}>
+              <p style={{ ...pStyle, margin: 0, fontWeight: "600", color: "#4b5563" }}>Důvod stažení:</p>
+              <p style={{ ...pStyle, margin: 0, color: "#1a1a1a" }}>{reason}</p>
+            </div>
+            <p style={pStyle}>
+              Šablona je i nadále dostupná ve Vašem účtu pro soukromé účely, ale již není viditelná pro ostatní uživatele ve veřejné galerii. Pokud se domníváte, že došlo k chybě, prosím kontaktujte naši podporu odpovědí na tento e-mail.
             </p>
           </>
         )}

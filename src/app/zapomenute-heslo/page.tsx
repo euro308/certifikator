@@ -39,7 +39,7 @@ export default function ZapomenuteHeslo() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
 
-    resetMutation.mutate({ email });
+    resetMutation.mutate({ emailAddress: email });
   };
 
   return (
