@@ -40,7 +40,7 @@ import type { CanvasElement } from "@/components/editor/types/canvas-types";
 import { authClient } from "@/server/better-auth/client";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { EmailTemplate } from "@/components/email-template";
+import { EmailSettingsForm } from "@/components/email-settings-form";
 
 // Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
@@ -821,35 +821,11 @@ export default function NovyCertifikat() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex min-h-0 flex-1 flex-col space-y-4">
-              {/* Input jména - smrskne se jen na svou výšku */}
-              <div className="shrink-0 space-y-2">
-                <Label htmlFor="sender-name">Jméno odesílatele</Label>
-                <Input
-                  id="sender-name"
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="Např. Jan Novák"
-                />
-              </div>
-
-              {/* Náhled - ten chceme, aby nabobtnal a vyplnil středový prostor */}
-              <div className="bg-muted/30 flex min-h-0 flex-1 flex-col rounded-md border p-4">
-                <h4 className="text-muted-foreground mb-2 shrink-0 text-sm font-semibold">
-                  Náhled zprávy v e-mailu:
-                </h4>
-                {/* Vnitřek náhledu, který dostane scroll */}
-                <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border bg-white shadow-sm">
-                  <div className="absolute inset-0 overflow-x-hidden overflow-y-auto">
-                    <div className="w-[117%] origin-top-left scale-[0.85] p-4">
-                      <EmailTemplate
-                        emailType="CERTIFICATE_SENT"
-                        username={senderName || "Jan Novák"}
-                        validationToken="xxxxxxxxxxxxxxxxxxxxxx"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <EmailSettingsForm
+                senderName={senderName}
+                onSenderNameChange={setSenderName}
+                className="flex flex-1 flex-col overflow-hidden"
+              />
 
               {/* Tip na konci - smrskne se jen na svou výšku */}
               <div className="shrink-0 rounded-md bg-blue-50 p-4 text-sm text-blue-700">

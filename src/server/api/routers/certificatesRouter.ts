@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { certificates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte } from "drizzle-orm";
@@ -42,6 +46,34 @@ export const certificatesRouter = createTRPCRouter({
     });
   }),
 
+  getCertificate: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const certificate = await ctx.db.query.certificates.findFirst({
+        where: and(
+          eq(certificates.id, input.id),
+          eq(certificates.userId, ctx.session.user.id),
+        ),
+        with: {
+          template: true,
+        },
+      });
+
+      if (!certificate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Certifikát nebyl nalezen, nebo nemáte oprávnění k jeho zobrazení.",
+        });
+      }
+
+      return certificate;
+    }),
+
   getCertificateCountByTemplate: protectedProcedure
     .input(
       z.object({
@@ -53,8 +85,8 @@ export const certificatesRouter = createTRPCRouter({
         certificates,
         and(
           eq(certificates.userId, ctx.session.user.id),
-          eq(certificates.templateId, input.templateId)
-        )
+          eq(certificates.templateId, input.templateId),
+        ),
       );
     }),
 
@@ -69,7 +101,6 @@ export const certificatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-
       const [newCertificate] = await db
         .insert(certificates)
         .values({
@@ -95,8 +126,8 @@ export const certificatesRouter = createTRPCRouter({
           recipientEmail: z.string().min(1),
           recipientData: z.record(z.unknown()),
           certificateUrl: z.string(),
-        })
-      )
+        }),
+      ),
     )
     .mutation(async ({ ctx, input }) => {
       if (input.length === 0) return [];
@@ -147,7 +178,8 @@ export const certificatesRouter = createTRPCRouter({
       if (!existingCertificate) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Certificate not found or you do not have permission to edit it.",
+          message:
+            "Certificate not found or you do not have permission to edit it.",
         });
       }
 
