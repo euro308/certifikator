@@ -110,7 +110,7 @@ const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
 export default function NovyCertifikatPage() {
   const router = useRouter();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [mode, setMode] = useState<GenerationMode>("bulk");
 
   // State pro hromadné generování (Excel)
@@ -464,7 +464,7 @@ export default function NovyCertifikatPage() {
 
   // ===== RENDER =====
 
-  // Pokud jsme ve kroku 3, zobrazíme úplně jiný layout
+  // Layout pro krok 3 (kontrola certifikátů)
   if (step === 3) {
     return (
       <div className="container mx-auto max-w-[1400px] space-y-6 px-4 py-8">
@@ -602,6 +602,11 @@ export default function NovyCertifikatPage() {
         )}
       </div>
     );
+  }
+
+  // Layout pro krok 4 (posílání e-mailů)
+  if(step === 4) {
+
   }
 
   // Layout pro Krok 1 a 2

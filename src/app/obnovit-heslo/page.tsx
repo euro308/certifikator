@@ -23,7 +23,7 @@ export default function ResetHesla() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get("token") ?? "";
@@ -45,19 +45,25 @@ export default function ResetHesla() {
     setLoading(true);
 
     try {
-      await authClient.resetPassword({
-        newPassword: firstPassword,
-        token: tokenFromUrl,
-      }, {
-        onSuccess: () => {
-          toast.success("Heslo bylo úspěšně změněno");
-          router.push("/prihlaseni");
+      await authClient.resetPassword(
+        {
+          newPassword: firstPassword,
+          token: tokenFromUrl,
         },
-        onError: (ctx) => {
-          setLoading(false);
-          setError(ctx.error.message || "Nepodařilo se obnovit heslo. Token může být neplatný.");
-        }
-      });
+        {
+          onSuccess: () => {
+            toast.success("Heslo bylo úspěšně změněno");
+            router.push("/prihlaseni");
+          },
+          onError: (ctx) => {
+            setLoading(false);
+            setError(
+              ctx.error.message ||
+                "Nepodařilo se obnovit heslo. Token může být neplatný.",
+            );
+          },
+        },
+      );
     } catch {
       setLoading(false);
       setError("Nastala neočekávaná chyba!");
@@ -75,12 +81,19 @@ export default function ResetHesla() {
       </h1>
 
       {!tokenFromUrl ? (
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-xl text-center">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-xl">
           <div className="mb-4 text-red-500">
-             <h2 className="text-xl font-bold mb-2">Odkaz je neplatný nebo vypršel</h2>
-             <p className="text-gray-600">Pro obnovu hesla si prosím zažádejte o nový odkaz.</p>
+            <h2 className="mb-2 text-xl font-bold">
+              Odkaz je neplatný nebo vypršel
+            </h2>
+            <p className="text-gray-600">
+              Pro obnovu hesla si prosím zažádejte o nový odkaz.
+            </p>
           </div>
-          <Link href="/zapomenute-heslo" className="text-[#E65758] font-semibold underline">
+          <Link
+            href="/zapomenute-heslo"
+            className="font-semibold text-[#E65758] underline"
+          >
             Zažádat o nový odkaz
           </Link>
           <div className="mt-4">
@@ -154,7 +167,7 @@ export default function ResetHesla() {
             </FieldSet>
 
             {error && (
-              <div className="mt-6 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
                 {error}
               </div>
             )}
@@ -162,15 +175,9 @@ export default function ResetHesla() {
             <Button
               type="submit"
               disabled={loading}
-              className="bg-gradient-primary mt-6 h-12 w-full text-base font-semibold text-white hover:opacity-90 shadow-sm"
+              className="bg-gradient-primary mt-6 h-12 w-full text-base font-semibold text-white shadow-sm hover:opacity-90"
             >
-              {loading ? (
-                <>
-                  Obnovuji...
-                </>
-              ) : (
-                "Obnovit heslo"
-              )}
+              {loading ? <>Obnovuji...</> : "Obnovit heslo"}
             </Button>
           </form>
 

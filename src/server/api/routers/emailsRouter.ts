@@ -7,7 +7,7 @@ import { auth } from "@/server/better-auth/config";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const emailsRouter = createTRPCRouter({
-  requestPasswordReset: publicProcedure
+  sendPasswordReset: publicProcedure
     .input(
       z.object({
         emailAddress: z.string().email(),

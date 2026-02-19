@@ -2,7 +2,6 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { certificatesRouter } from "./routers/certificatesRouter";
 import { templatesRouter } from "@/server/api/routers/templatesRouter";
 import { emailsRouter } from "@/server/api/routers/emailsRouter";
-import { passwordResetsRouter } from "@/server/api/routers/passwordResetsRouter";
 
 /**
  * This is the primary router for your server.
@@ -13,7 +12,6 @@ export const appRouter = createTRPCRouter({
   certificates: certificatesRouter,
   templates: templatesRouter,
   emails: emailsRouter,
-  passwordResets: passwordResetsRouter,
 });
 
 // export type definition of API
