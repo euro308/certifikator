@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/email-template";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { auth } from "@/server/better-auth/config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -58,13 +58,13 @@ export const emailsRouter = createTRPCRouter({
       }
     }),
 
-  sendCertificateSent: publicProcedure
+  sendCertificateSingle: publicProcedure
     .input(
       z.object({
         emailAddresses: z.array(z.string().email()),
-        subject: z.string(),
-        header: z.string().optional(),
-        content: z.string().optional(),
+        validationToken: z.string(),
+        username: z.string(),
+        certificateUrl: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -72,12 +72,19 @@ export const emailsRouter = createTRPCRouter({
         await resend.emails.send({
           from: "Certifikátor <info@certifikator.eu>",
           to: input.emailAddresses,
-          subject: input.subject,
+          subject: "Obdrželi jste nový certifikát",
           react: EmailTemplate({
             emailType: "CERTIFICATE_SENT",
-            header: input.header,
-            content: input.content,
+            validationToken: input.validationToken,
+            username: input.username
           }),
+          attachments: [
+            {
+              filename: `${input.validationToken}.png`,
+              content: input.certificateUrl.split(",")[1],
+              contentType: "image/png",
+            },
+        ]
         });
 
         return { success: true };
@@ -85,5 +92,54 @@ export const emailsRouter = createTRPCRouter({
         console.error("Chyba při odesílání emailu:", error);
         return { success: false };
       }
+    }),
+
+  sendCertificatesBatch: protectedProcedure
+    .input(
+      z.object({
+        recipients: z.array(
+          z.object({
+            email: z.string().email(),
+            name: z.string(),
+            validationToken: z.string(),
+            certificateUrl: z.string(),
+          }),
+        ),
+        senderName: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const senderString = input.senderName;
+
+      const results = await Promise.allSettled(
+        input.recipients.map(async (recipient) => {
+          try {
+             await resend.emails.send({
+              from: "Certifikátor <info@certifikator.eu>",
+              to: recipient.email,
+              subject: "Obdrželi jste nový certifikát",
+              react: EmailTemplate({
+                emailType: "CERTIFICATE_SENT",
+                validationToken: recipient.validationToken,
+                username: senderString,
+              }),
+              attachments: [
+                {
+                  filename: `${recipient.validationToken}.png`,
+                  content: recipient.certificateUrl.split(",")[1],
+                  contentType: "image/png",
+                },
+              ]
+            });
+            return { email: recipient.email, status: "fulfilled" };
+          } catch (error) {
+            console.error(`Nastala chyba při odesílání e-mailu na ${recipient.email}:`, error);
+            throw error;
+          }
+        }),
+      );
+      
+      const successCount = results.filter((r) => r.status === "fulfilled").length;
+      return { success: true, sentCount: successCount, total: input.recipients.length };
     }),
 });

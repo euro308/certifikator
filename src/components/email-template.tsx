@@ -2,8 +2,8 @@ import * as React from "react";
 
 interface EmailTemplateProps {
   emailType: "FORGOT_PASSWORD" | "CERTIFICATE_SENT" | "TEMPLATE_TAKEN_DOWN";
-  header?: string;
-  content?: string;
+  username?: string;
+  validationToken?: string;
   resetLink?: string;
   templateName?: string;
   templateId?: string;
@@ -16,8 +16,8 @@ interface EmailTemplateProps {
  */
 export function EmailTemplate({
   emailType,
-  header,
-  content,
+  username,
+  validationToken,
   resetLink,
   templateName,
   templateId,
@@ -115,8 +115,45 @@ export function EmailTemplate({
 
         {emailType === "CERTIFICATE_SENT" && (
           <>
-            <h3 style={h3Style}>{header}</h3>
-            <p style={pStyle}>{content}</p>
+            <h3 style={h3Style}>Vystavení nového certifikátu</h3>
+            <p style={pStyle}>Vážená paní / Vážený pane,</p>
+            <p style={pStyle}>
+              dovolujeme si Vás informovat, že Vám byl úspěšně vystaven a zaslán
+              nový certifikát. Vystavitelem tohoto dokumentu je {username}.
+            </p>
+            <p style={pStyle}>
+              K Vašemu certifikátu byl přidělen unikátní identifikační kód,
+              který slouží k ověření jeho pravosti a platnosti:
+            </p>
+            <div
+              style={{
+                backgroundColor: "#f9fafb",
+                borderLeft: "4px solid #FEA858",
+                padding: "16px",
+                margin: "16px 0",
+                borderRadius: "4px",
+              }}
+            >
+              <p
+                style={{
+                  ...pStyle,
+                  margin: 0,
+                  fontSize: "18px",
+                  letterSpacing: "1px",
+                  fontFamily: "monospace",
+                  color: "#1a1a1a",
+                }}
+              >
+                <strong>{validationToken}</strong>
+              </p>
+            </div>
+            <span style={italicStyle}>
+              Identifikační kód si pečlivě uschovejte. Bude
+              vyžadován v případě, že budete Vy nebo třetí strana potřebovat
+              elektronicky ověřit platnost certifikátu. Pokud dojde k jeho
+              ztrátě, obraťte se přímo na vystavitele, který Vám může
+              tento e-mail zaslat opakovaně.
+            </span>
           </>
         )}
 
@@ -124,7 +161,7 @@ export function EmailTemplate({
           <>
             <h3 style={h3Style}>Vaše šablona byla stažena z galerie</h3>
             <p style={pStyle}>
-              Dobrý den, informujeme Vás, že Vaše šablona{" "}
+              Dobrý den, dovolujeme si Vás informovat, že Vaše šablona{" "}
               <strong>{templateName}</strong> (ID šablony: {templateId}) byla
               stažena z veřejné galerie systému Certifikátor.
             </p>

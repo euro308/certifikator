@@ -37,8 +37,10 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import type { CanvasElement } from "@/components/editor/types/canvas-types";
+import { authClient } from "@/server/better-auth/client";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { EmailTemplate } from "@/components/email-template";
 
 // Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
@@ -75,6 +77,14 @@ interface GeneratedCertificate {
   certificateUrl: string;
 }
 
+interface SavedCertificate {
+  id: string;
+  recipientName: string;
+  recipientEmail: string;
+  validationToken: string;
+  certificateUrl: string;
+}
+
 const ITEMS_PER_PAGE = 6; // 3x2 pole
 
 const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
@@ -107,7 +117,7 @@ const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
   );
 };
 
-export default function NovyCertifikatPage() {
+export default function NovyCertifikat() {
   const router = useRouter();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -140,6 +150,26 @@ export default function NovyCertifikatPage() {
   // State pro generování obrázku
   const [generationIndex, setGenerationIndex] = useState(0);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+
+  // State pro Step 4 (Odesílání emailů)
+  const { data: session } = authClient.useSession();
+  const [savedCertificates, setSavedCertificates] = useState<
+    SavedCertificate[]
+  >([]);
+  const [emailRecipients, setEmailRecipients] = useState<Set<string>>(
+    new Set(),
+  );
+  const [senderName, setSenderName] = useState("");
+  const [isSendingEmails, setIsSendingEmails] = useState(false);
+  const hasInitializedSenderName = useRef(false);
+
+  // Nastavení výchozího jména odesílatele (pouze jednou)
+  useEffect(() => {
+    if (session?.user?.name && !hasInitializedSenderName.current) {
+      setSenderName(session.user.name);
+      hasInitializedSenderName.current = true;
+    }
+  }, [session?.user?.name]);
 
   // logika stránkování
   const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
@@ -182,10 +212,33 @@ export default function NovyCertifikatPage() {
   }, [step, generatedCertificates.length]);
 
   // TRPC mutace
+  const sendEmailsMutation = api.emails.sendCertificatesBatch.useMutation({
+    onSuccess: (data) => {
+      toast.success(
+        `Úspěšně odesláno ${data.sentCount} z ${data.total} e-mailů.`,
+      );
+      router.push("/dashboard/me-certifikaty");
+    },
+    onError: (err) => {
+      toast.error("Chyba při odesílání e-mailů: " + err.message);
+      setIsSendingEmails(false);
+    },
+  });
+
   const createBatch = api.certificates.createBatch.useMutation({
     onSuccess: (data: unknown[]) => {
-      toast.success(`Úspěšně ${correctSuccessToastText(data.length)}`);
-      router.push("/dashboard/me-certifikaty");
+      const certificates = data as SavedCertificate[];
+      toast.success(`Úspěšně ${correctSuccessToastText(certificates.length)}`);
+
+      setSavedCertificates(certificates);
+      // Předvybrat všechny pro odeslání emailu, pokud mají email
+      const validEmails = certificates
+        .filter((c) => c.recipientEmail?.includes("@"))
+        .map((c) => c.id);
+      setEmailRecipients(new Set(validEmails));
+
+      setStep(4);
+      setIsSaving(false);
     },
     onError: (err: { message: string }) => {
       toast.error("Chyba při ukládání certifikátů: " + err.message);
@@ -462,6 +515,53 @@ export default function NovyCertifikatPage() {
     );
   };
 
+  const handleSendEmails = () => {
+    const recipientsToSend = savedCertificates.filter((c) =>
+      emailRecipients.has(c.id),
+    );
+
+    if (recipientsToSend.length === 0) {
+      toast.error("Vyberte alespoň jednoho příjemce.");
+      return;
+    }
+
+    if (!senderName.trim()) {
+      toast.error("Zadejte jméno odesílatele.");
+      return;
+    }
+
+    setIsSendingEmails(true);
+    sendEmailsMutation.mutate({
+      recipients: recipientsToSend.map((c) => ({
+        email: c.recipientEmail,
+        name: c.recipientName,
+        validationToken: c.validationToken,
+        certificateUrl: c.certificateUrl,
+      })),
+      senderName: senderName,
+    });
+  };
+
+  const toggleEmailRecipient = (id: string, checked: boolean) => {
+    setEmailRecipients((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAllEmailRecipients = (checked: boolean) => {
+    if (checked) {
+      const allIds = savedCertificates
+        .filter((c) => c.recipientEmail)
+        .map((c) => c.id);
+      setEmailRecipients(new Set(allIds));
+    } else {
+      setEmailRecipients(new Set());
+    }
+  };
+
   // ===== RENDER =====
 
   // Layout pro krok 3 (kontrola certifikátů)
@@ -605,8 +705,164 @@ export default function NovyCertifikatPage() {
   }
 
   // Layout pro krok 4 (posílání e-mailů)
-  if(step === 4) {
+  if (step === 4) {
+    return (
+      <div className="container mx-auto max-w-[1400px] space-y-6 px-4 py-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              Odeslání e-mailů
+            </h1>
+            <p className="text-muted-foreground">
+              Certifikáty byly úspěšně vytvořeny. Nyní je můžete odeslat
+              příjemcům.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/dashboard/me-certifikaty")}
+            >
+              Přeskočit a přejít do přehledu
+            </Button>
+            <Button
+              onClick={handleSendEmails}
+              disabled={isSendingEmails || emailRecipients.size === 0}
+              className="min-w-[160px]"
+            >
+              {isSendingEmails ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Users className="mr-2 h-4 w-4" />
+              )}
+              Odeslat {emailRecipients.size} e-mailů
+            </Button>
+          </div>
+        </div>
 
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Levý sloupec: Seznam příjemců */}
+          <Card className="flex h-[95vh] flex-col">
+            <CardHeader className="shrink-0">
+              <CardTitle className="flex items-center justify-between">
+                <span>Příjemci</span>
+                <div className="flex items-center gap-2 text-sm font-normal">
+                  <Checkbox
+                    id="select-all-emails"
+                    checked={
+                      emailRecipients.size === savedCertificates.length &&
+                      savedCertificates.length > 0
+                    }
+                    onCheckedChange={(v) => toggleAllEmailRecipients(!!v)}
+                  />
+                  <Label
+                    htmlFor="select-all-emails"
+                    className="cursor-pointer font-normal"
+                  >
+                    Vybrat vše
+                  </Label>
+                </div>
+              </CardTitle>
+              <CardDescription>
+                Vyberte, komu chcete e-mail odeslat. Zobrazeni jsou pouze ti s
+                vyplněným e-mailem.
+              </CardDescription>
+            </CardHeader>
+            {/* Tady je kouzlo flex-1 a min-h-0, které vyplní zbylý prostor a dovolí scroll */}
+            <CardContent className="min-h-0 flex-1 overflow-y-auto pr-4">
+              <div className="flex flex-col gap-2">
+                {savedCertificates.map((cert) => {
+                  const hasEmail = !!cert.recipientEmail;
+                  const isSelected = emailRecipients.has(cert.id);
+
+                  return (
+                    <div
+                      key={cert.id}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-white"
+                      } ${!hasEmail ? "opacity-50" : ""}`}
+                    >
+                      <Checkbox
+                        id={`email-recipient-${cert.id}`}
+                        checked={isSelected}
+                        disabled={!hasEmail}
+                        onCheckedChange={(v) =>
+                          toggleEmailRecipient(cert.id, !!v)
+                        }
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium">
+                          {cert.recipientName}
+                        </div>
+                        <div className="text-muted-foreground truncate text-sm">
+                          {hasEmail ? cert.recipientEmail : "E-mail nevyplněn"}
+                        </div>
+                      </div>
+                      {hasEmail && (
+                        <div className="text-muted-foreground shrink-0 font-mono text-xs">
+                          {cert.id.substring(0, 8)}...
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pravý sloupec: Editor e-mailu */}
+          <Card className="flex h-[95vh] flex-col">
+            <CardHeader className="shrink-0">
+              <CardTitle>Nastavení odesílatele</CardTitle>
+              <CardDescription>
+                Upravte, jak se budete příjemcům zobrazovat.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1 flex-col space-y-4">
+              {/* Input jména - smrskne se jen na svou výšku */}
+              <div className="shrink-0 space-y-2">
+                <Label htmlFor="sender-name">Jméno odesílatele</Label>
+                <Input
+                  id="sender-name"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                  placeholder="Např. Jan Novák"
+                />
+              </div>
+
+              {/* Náhled - ten chceme, aby nabobtnal a vyplnil středový prostor */}
+              <div className="bg-muted/30 flex min-h-0 flex-1 flex-col rounded-md border p-4">
+                <h4 className="text-muted-foreground mb-2 shrink-0 text-sm font-semibold">
+                  Náhled zprávy v e-mailu:
+                </h4>
+                {/* Vnitřek náhledu, který dostane scroll */}
+                <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border bg-white shadow-sm">
+                  <div className="absolute inset-0 overflow-x-hidden overflow-y-auto">
+                    <div className="w-[117%] origin-top-left scale-[0.85] p-4">
+                      <EmailTemplate
+                        emailType="CERTIFICATE_SENT"
+                        username={senderName || "Jan Novák"}
+                        validationToken="xxxxxxxxxxxxxxxxxxxxxx"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tip na konci - smrskne se jen na svou výšku */}
+              <div className="shrink-0 rounded-md bg-blue-50 p-4 text-sm text-blue-700">
+                <p>
+                  <strong>Tip:</strong> Certifikát bude automaticky přiložen
+                  jako příloha k e-mailu.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   // Layout pro Krok 1 a 2
