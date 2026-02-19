@@ -17,16 +17,14 @@ import {
   Mail,
   Trash2,
   User,
-  Award,
   FileText,
-  Clock,
-  ChevronLeft,
+
+
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
 import { ResendEmailDialog } from "@/components/resend-email-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
@@ -58,7 +56,7 @@ export default function CertificateDetailPage() {
       <div className="container mx-auto flex min-h-[50vh] flex-col items-center justify-center space-y-4 px-4">
         <h1 className="text-2xl font-bold">Certifikát nenalezen</h1>
         <p className="text-muted-foreground">
-          {error?.message || "Požadovaný certifikát neexistuje nebo k němu nemáte přístup."}
+          {error?.message ?? "Požadovaný certifikát neexistuje nebo k němu nemáte přístup."}
         </p>
         <Button asChild variant="outline">
           <Link href="/dashboard/me-certifikaty">Zpět na přehled</Link>
