@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, PencilLine, Plus, Search, Trash } from "lucide-react";
+import {
+  Copy,
+  MoreHorizontal,
+  PencilLine,
+  Plus,
+  Search,
+  Trash,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -255,14 +262,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     {/* 2. Name (All) + Mobile Meta */}
                     <div className="flex flex-col gap-1 overflow-hidden">
                       <Link href={`/dashboard/me-sablony/${template.id}`}>
-                        <span
-                          className={`cursor-pointer truncate ${
-                            selectedSort === "nameAToZ" ||
-                            selectedSort === "nameZToA"
-                              ? "text-foreground font-medium"
-                              : "text-muted-foreground font-light"
-                          }`}
-                        >
+                        <span className={"cursor-pointer truncate"}>
                           {template.name}
                         </span>
                       </Link>
@@ -280,31 +280,17 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                     </div>
 
                     {/* 3. Description (LG only) */}
-                    <span className="text-muted-foreground hidden truncate text-sm lg:block">
+                    <span className="hidden truncate text-sm lg:block">
                       {template.description ?? "-"}
                     </span>
 
                     {/* 4. Date (MD+) */}
-                    <span
-                      className={`hidden text-sm md:block ${
-                        selectedSort === "creationDateNewest" ||
-                        selectedSort === "creationDateOldest"
-                          ? "text-foreground font-bold"
-                          : "text-muted-foreground"
-                      }`}
-                    >
+                    <span className={"hidden text-sm md:block"}>
                       {new Date(template.createdAt).toLocaleDateString("cs-CZ")}
                     </span>
 
                     {/* 5. Usage (MD+) */}
-                    <div
-                      className={`hidden text-sm md:block ${
-                        selectedSort === "usedCountMost" ||
-                        selectedSort === "usedCountLeast"
-                          ? "text-foreground font-bold"
-                          : "text-muted-foreground"
-                      }`}
-                    >
+                    <div className={"hidden text-sm md:block"}>
                       <TemplateUsageCounter templateId={template.id} />
                     </div>
 
@@ -339,7 +325,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
                             size="sm"
                             className="h-8 w-8 p-0"
                           >
-                            ...
+                            <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="bottom" align="start">

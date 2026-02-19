@@ -84,7 +84,7 @@ export default function CertificateDetailPage() {
         <div className="flex gap-2">
           <Button onClick={() => setIsEmailDialogOpen(true)}>
             <Mail className="mr-2 size-4" />
-            Znovu odeslat e-mail
+            Odeslat e-mail
           </Button>
           <Button 
             variant="outline" 

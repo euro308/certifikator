@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Plus, Search, Trash } from "lucide-react";
+import { Copy, Mail, MoreHorizontal, Plus, Search, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,6 +20,13 @@ import {
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ResendEmailDialog } from "@/components/resend-email-dialog";
 
 interface CertificateSummaryProps {
   userCertificates: {
@@ -41,8 +48,11 @@ export function CertificateSummary({
 }: CertificateSummaryProps) {
   const [searchValue, setSearchValue] = useState<string>("");
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
-  const [deleteDialog, setDeleteDialog] = useState(false);
-  const [currentCertificateId, setCurrentCertificateId] = useState<string>("");
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<
+    CertificateSummaryProps["userCertificates"][0] | null
+  >(null);
   const utils = api.useUtils();
   const deleteCertificateMutation =
     api.certificates.deleteCertificate.useMutation();
@@ -54,13 +64,13 @@ export function CertificateSummary({
       },
       {
         onSuccess: (_data) => {
-          setDeleteDialog(false);
+          setIsDeleteDialogOpen(false);
           toast.loading("Certifikát se maže...");
 
           void utils.certificates.getUserCertificates.invalidate().then(() => {
             toast.dismiss();
             toast.success("Certifikát byl úspěšně smazán!");
-            setCurrentCertificateId("");
+            setSelectedCertificate(null);
           });
         },
         onError: (err) => {
@@ -283,10 +293,10 @@ export function CertificateSummary({
                       {certificate.templateId && (
                         <>
                           <span
-                            className="text-muted-foreground truncate font-mono text-[10px] select-none"
+                            className="text-muted-foreground font-mono text-[10px] select-none"
                             title={certificate.templateId}
                           >
-                            {certificate.templateId.substring(0, 8)}...
+                            {certificate.templateId.substring(0, 8)}…
                           </span>
                           <Button
                             variant="ghost"
@@ -306,10 +316,10 @@ export function CertificateSummary({
                     {/* 6. certificate ID (LG only) - Moved to end with Copy Button */}
                     <div className="group hidden items-center gap-2 lg:flex">
                       <span
-                        className="text-muted-foreground truncate font-mono text-[10px] select-none"
+                        className="text-muted-foreground font-mono text-[10px] select-none"
                         title={certificate.id}
                       >
-                        {certificate.id.substring(0, 8)}...
+                        {certificate.id.substring(0, 8)}…
                       </span>
                       <Button
                         variant="ghost"
@@ -322,21 +332,44 @@ export function CertificateSummary({
                       </Button>
                     </div>
 
-                    {/* 7. Delete Button */}
+                    {/* 7. Actions (All) */}
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => {
-                          setDeleteDialog(true);
-                          setCurrentCertificateId(certificate.id);
-                        }}
-                      >
-                        <Trash className="size-4" color="#e7000b" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="bottom" align="start">
+                          <DropdownMenuItem
+                            className="focus:bg-gray-100 flex cursor-pointer gap-2"
+                            onClick={() => {
+                              setSelectedCertificate(certificate);
+                              setIsEmailDialogOpen(true);
+                            }}
+                          >
+                            <Mail className="size-4" />
+                            <span>Odeslat e-mail</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+                            onClick={() => {
+                              setSelectedCertificate(certificate);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash className="size-4" color="#e7000b" />
+                            <span>Smazat certifikát</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}
@@ -346,14 +379,24 @@ export function CertificateSummary({
         </div>
       )}
 
-      <DeleteDialog
-        type={"certificate"}
-        open={deleteDialog}
-        onOpenChange={() => setDeleteDialog(!deleteDialog)}
-        onConfirm={() => deleteCertificateFromUser(currentCertificateId)}
-        onCancel={() => setCurrentCertificateId("")}
-        isDeleting={deleteCertificateMutation.isPending}
-      />
+      {selectedCertificate && (
+        <>
+          <ResendEmailDialog
+            open={isEmailDialogOpen}
+            onOpenChange={setIsEmailDialogOpen}
+            certificate={selectedCertificate}
+          />
+
+          <DeleteDialog
+            type={"certificate"}
+            open={isDeleteDialogOpen}
+            onOpenChange={() => setIsDeleteDialogOpen(!isDeleteDialogOpen)}
+            onConfirm={() => deleteCertificateFromUser(selectedCertificate.id)}
+            onCancel={() => setSelectedCertificate(null)}
+            isDeleting={deleteCertificateMutation.isPending}
+          />
+        </>
+      )}
     </>
   );
 }

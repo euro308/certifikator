@@ -824,7 +824,7 @@ export default function NovyCertifikat() {
               <EmailSettingsForm
                 senderName={senderName}
                 onSenderNameChange={setSenderName}
-                className="flex flex-1 flex-col overflow-hidden"
+                className="flex flex-1 flex-col px-0.5"
               />
 
               {/* Tip na konci - smrskne se jen na svou výšku */}

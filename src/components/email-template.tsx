@@ -148,11 +148,10 @@ export function EmailTemplate({
               </p>
             </div>
             <span style={italicStyle}>
-              Identifikační kód si pečlivě uschovejte. Bude
-              vyžadován v případě, že budete Vy nebo třetí strana potřebovat
-              elektronicky ověřit platnost certifikátu. Pokud dojde k jeho
-              ztrátě, obraťte se přímo na vystavitele, který Vám může
-              tento e-mail zaslat opakovaně.
+              Identifikační kód si pečlivě uschovejte. Bude vyžadován v případě,
+              že budete Vy nebo třetí strana potřebovat elektronicky ověřit
+              platnost certifikátu. Pokud dojde k jeho ztrátě, obraťte se přímo
+              na vystavitele, který Vám může tento e-mail zaslat opakovaně.
             </span>
           </>
         )}
