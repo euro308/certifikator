@@ -19,7 +19,7 @@ export function EmailSettingsForm({
   className,
 }: EmailSettingsFormProps) {
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-4 px-0.5", className)}>
       <div className="shrink-0 space-y-2">
         <Label htmlFor="sender-name">Jméno odesílatele</Label>
         <Input

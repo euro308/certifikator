@@ -78,7 +78,7 @@ export function ResendEmailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[95vh] max-w-2xl flex-col p-0">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle>Znovu odeslat e-mail</DialogTitle>
+          <DialogTitle>Odeslat e-mail</DialogTitle>
           <DialogDescription>
             Příjemci {certificate.recipientName} ({certificate.recipientEmail})
             bude odeslán e-mail s certifikátem.
@@ -104,7 +104,7 @@ export function ResendEmailDialog({
             ) : (
               <Mail className="mr-2 h-4 w-4" />
             )}
-            Odeslat e-mail
+            {sendEmailMutation.isPending ? "Odesílám..." : "Odeslat e-mail"}
           </Button>
         </DialogFooter>
       </DialogContent>
