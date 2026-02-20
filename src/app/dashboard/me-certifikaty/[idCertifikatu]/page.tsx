@@ -37,7 +37,7 @@ export default function CertificateDetailPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
 
-  const { data: certificate, isLoading, isError, error } = api.certificates.getCertificate.useQuery({ id });
+  const { data: certificate, isLoading, isError, error } = api.certificates.getById.useQuery({ id });
 
   const deleteMutation = api.certificates.deleteCertificate.useMutation({
     onSuccess: () => {

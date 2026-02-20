@@ -19,9 +19,6 @@ import {
   Users,
   Heart,
   Loader2,
-  Mail,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import {
   Card,
@@ -59,18 +56,17 @@ export default function DetailSablony() {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [showCertificates, setShowCertificates] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const router = useRouter();
   const utils = api.useUtils();
   const hideTemplateMutation = api.templates.hideTemplate.useMutation();
 
   // Fetch certificates for this template (lazy — only when expanded)
-  const {
-    data: templateCertificates,
-    isLoading: certsLoading,
-  } = api.certificates.getByTemplate.useQuery(
-    { templateId: idSablony ?? "" },
-    { enabled: !!idSablony && showCertificates },
-  );
+  const { data: templateCertificates, isLoading: certsLoading } =
+    api.certificates.getByTemplate.useQuery(
+      { templateId: idSablony ?? "" },
+      { enabled: !!idSablony && showCertificates },
+    );
 
   const filteredCertificates = templateCertificates?.filter((cert) => {
     const search = searchTerm.toLowerCase();
@@ -147,23 +143,35 @@ export default function DetailSablony() {
               </h1>
               <Badge variant={template.isPublic ? "default" : "secondary"}>
                 {template.isPublic ? (
-                  <><Globe className="mr-1 size-3" /> Veřejná</>
+                  <>
+                    <Globe className="mr-1 size-3" /> Veřejná
+                  </>
                 ) : (
-                  <><Lock className="mr-1 size-3" /> Soukromá</>
+                  <>
+                    <Lock className="mr-1 size-3" /> Soukromá
+                  </>
                 )}
               </Badge>
             </div>
-            <p className="mt-2 text-lg text-muted-foreground">Detail a správa vaší šablony.</p>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Detail a správa vaší šablony.
+            </p>
           </div>
 
           <div className="flex gap-2">
             <Button asChild>
-              <Link href={`/dashboard/me-sablony/${template.id}/upravit?returnToList=false`}>
+              <Link
+                href={`/dashboard/me-sablony/${template.id}/upravit?returnToList=false`}
+              >
                 <Edit className="mr-2 size-4" />
                 Upravit design
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => setDeleteDialog(true)} className="text-destructive hover:bg-destructive/10">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialog(true)}
+              className="text-destructive hover:bg-destructive/10"
+            >
               <Trash2 className="mr-2 size-4" />
               Smazat
             </Button>
@@ -175,7 +183,7 @@ export default function DetailSablony() {
           <div className="lg:col-span-7 xl:col-span-8">
             <Card className="overflow-hidden border-2 py-0">
               {template.previewImageUrl ? (
-                <div className="relative aspect-[1.414/1] w-full bg-muted">
+                <div className="bg-muted relative aspect-[1.414/1] w-full">
                   <Image
                     src={template.previewImageUrl}
                     alt={`Náhled - ${template.name}`}
@@ -185,8 +193,8 @@ export default function DetailSablony() {
                   />
                 </div>
               ) : (
-                <div className="relative aspect-[1.414/1] w-full bg-muted/5 flex flex-col items-center justify-center py-20 text-muted-foreground">
-                  <FileText className="size-16 mb-2 opacity-20" />
+                <div className="bg-muted/5 text-muted-foreground relative flex aspect-[1.414/1] w-full flex-col items-center justify-center py-20">
+                  <FileText className="mb-2 size-16 opacity-20" />
                   <span>Náhled není k dispozici</span>
                 </div>
               )}
@@ -201,8 +209,10 @@ export default function DetailSablony() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1">
-                  <span className="text-sm font-medium text-muted-foreground">Popis</span>
-                  <p className="text-sm leading-relaxed">
+                  <span className="text-muted-foreground text-sm font-medium">
+                    Popis
+                  </span>
+                  <p className="text-sm leading-relaxed whitespace-normal break-words">
                     {template.description ?? "Bez popisu"}
                   </p>
                 </div>
@@ -214,31 +224,41 @@ export default function DetailSablony() {
                     <span className="text-muted-foreground flex items-center">
                       <Calendar className="mr-2 size-4" /> Vytvořeno
                     </span>
-                    <span>{new Date(template.createdAt).toLocaleDateString("cs-CZ")}</span>
+                    <span>
+                      {new Date(template.createdAt).toLocaleDateString("cs-CZ")}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground flex items-center">
                       <Clock className="mr-2 size-4" /> Poslední úprava
                     </span>
-                    <span>{template.updatedAt ? new Date(template.updatedAt).toLocaleDateString("cs-CZ") : "-"}</span>
+                    <span>
+                      {template.updatedAt
+                        ? new Date(template.updatedAt).toLocaleDateString(
+                            "cs-CZ",
+                          )
+                        : "-"}
+                    </span>
                   </div>
                 </div>
 
                 <Separator />
 
                 {/* Veřejné statistiky — jen pro public šablony */}
-                {(template.isPublic && publicStats) && (
+                {template.isPublic && publicStats && (
                   <>
                     <div className="space-y-3 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground flex items-center">
-                          <Users className="mr-2 size-4" /> Použito ostatními uživateli
+                          <Users className="mr-2 size-4" /> Použito ostatními
+                          uživateli
                         </span>
                         <span>{publicStats.usageByOthers}×</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground flex items-center">
-                          <Heart className="mr-2 size-4" /> Oblíbeno ostatními uživateli
+                          <Heart className="mr-2 size-4" /> Oblíbeno ostatními
+                          uživateli
                         </span>
                         <span>{publicStats.favoritesCount}×</span>
                       </div>
@@ -252,49 +272,47 @@ export default function DetailSablony() {
             <Card className="bg-muted/30">
               <CardHeader>
                 <CardTitle>Certifikáty</CardTitle>
-                <CardDescription>Správa certifikátů využívajících tuto šablonu.</CardDescription>
+                <CardDescription>
+                  Správa certifikátů využívajících tuto šablonu.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => setShowCertificates(!showCertificates)}
-                >
-                  <Search className="mr-2 size-4" />
-                  Vyhledat certifikáty
-                  {showCertificates ? (
-                    <ChevronUp className="ml-auto size-4" />
-                  ) : (
-                    <ChevronDown className="ml-auto size-4" />
-                  )}
-                </Button>
+                <div className="relative">
+                  <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+                  <Input
+                    type="search"
+                    placeholder="Vyhledat certifikát..."
+                    className="bg-white pl-9"
+                    value={searchTerm}
+                    onFocus={() => {
+                      setShowCertificates(true);
+                      setSearchFocused(true);
+                    }}
+                    onBlur={() => {
+                      // Small delay to allow clicking on links
+                      setTimeout(() => setSearchFocused(false), 200);
+                    }}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
 
-                {/* Expandable certificate list */}
-                {showCertificates && (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="search"
-                        placeholder="Hledat jméno, email, ID..."
-                        className="pl-9 h-9"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                    <div className="max-h-[200px] overflow-y-auto rounded-md border bg-white">
+                  {/* Floating results list */}
+                  {searchFocused && (
+                    <div className="absolute top-full right-0 left-0 z-10 mt-1 max-h-[200px] overflow-y-auto rounded-md border bg-white shadow-lg">
                       {certsLoading ? (
                         <div className="flex items-center justify-center p-4">
                           <Loader2 className="mr-2 size-4 animate-spin" />
-                          <span className="text-sm text-muted-foreground">Načítám certifikáty...</span>
+                          <span className="text-muted-foreground text-sm">
+                            Načítám...
+                          </span>
                         </div>
-                      ) : !templateCertificates || templateCertificates.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          Žádné certifikáty nebyly vytvořeny z této šablony.
+                      ) : !templateCertificates ||
+                        templateCertificates.length === 0 ? (
+                        <div className="text-muted-foreground p-4 text-center text-sm">
+                          Žádné certifikáty k zobrazení.
                         </div>
                       ) : filteredCertificates?.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          Nebyly nalezeny žádné certifikáty odpovídající hledání.
+                        <div className="text-muted-foreground p-4 text-center text-sm">
+                          Nebyly nalezeny žádné certifikáty.
                         </div>
                       ) : (
                         <div className="divide-y">
@@ -308,30 +326,29 @@ export default function DetailSablony() {
                                 <p className="truncate text-sm font-medium">
                                   {cert.recipientName}
                                 </p>
-                                <p className="truncate text-xs text-muted-foreground">
+                                <p className="text-muted-foreground truncate text-xs">
                                   {cert.recipientEmail}
                                 </p>
                               </div>
                               <div className="flex shrink-0 flex-col items-end gap-0.5">
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(cert.createdAt).toLocaleDateString("cs-CZ")}
+                                <span className="text-muted-foreground text-xs">
+                                  {new Date(cert.createdAt).toLocaleDateString(
+                                    "cs-CZ",
+                                  )}
                                 </span>
-                                {cert.sentAt && (
-                                  <span className="flex items-center text-xs text-green-600">
-                                    <Mail className="mr-1 size-3" /> Odesláno
-                                  </span>
-                                )}
                               </div>
                             </Link>
                           ))}
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <Button className="w-full justify-start" asChild>
-                  <Link href={`/dashboard/me-certifikaty/novy?idSablony=${template.id}`}>
+                  <Link
+                    href={`/dashboard/me-certifikaty/novy?idSablony=${template.id}`}
+                  >
                     <Award className="mr-2 size-4" />
                     Vydat nový certifikát
                   </Link>
@@ -371,11 +388,11 @@ function TemplateDetailSkeleton() {
         <div className="lg:col-span-8">
           <Skeleton className="h-[500px] w-full rounded-xl" />
         </div>
-        <div className="lg:col-span-4 space-y-6">
+        <div className="space-y-6 lg:col-span-4">
           <Skeleton className="h-64 w-full rounded-xl" />
           <Skeleton className="h-40 w-full rounded-xl" />
         </div>
       </div>
     </div>
-  )
+  );
 }

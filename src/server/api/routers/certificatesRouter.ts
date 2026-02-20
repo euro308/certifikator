@@ -46,7 +46,7 @@ export const certificatesRouter = createTRPCRouter({
     });
   }),
 
-  getCertificate: protectedProcedure
+  getById: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -111,6 +111,30 @@ export const certificatesRouter = createTRPCRouter({
           sentAt: true,
         },
       });
+    }),
+
+  getByValidationToken: protectedProcedure
+    .input(
+      z.object({
+        validationToken: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const certificate = await db.query.certificates.findFirst({
+        where: and(
+          eq(certificates.validationToken, input.validationToken),
+        ),
+      });
+
+      if (!certificate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Certifikát nebyl nalezen, nebo nemáte oprávnění k jeho zobrazení.",
+        });
+      }
+
+      return certificate;
     }),
 
   createCertificate: protectedProcedure

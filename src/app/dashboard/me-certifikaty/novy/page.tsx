@@ -189,6 +189,7 @@ export default function NovyCertifikat() {
       setSelectedTemplateId(matchedTemplate.id);
       setStep(2);
       hasAutoSelected.current = true;
+      toast.success("Šablona byla úspěšně načtena.");
     }
   }, [searchParams, templates, templatesLoading]);
 
@@ -266,7 +267,6 @@ export default function NovyCertifikat() {
       setIsSaving(false);
     },
   });
-
 
   // Najít vybranou šablonu
   const selectedTemplate = templates?.find((t) => t.id === selectedTemplateId);
@@ -644,12 +644,13 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${displayedCertificates.length === 1
-            ? "mx-auto max-w-3xl grid-cols-1"
-            : displayedCertificates.length === 2
-              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            }`}
+          className={`grid gap-6 ${
+            displayedCertificates.length === 1
+              ? "mx-auto max-w-3xl grid-cols-1"
+              : displayedCertificates.length === 2
+                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -795,10 +796,11 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
-                        ? "bg-primary/5 border-primary/20"
-                        : "bg-white"
-                        } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-white"
+                      } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}
@@ -817,8 +819,8 @@ export default function NovyCertifikat() {
                         </div>
                       </div>
                       {hasEmail && (
-                        <div className="text-muted-foreground shrink-0 font-mono text-xs">
-                          {cert.id.substring(0, 8)}...
+                        <div className="text-muted-foreground shrink-0 truncate font-mono text-xs">
+                          {cert.id}
                         </div>
                       )}
                     </div>
