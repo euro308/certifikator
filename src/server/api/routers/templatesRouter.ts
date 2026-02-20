@@ -4,9 +4,9 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { certificates, templates } from "@/server/db/schema";
+import { certificates, templates, templateFavorites } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, count, desc, eq, gte, inArray, isNull } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNull, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const templatesRouter = createTRPCRouter({
@@ -180,6 +180,47 @@ export const templatesRouter = createTRPCRouter({
         .returning();
 
       return updatedTemplate;
+    }),
+
+  getPublicStats: protectedProcedure
+    .input(z.object({ templateId: z.string() }))
+    .query(async ({ input }) => {
+      // Verify the template is public
+      const template = await db.query.templates.findFirst({
+        where: and(
+          eq(templates.id, input.templateId),
+          eq(templates.isPublic, true),
+          isNull(templates.deletedAt),
+        ),
+        columns: { id: true, userId: true },
+      });
+
+      if (!template) {
+        return { usageByOthers: 0, favoritesCount: 0 };
+      }
+
+      const [usageResult, favoritesResult] = await Promise.all([
+        // Count certificates created by OTHER users using this template
+        db
+          .select({ count: count(certificates.id) })
+          .from(certificates)
+          .where(
+            and(
+              eq(certificates.templateId, input.templateId),
+              ne(certificates.userId, template.userId),
+            ),
+          ),
+        // Count favorites
+        db
+          .select({ count: count(templateFavorites.id) })
+          .from(templateFavorites)
+          .where(eq(templateFavorites.templateId, input.templateId)),
+      ]);
+
+      return {
+        usageByOthers: usageResult[0]?.count ?? 0,
+        favoritesCount: favoritesResult[0]?.count ?? 0,
+      };
     }),
 
   hideTemplate: protectedProcedure

@@ -154,11 +154,35 @@ export const certificates = createTable(
   }),
 );
 
+export const templateFavorites = createTable(
+  "template_favorites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => templates.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userTemplateIdx: uniqueIndex("template_favorites_user_template_idx").on(
+      table.userId,
+      table.templateId,
+    ),
+    templateIdx: index("template_favorites_template_idx").on(table.templateId),
+  }),
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
   templates: many(templates),
   certificates: many(certificates),
+  templateFavorites: many(templateFavorites),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -172,6 +196,7 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const templatesRelations = relations(templates, ({ one, many }) => ({
   user: one(user, { fields: [templates.userId], references: [user.id] }),
   certificates: many(certificates),
+  favorites: many(templateFavorites),
 }));
 
 export const certificatesRelations = relations(certificates, ({ one }) => ({
@@ -182,6 +207,20 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
   }),
 }));
 
+export const templateFavoritesRelations = relations(
+  templateFavorites,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [templateFavorites.userId],
+      references: [user.id],
+    }),
+    template: one(templates, {
+      fields: [templateFavorites.templateId],
+      references: [templates.id],
+    }),
+  }),
+);
+
 export const schema = {
   user,
   session,
@@ -189,4 +228,5 @@ export const schema = {
   verification,
   templates,
   certificates,
+  templateFavorites,
 };

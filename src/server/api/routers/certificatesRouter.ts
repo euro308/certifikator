@@ -90,6 +90,29 @@ export const certificatesRouter = createTRPCRouter({
       );
     }),
 
+  getByTemplate: protectedProcedure
+    .input(
+      z.object({
+        templateId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.query.certificates.findMany({
+        where: and(
+          eq(certificates.userId, ctx.session.user.id),
+          eq(certificates.templateId, input.templateId),
+        ),
+        orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
+        columns: {
+          id: true,
+          recipientName: true,
+          recipientEmail: true,
+          createdAt: true,
+          sentAt: true,
+        },
+      });
+    }),
+
   createCertificate: protectedProcedure
     .input(
       z.object({
