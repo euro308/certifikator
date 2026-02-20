@@ -38,7 +38,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import type { CanvasElement } from "@/components/editor/types/canvas-types";
 import { authClient } from "@/server/better-auth/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { EmailSettingsForm } from "@/components/email-settings-form";
 
@@ -119,8 +119,10 @@ const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
 
 export default function NovyCertifikat() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const hasAutoSelected = useRef(false);
   const [mode, setMode] = useState<GenerationMode>("bulk");
 
   // State pro hromadné generování (Excel)
@@ -163,6 +165,10 @@ export default function NovyCertifikat() {
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const hasInitializedSenderName = useRef(false);
 
+  // Načtení uživatelových šablon
+  const { data: templates, isLoading: templatesLoading } =
+    api.templates.getUserTemplates.useQuery();
+
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
     if (session?.user?.name && !hasInitializedSenderName.current) {
@@ -170,6 +176,21 @@ export default function NovyCertifikat() {
       hasInitializedSenderName.current = true;
     }
   }, [session?.user?.name]);
+
+  // Auto-výběr šablony z URL parametru ?idSablony=xxx
+  useEffect(() => {
+    if (hasAutoSelected.current || templatesLoading || !templates) return;
+
+    const idSablony = searchParams.get("idSablony");
+    if (!idSablony) return;
+
+    const matchedTemplate = templates.find((t) => t.id === idSablony);
+    if (matchedTemplate) {
+      setSelectedTemplateId(matchedTemplate.id);
+      setStep(2);
+      hasAutoSelected.current = true;
+    }
+  }, [searchParams, templates, templatesLoading]);
 
   // logika stránkování
   const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
@@ -246,9 +267,6 @@ export default function NovyCertifikat() {
     },
   });
 
-  // Načtení uživatelových šablon
-  const { data: templates, isLoading: templatesLoading } =
-    api.templates.getUserTemplates.useQuery();
 
   // Najít vybranou šablonu
   const selectedTemplate = templates?.find((t) => t.id === selectedTemplateId);
@@ -626,13 +644,12 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${
-            displayedCertificates.length === 1
-              ? "mx-auto max-w-3xl grid-cols-1"
-              : displayedCertificates.length === 2
-                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          }`}
+          className={`grid gap-6 ${displayedCertificates.length === 1
+            ? "mx-auto max-w-3xl grid-cols-1"
+            : displayedCertificates.length === 2
+              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -778,11 +795,10 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                        isSelected
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-white"
-                      } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-white"
+                        } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}

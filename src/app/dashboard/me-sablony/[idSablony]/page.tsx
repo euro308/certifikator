@@ -156,36 +156,6 @@ export default function DetailSablony() {
                         </div>
                      )}
             </Card>
-            
-             {/* Statistiky (Future proofing) */}
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Vydaných certifikátů
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                        <p className="text-xs text-muted-foreground">
-                            (Připravujeme)
-                        </p>
-                    </CardContent>
-                 </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Zobrazení
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                         <p className="text-xs text-muted-foreground">
-                            (Připravujeme)
-                        </p>
-                    </CardContent>
-                 </Card>
-            </div>
         </div>
 
         {/* Pravý sloupec - Info */}
@@ -233,7 +203,7 @@ export default function DetailSablony() {
                         Vyhledat certifikáty
                     </Button>
                     <Button className="w-full justify-start" asChild>
-                         <Link href={`/dashboard/me-certifikaty/novy?templateId=${template.id}`}>
+                         <Link href={`/dashboard/me-certifikaty/novy?idSablony=${template.id}`}>
                             <Award className="mr-2 size-4" />
                             Vydat nový certifikát
                         </Link>
