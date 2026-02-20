@@ -32,8 +32,14 @@ function formatRelativeTime(date: Date): string {
 
 function ActivityItemRow({ item }: { item: ActivityItem }) {
   const isTemplate = item.type === "template_created";
+  const href = isTemplate
+    ? `/dashboard/me-sablony/${item.id}`
+    : `/dashboard/me-certifikaty/${item.id}`;
   return (
-    <div className="flex items-start gap-3">
+    <Link
+      href={href}
+      className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+    >
       <div
         className={`rounded-full p-2 ${isTemplate ? "bg-blue-100" : "bg-green-100"}`}
       >
@@ -53,7 +59,7 @@ function ActivityItemRow({ item }: { item: ActivityItem }) {
           {formatRelativeTime(item.createdAt)}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -87,8 +93,8 @@ export default async function Dashboard() {
       api.templates.getUserTemplateCount({ userId: session.user.id }),
       api.certificates.pastWeeksChange({ userId: session.user.id }),
       api.templates.pastWeeksChange({ userId: session.user.id }),
-      api.activity.getRecentActivity({ limit: 3 }),
-      api.templates.getMostUsedTemplates({ limit: 5 }),
+      api.activity.getRecentActivity({ limit: 10 }),
+      api.templates.getMostUsedTemplates({ limit: 10 }),
     ]);
   }
 
@@ -193,14 +199,19 @@ export default async function Dashboard() {
               <CardDescription>Vaše nedávné změny a akce</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {recentActivity.length === 0 ? (
-              <p className="text-sm text-gray-500">Zatím žádná aktivita.</p>
-            ) : (
-              recentActivity.map((item) => (
-                <ActivityItemRow key={`${item.type}-${item.id}`} item={item} />
-              ))
-            )}
+          <CardContent className="max-h-[180px] overflow-y-auto sm:max-h-[220px] lg:max-h-[260px]">
+            <div className="space-y-1">
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-gray-500">Zatím žádná aktivita.</p>
+              ) : (
+                recentActivity.map((item) => (
+                  <ActivityItemRow
+                    key={`${item.type}-${item.id}`}
+                    item={item}
+                  />
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -215,39 +226,41 @@ export default async function Dashboard() {
               <Link href="/dashboard/me-sablony">Vše →</Link>
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {mostUsedTemplates.length === 0 ? (
-              <p className="text-sm text-gray-500">
-                Zatím žádné šablony nebyly použity.
-              </p>
-            ) : (
-              mostUsedTemplates.map((template) => (
-                <Link
-                  key={template.id}
-                  href={`/dashboard/me-sablony/${template.id}`}
-                  className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50"
-                >
-                  {template.previewImageUrl ? (
-                    <Image
-                      src={template.previewImageUrl}
-                      alt={template.name}
-                      className="rounded-xs object-cover"
-                      width={48}
-                      height={48}
-                    />
-                  ) : (
-                    <div className="bg-gradient-primary h-12 w-12 rounded-lg" />
-                  )}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{template.name}</p>
-                    <p className="text-xs text-gray-500">
-                      Použito: {template.usageCount}× | Upraveno:{" "}
-                      {formatRelativeTime(template.updatedAt)}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            )}
+          <CardContent className="max-h-[180px] overflow-y-auto sm:max-h-[220px] lg:max-h-[260px]">
+            <div className="space-y-1">
+              {mostUsedTemplates.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  Zatím žádné šablony nebyly použity.
+                </p>
+              ) : (
+                mostUsedTemplates.map((template) => (
+                  <Link
+                    key={template.id}
+                    href={`/dashboard/me-sablony/${template.id}`}
+                    className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+                  >
+                    {template.previewImageUrl ? (
+                      <Image
+                        src={template.previewImageUrl}
+                        alt={template.name}
+                        className="rounded-xs object-cover"
+                        width={48}
+                        height={48}
+                      />
+                    ) : (
+                      <div className="bg-gradient-primary h-12 w-12 rounded-lg" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{template.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Použito: {template.usageCount}× | Upraveno:{" "}
+                        {formatRelativeTime(template.updatedAt)}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
