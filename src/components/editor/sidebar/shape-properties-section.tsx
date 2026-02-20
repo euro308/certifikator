@@ -230,7 +230,7 @@ export function ShapePropertiesSection() {
                       id="shape-size"
                       type="number"
                       min={1}
-                      value={parseInt(shapeWidth, 10)}
+                      value={shapeWidth}
                       onChange={handleWidthChange}
                       onBlur={handleWidthBlur}
                       className="h-8"
@@ -246,7 +246,7 @@ export function ShapePropertiesSection() {
                         id="shape-width"
                         type="number"
                         min={1}
-                        value={parseInt(shapeWidth, 10)}
+                        value={shapeWidth}
                         onChange={handleWidthChange}
                         onBlur={handleWidthBlur}
                         className="h-8"
@@ -260,7 +260,7 @@ export function ShapePropertiesSection() {
                         id="shape-height"
                         type="number"
                         min={1}
-                        value={parseInt(shapeHeight, 10)}
+                        value={shapeHeight}
                         onChange={handleHeightChange}
                         onBlur={handleHeightBlur}
                         className="h-8"
@@ -302,7 +302,7 @@ export function ShapePropertiesSection() {
                     id="arrow-pointer-width"
                     type="number"
                     min={1}
-                    value={parseInt(arrowPointerWidth, 10)}
+                    value={arrowPointerWidth}
                     onChange={handlePointerWidthChange}
                     onBlur={handlePointerWidthBlur}
                     className="h-8"
@@ -316,7 +316,7 @@ export function ShapePropertiesSection() {
                     id="arrow-pointer-length"
                     type="number"
                     min={1}
-                    value={parseInt(arrowPointerLength, 10)}
+                    value={arrowPointerLength}
                     onChange={handlePointerLengthChange}
                     onBlur={handlePointerLengthBlur}
                     className="h-8"
@@ -329,23 +329,23 @@ export function ShapePropertiesSection() {
             {(shape.shapeType === "arc" ||
               shape.shapeType === "ring" ||
               shape.shapeType === "star") && (
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label className="text-xs">Vnitřní rádius</Label>
-                  <span className="text-muted-foreground text-xs">
-                    {shape.innerRadius} px
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label className="text-xs">Vnitřní rádius</Label>
+                    <span className="text-muted-foreground text-xs">
+                      {shape.innerRadius} px
+                    </span>
+                  </div>
+                  <Slider
+                    value={[shape.innerRadius ?? 20]}
+                    min={0}
+                    max={Math.max(100, (shape.innerRadius ?? 50) - 1)}
+                    step={1}
+                    onValueChange={handleInnerRadiusChange}
+                    onValueCommit={handleInnerRadiusCommit} // Added
+                  />
                 </div>
-                <Slider
-                  value={[shape.innerRadius ?? 20]}
-                  min={0}
-                  max={Math.max(100, (shape.innerRadius ?? 50) - 1)}
-                  step={1}
-                  onValueChange={handleInnerRadiusChange}
-                  onValueCommit={handleInnerRadiusCommit} // Added
-                />
-              </div>
-            )}
+              )}
 
             {/* Výplň */}
             {shape.shapeType !== "line" && (
