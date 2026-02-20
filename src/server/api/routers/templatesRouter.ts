@@ -4,12 +4,56 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { templates } from "@/server/db/schema";
+import { certificates, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, eq, gte, isNull } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const templatesRouter = createTRPCRouter({
+  getMostUsedTemplates: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Count certificates per template, return top N
+      const results = await db
+        .select({
+          templateId: certificates.templateId,
+          usageCount: count(certificates.id).as("usage_count"),
+        })
+        .from(certificates)
+        .where(eq(certificates.userId, ctx.session.user.id))
+        .groupBy(certificates.templateId)
+        .orderBy(desc(count(certificates.id)))
+        .limit(input.limit);
+
+      if (results.length === 0) return [];
+
+      // Fetch template details for the matched IDs
+      const templateIds = results.map((r) => r.templateId);
+      const matchedTemplates = await db.query.templates.findMany({
+        where: and(
+          inArray(templates.id, templateIds),
+          isNull(templates.deletedAt),
+        ),
+      });
+
+      const templateMap = new Map(matchedTemplates.map((t) => [t.id, t]));
+
+      return results
+        .map((r) => {
+          const template = templateMap.get(r.templateId);
+          if (!template) return null;
+          return {
+            ...template,
+            usageCount: r.usageCount,
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+    }),
+
   getUserTemplates: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.query.templates.findMany({
       where: and(
@@ -115,7 +159,8 @@ export const templatesRouter = createTRPCRouter({
       if (!existingTemplate) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Template not found or you do not have permission to edit it.",
+          message:
+            "Template not found or you do not have permission to edit it.",
         });
       }
 
@@ -155,7 +200,8 @@ export const templatesRouter = createTRPCRouter({
       if (!existingTemplate) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Template not found or you do not have permission to edit it.",
+          message:
+            "Template not found or you do not have permission to edit it.",
         });
       }
 
