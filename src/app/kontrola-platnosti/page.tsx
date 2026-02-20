@@ -3,7 +3,7 @@
 import { NavbarOutside } from "@/components/navbar-outside";
 import { FooterOutside } from "@/components/footer-outside";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import Image from "next/image";
@@ -26,7 +26,6 @@ export default function KontrolaPlatnosti() {
     data: certificate,
     isLoading,
     isError,
-    error,
   } = api.certificates.getByValidationToken.useQuery(
     { validationToken: submittedToken ?? "" },
     { enabled: !!submittedToken, retry: false },
