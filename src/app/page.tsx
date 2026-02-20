@@ -1,15 +1,14 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button"
 import { HydrateClient } from "@/trpc/server";
 import { NavbarOutside } from "@/components/navbar-outside";
 import { FooterOutside } from "@/components/footer-outside";
+import { HeroCTA } from "@/components/hero-cta";
 
 export default async function Home() {
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">
         {/* Landing Page Navbar */}
-        <NavbarOutside/>
+        <NavbarOutside />
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center flex-1 px-6 pt-32 pb-16">
           <header className="text-center max-w-4xl mx-auto space-y-6">
@@ -22,7 +21,7 @@ export default async function Home() {
 
             {/* Subheading */}
             <h2 className="text-xl md:text-2xl lg:text-3xl text-gray-600 font-medium leading-relaxed max-w-3xl mx-auto">
-              Jednotné prostředí pro tvorbu, správu, rozeslání a validaci certifikátů!
+              Jednotné prostředí pro tvorbu, správu, rozeslání a&nbsp;validaci certifikátů!
             </h2>
 
             {/* Description */}
@@ -32,36 +31,8 @@ export default async function Home() {
             </p>
           </header>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-10">
-            <Button
-              size="lg"
-              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Link href={"/registrace"}>
-                Registrovat se
-              </Link>
-            </Button>
-
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-[#E65758] text-[#E65758] hover:bg-red-50 px-8 py-6 text-lg font-semibold transition-all duration-200"
-            >
-              <Link href={"/prihlaseni"}>
-                Přihlásit se
-              </Link>
-            </Button>
-
-            <Button
-              size="lg"
-              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Link href={"/dashboard"}>
-                Vstup do systému
-              </Link>
-            </Button>
-          </div>
+          {/* CTA Buttons — session-aware */}
+          <HeroCTA />
         </section>
 
         {/* Features Preview Section */}
@@ -97,13 +68,13 @@ export default async function Home() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2 text-gray-900">Validace pravosti</h3>
-              <p className="text-gray-600">Každý certifikát má unikátní kód pro ověření autenticity</p>
+              <p className="text-gray-600">Každý certifikát má unikátní identifikační klíč pro ověření autenticity</p>
             </div>
           </div>
         </section>
 
         {/* FooterOutside */}
-        <FooterOutside/>
+        <FooterOutside />
       </main>
     </HydrateClient>
   );

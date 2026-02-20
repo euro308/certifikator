@@ -154,7 +154,7 @@ export default function CertificateDetailPage() {
                     <Separator />
 
                     <div className="space-y-2">
-                        <span className="text-sm font-medium text-muted-foreground">Verifikační klíč</span>
+                        <span className="text-sm font-medium text-muted-foreground">Identifikační klíč</span>
                         <div className="bg-muted rounded-md p-3">
                             <code className="break-all font-mono text-xs font-bold">
                                 {certificate.validationToken}

@@ -79,12 +79,12 @@ export default function Funkce() {
                 Certifikátor je dokáže automaticky poslat příjemcům na jejich
                 e-mailové adresy. Stačí jednou nastavit šablonu zprávy a služba{" "}
                 <a
-                  href={"https://www.mailgun.com/"}
+                  href={"https://www.resend.com/"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#ED765E] underline underline-offset-4"
                 >
-                  Mailgun
+                  Resend
                 </a>{" "}
                 se postará o doručení každému účastníku zvlášť.
               </span>
@@ -101,7 +101,7 @@ export default function Funkce() {
                 Platný, nebo fejk? Ověř to hned
               </h2>
               <span className="text-lg text-gray-700">
-                Každý certifikát má svůj unikátní validační kód, díky kterému si
+                Každý certifikát má svůj unikátní identifikační klíč, díky kterému si
                 může jeho držitel ověřit, zda je dokument skutečný a nebyl
                 upraven. Stačí kód zadat do validačního formuláře na webu a
                 Certifikátor zobrazí informaci o platnosti certifikátu.
@@ -132,7 +132,7 @@ export default function Funkce() {
             </div>
           </div>
 
-          {/* Funkce 6 */}
+          {/* Funkce 6
           <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row-reverse md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
@@ -150,6 +150,7 @@ export default function Funkce() {
               Náhled
             </div>
           </div>
+          */}
         </div>
       </div>
 

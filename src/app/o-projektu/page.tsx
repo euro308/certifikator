@@ -81,12 +81,12 @@ export default function InfoOProjektu() {
               </a>{" "}
               pro zpracování dat z Excel souborů, službu{" "}
               <a
-                href={"https://www.mailgun.com/"}
+                href={"https://www.resend.com/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#ED765E] underline underline-offset-4"
               >
-                Mailgun
+                Resend
               </a>{" "}
               pro rozesílání e-mailů a sadu UI komponent{" "}
               <a

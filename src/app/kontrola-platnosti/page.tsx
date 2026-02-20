@@ -61,7 +61,7 @@ export default function KontrolaPlatnosti() {
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-center text-lg text-gray-600">
             Zde si můžete ověřit, zda je Váš certifikát platný. Jednoduše zadejte
-            tajný identifikátor, který Vám byl zaslán v původním e-mailu
+            identifikační klíč, který Vám byl zaslán v původním e-mailu
             s certifikátem.
           </p>
 
@@ -71,7 +71,7 @@ export default function KontrolaPlatnosti() {
               htmlFor="validation-token"
               className="mb-2 block text-sm font-medium text-gray-700"
             >
-              Tajný identifikátor
+              Identifikační klíč
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -117,7 +117,7 @@ export default function KontrolaPlatnosti() {
                 Certifikát nenalezen
               </h2>
               <p className="text-gray-600">
-                Certifikát s tímto identifikátorem nebyl nalezen. Zkontrolujte,
+                Certifikát s tímto identifikačním klíčem nebyl nalezen. Zkontrolujte,
                 zda jste zadali správný kód z e-mailu.
               </p>
             </div>

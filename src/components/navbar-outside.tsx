@@ -30,13 +30,16 @@ export function NavbarOutside() {
           <Button variant="ghost" className="hover:bg-red-50">
             <Link href={"/galerie"}>Galerie šablon</Link>
           </Button>
+          <Button variant="ghost" className="hover:bg-red-50">
+            <Link href="/kontrola-platnosti">Kontrola platnosti</Link>
+          </Button>
         </div>
 
         {/* Mobile menu burger - viditelný jen na mobilu */}
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon" className="h-10 w-10 border-2">
-              <Menu className={"size-6"} strokeWidth={3}/>
+              <Menu className={"size-6"} strokeWidth={3} />
             </Button>
           </SheetTrigger>
 
@@ -62,6 +65,11 @@ export function NavbarOutside() {
               <SheetClose asChild>
                 <Link href="/galerie" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
                   Galerie šablon
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link href="/kontrola-platnosti" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                  Kontrola platnosti
                 </Link>
               </SheetClose>
             </div>

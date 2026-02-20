@@ -122,7 +122,7 @@ export function EmailTemplate({
               nový certifikát. Vystavitelem tohoto dokumentu je {username}.
             </p>
             <p style={pStyle}>
-              K Vašemu certifikátu byl přidělen unikátní identifikační kód,
+              K Vašemu certifikátu byl přidělen unikátní identifikační klíč,
               který slouží k ověření jeho pravosti a platnosti:
             </p>
             <div
