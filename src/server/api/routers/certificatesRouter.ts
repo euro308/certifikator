@@ -4,9 +4,9 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { certificates } from "@/server/db/schema";
+import { certificates, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, eq, gte } from "drizzle-orm";
+import { and, eq, gte, ne, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const certificatesRouter = createTRPCRouter({
@@ -161,6 +161,17 @@ export const certificatesRouter = createTRPCRouter({
         })
         .returning();
 
+      // Increment downloads if using someone else's template
+      await db
+        .update(templates)
+        .set({ downloads: sql`${templates.downloads} + 1` })
+        .where(
+          and(
+            eq(templates.id, input.templateId),
+            ne(templates.userId, ctx.session.user.id),
+          ),
+        );
+
       return newCertificate;
     }),
 
@@ -204,7 +215,24 @@ export const certificatesRouter = createTRPCRouter({
           Math.random().toString(36).substring(2, 15),
       }));
 
-      return db.insert(certificates).values(valuesWithToken).returning();
+      const result = await db.insert(certificates).values(valuesWithToken).returning();
+
+      // Increment downloads for each unique foreign template used
+      const uniqueTemplateIds = [...new Set(input.map((c) => c.templateId))];
+      for (const templateId of uniqueTemplateIds) {
+        const count = input.filter((c) => c.templateId === templateId).length;
+        await db
+          .update(templates)
+          .set({ downloads: sql`${templates.downloads} + ${count}` })
+          .where(
+            and(
+              eq(templates.id, templateId),
+              ne(templates.userId, ctx.session.user.id),
+            ),
+          );
+      }
+
+      return result;
     }),
 
   deleteCertificate: protectedProcedure

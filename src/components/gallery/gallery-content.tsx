@@ -17,15 +17,15 @@ type SortKey = "date" | "favorites" | "downloads" | "name";
 type SortDir = "asc" | "desc";
 
 const sortFields: { key: SortKey; label: string }[] = [
-    { key: "date", label: "Datum" },
-    { key: "favorites", label: "Oblíbené" },
-    { key: "downloads", label: "Využité" },
+    { key: "downloads", label: "Využití" },
+    { key: "favorites", label: "Oblíbenost" },
     { key: "name", label: "Název" },
+    { key: "date", label: "Datum" },
 ];
 
 export function GalleryContent() {
     const [searchValue, setSearchValue] = useState("");
-    const [sortKey, setSortKey] = useState<SortKey>("date");
+    const [sortKey, setSortKey] = useState<SortKey>("downloads");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 

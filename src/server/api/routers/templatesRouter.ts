@@ -333,7 +333,7 @@ export const templatesRouter = createTRPCRouter({
 
   getTemplatePublic: publicProcedure
     .input(z.object({ templateId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const result = await db
         .select({
           id: templates.id,
@@ -368,7 +368,39 @@ export const templatesRouter = createTRPCRouter({
         });
       }
 
-      return result[0]!;
+      const tmpl = result[0]!;
+
+      // Favorites count
+      const favCountResult = await db
+        .select({ count: count(templateFavorites.id) })
+        .from(templateFavorites)
+        .where(eq(templateFavorites.templateId, tmpl.id));
+      const favoritesCount = favCountResult[0]?.count ?? 0;
+
+      // Is favorited by current user
+      let isFavorited = false;
+      if (ctx.session?.user?.id) {
+        const userFav = await db
+          .select({ id: templateFavorites.id })
+          .from(templateFavorites)
+          .where(
+            and(
+              eq(templateFavorites.userId, ctx.session.user.id),
+              eq(templateFavorites.templateId, tmpl.id),
+            ),
+          )
+          .limit(1);
+        isFavorited = userFav.length > 0;
+      }
+
+      const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
+
+      return {
+        ...tmpl,
+        favoritesCount,
+        isFavorited,
+        isOfficial: officialUserId !== "" && tmpl.userId === officialUserId,
+      };
     }),
 
   toggleFavorite: protectedProcedure

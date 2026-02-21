@@ -169,6 +169,20 @@ export default function NovyCertifikat() {
   const { data: templates, isLoading: templatesLoading } =
     api.templates.getUserTemplates.useQuery();
 
+  // Podpora cizí šablony z galerie (z URL parametru)
+  const galleryTemplateId = searchParams.get("idSablony") ?? undefined;
+  const isGalleryId =
+    !!galleryTemplateId &&
+    !templatesLoading &&
+    templates !== undefined &&
+    !templates.some((t) => t.id === galleryTemplateId);
+
+  const { data: galleryTemplate } =
+    api.templates.getTemplatePublic.useQuery(
+      { templateId: galleryTemplateId! },
+      { enabled: isGalleryId },
+    );
+
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
     if (session?.user?.name && !hasInitializedSenderName.current) {
@@ -184,14 +198,24 @@ export default function NovyCertifikat() {
     const idSablony = searchParams.get("idSablony");
     if (!idSablony) return;
 
+    // Nejprve zkusíme vlastní šablony
     const matchedTemplate = templates.find((t) => t.id === idSablony);
     if (matchedTemplate) {
       setSelectedTemplateId(matchedTemplate.id);
       setStep(2);
       hasAutoSelected.current = true;
       toast.success("Šablona byla úspěšně načtena.");
+      return;
     }
-  }, [searchParams, templates, templatesLoading]);
+
+    // Pokud není vlastní, použijeme galerijní
+    if (galleryTemplate) {
+      setSelectedTemplateId(galleryTemplate.id);
+      setStep(2);
+      hasAutoSelected.current = true;
+      toast.success(`Šablona "${galleryTemplate.name}" načtena z galerie.`);
+    }
+  }, [searchParams, templates, templatesLoading, galleryTemplate]);
 
   // logika stránkování
   const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
@@ -268,8 +292,10 @@ export default function NovyCertifikat() {
     },
   });
 
-  // Najít vybranou šablonu
-  const selectedTemplate = templates?.find((t) => t.id === selectedTemplateId);
+  // Najít vybranou šablonu (vlastní NEBO z galerie)
+  const selectedTemplate =
+    templates?.find((t) => t.id === selectedTemplateId) ??
+    (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
   // Placeholdery šablony
   const placeholders = (selectedTemplate?.placeholders as string[]) || [];
 
@@ -644,13 +670,12 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${
-            displayedCertificates.length === 1
-              ? "mx-auto max-w-3xl grid-cols-1"
-              : displayedCertificates.length === 2
-                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          }`}
+          className={`grid gap-6 ${displayedCertificates.length === 1
+            ? "mx-auto max-w-3xl grid-cols-1"
+            : displayedCertificates.length === 2
+              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -796,11 +821,10 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                        isSelected
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-white"
-                      } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-white"
+                        } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}
@@ -910,7 +934,7 @@ export default function NovyCertifikat() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Načítám šablony...
                     </div>
-                  ) : templates?.length === 0 ? (
+                  ) : templates?.length === 0 && !galleryTemplate ? (
                     <div className="text-muted-foreground p-2 text-center text-sm">
                       Nemáte žádné šablony.{" "}
                       <Link
@@ -921,11 +945,21 @@ export default function NovyCertifikat() {
                       </Link>
                     </div>
                   ) : (
-                    templates?.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        {template.name}
-                      </SelectItem>
-                    ))
+                    <>
+                      {galleryTemplate && (
+                        <SelectItem
+                          key={galleryTemplate.id}
+                          value={galleryTemplate.id}
+                        >
+                          {galleryTemplate.name} (Z galerie – {galleryTemplate.authorName})
+                        </SelectItem>
+                      )}
+                      {templates?.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </>
                   )}
                 </SelectContent>
               </Select>
