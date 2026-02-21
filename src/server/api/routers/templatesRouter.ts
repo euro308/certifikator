@@ -4,7 +4,12 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { certificates, templates, templateFavorites } from "@/server/db/schema";
+import {
+  certificates,
+  templates,
+  templateFavorites,
+  user,
+} from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, count, desc, eq, gte, inArray, isNull, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -258,4 +263,189 @@ export const templatesRouter = createTRPCRouter({
 
       return hiddenTemplate;
     }),
+
+  // =============================================
+  // GALERIE – veřejné endpointy
+  // =============================================
+
+  getPublicTemplates: publicProcedure.query(async ({ ctx }) => {
+    const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
+
+    // Fetch all public templates with author name
+    const results = await db
+      .select({
+        id: templates.id,
+        name: templates.name,
+        description: templates.description,
+        previewImageUrl: templates.previewImageUrl,
+        downloads: templates.downloads,
+        isVerified: templates.isVerified,
+        createdAt: templates.createdAt,
+        userId: templates.userId,
+        authorName: user.name,
+      })
+      .from(templates)
+      .innerJoin(user, eq(templates.userId, user.id))
+      .where(
+        and(eq(templates.isPublic, true), isNull(templates.deletedAt)),
+      )
+      .orderBy(desc(templates.createdAt));
+
+    // Fetch favorites count per template
+    const templateIds = results.map((r) => r.id);
+    let favoritesMap = new Map<string, number>();
+
+    if (templateIds.length > 0) {
+      const favCounts = await db
+        .select({
+          templateId: templateFavorites.templateId,
+          count: count(templateFavorites.id).as("fav_count"),
+        })
+        .from(templateFavorites)
+        .where(inArray(templateFavorites.templateId, templateIds))
+        .groupBy(templateFavorites.templateId);
+
+      favoritesMap = new Map(favCounts.map((f) => [f.templateId, f.count]));
+    }
+
+    // Check which templates are favorited by the current user
+    let userFavoritesSet = new Set<string>();
+    if (ctx.session?.user?.id && templateIds.length > 0) {
+      const userFavs = await db
+        .select({ templateId: templateFavorites.templateId })
+        .from(templateFavorites)
+        .where(
+          and(
+            eq(templateFavorites.userId, ctx.session.user.id),
+            inArray(templateFavorites.templateId, templateIds),
+          ),
+        );
+      userFavoritesSet = new Set(userFavs.map((f) => f.templateId));
+    }
+
+    return results.map((r) => ({
+      ...r,
+      favoritesCount: favoritesMap.get(r.id) ?? 0,
+      isFavorited: userFavoritesSet.has(r.id),
+      isOfficial: officialUserId !== "" && r.userId === officialUserId,
+    }));
+  }),
+
+  getTemplatePublic: publicProcedure
+    .input(z.object({ templateId: z.string() }))
+    .query(async ({ input }) => {
+      const result = await db
+        .select({
+          id: templates.id,
+          name: templates.name,
+          description: templates.description,
+          canvasData: templates.canvasData,
+          placeholders: templates.placeholders,
+          previewImageUrl: templates.previewImageUrl,
+          isPublic: templates.isPublic,
+          isVerified: templates.isVerified,
+          downloads: templates.downloads,
+          userId: templates.userId,
+          createdAt: templates.createdAt,
+          updatedAt: templates.updatedAt,
+          authorName: user.name,
+        })
+        .from(templates)
+        .innerJoin(user, eq(templates.userId, user.id))
+        .where(
+          and(
+            eq(templates.id, input.templateId),
+            eq(templates.isPublic, true),
+            isNull(templates.deletedAt),
+          ),
+        )
+        .limit(1);
+
+      if (result.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Veřejná šablona nebyla nalezena.",
+        });
+      }
+
+      return result[0]!;
+    }),
+
+  toggleFavorite: protectedProcedure
+    .input(z.object({ templateId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check that the template is public
+      const template = await db.query.templates.findFirst({
+        where: and(
+          eq(templates.id, input.templateId),
+          eq(templates.isPublic, true),
+          isNull(templates.deletedAt),
+        ),
+        columns: { id: true },
+      });
+
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Šablona nebyla nalezena.",
+        });
+      }
+
+      // Check if already favorited
+      const existing = await db.query.templateFavorites.findFirst({
+        where: and(
+          eq(templateFavorites.userId, ctx.session.user.id),
+          eq(templateFavorites.templateId, input.templateId),
+        ),
+      });
+
+      if (existing) {
+        // Remove favorite
+        await db
+          .delete(templateFavorites)
+          .where(eq(templateFavorites.id, existing.id));
+        return { isFavorited: false };
+      } else {
+        // Add favorite
+        await db.insert(templateFavorites).values({
+          userId: ctx.session.user.id,
+          templateId: input.templateId,
+        });
+        return { isFavorited: true };
+      }
+    }),
+
+  getUserFavorites: protectedProcedure.query(async ({ ctx }) => {
+    const results = await db
+      .select({
+        favoriteId: templateFavorites.id,
+        favoritedAt: templateFavorites.createdAt,
+        templateId: templates.id,
+        templateName: templates.name,
+        templateDescription: templates.description,
+        previewImageUrl: templates.previewImageUrl,
+        downloads: templates.downloads,
+        isVerified: templates.isVerified,
+        authorId: templates.userId,
+        authorName: user.name,
+      })
+      .from(templateFavorites)
+      .innerJoin(templates, eq(templateFavorites.templateId, templates.id))
+      .innerJoin(user, eq(templates.userId, user.id))
+      .where(
+        and(
+          eq(templateFavorites.userId, ctx.session.user.id),
+          eq(templates.isPublic, true),
+          isNull(templates.deletedAt),
+        ),
+      )
+      .orderBy(desc(templateFavorites.createdAt));
+
+    return results.map((r) => ({
+      ...r,
+      isOfficial:
+        (process.env.OFFICIAL_USER_ID ?? "") !== "" &&
+        r.authorId === process.env.OFFICIAL_USER_ID,
+    }));
+  }),
 });
