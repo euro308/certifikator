@@ -11,18 +11,18 @@ export function FooterOutside() {
           </Link>
 
           {/* Center - Links */}
-          <div className="flex items-center gap-6 text-sm text-gray-600">
+          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+            <Link href="/galerie" className="hover:text-[#E65758] transition-colors">
+              Galerie šablon
+            </Link>
             <Link href="/funkce" className="hover:text-[#E65758] transition-colors">
               Funkce
             </Link>
-            <Link href="/o-projektu" className="hover:text-[#E65758] transition-colors">
-              O projektu
-            </Link>
-            <Link href="/galerie" className="hover:text-[#E65758] transition-colors">
-              Galerie
-            </Link>
             <Link href="/kontrola-platnosti" className="hover:text-[#E65758] transition-colors">
               Kontrola platnosti
+            </Link>
+            <Link href="/o-projektu" className="hover:text-[#E65758] transition-colors">
+              O projektu
             </Link>
             <Link href="/kontakt" className="hover:text-[#E65758] transition-colors">
               Kontakt

@@ -22,16 +22,19 @@ export function NavbarOutside() {
         {/* Desktop menu - skrytý na mobilu */}
         <div className="hidden md:flex gap-2 bg-white">
           <Button variant="ghost" className="hover:bg-red-50">
+            <Link href={"/galerie"}>Galerie šablon</Link>
+          </Button>
+          <Button variant="ghost" className="hover:bg-red-50">
             <Link href={"/funkce"}>Funkce</Link>
+          </Button>
+          <Button variant="ghost" className="hover:bg-red-50">
+            <Link href="/kontrola-platnosti">Kontrola platnosti</Link>
           </Button>
           <Button variant="ghost" className="hover:bg-red-50">
             <Link href={"/o-projektu"}>O projektu</Link>
           </Button>
           <Button variant="ghost" className="hover:bg-red-50">
-            <Link href={"/galerie"}>Galerie šablon</Link>
-          </Button>
-          <Button variant="ghost" className="hover:bg-red-50">
-            <Link href="/kontrola-platnosti">Kontrola platnosti</Link>
+            <Link href={"/kontakt"}>Kontakt</Link>
           </Button>
         </div>
 
@@ -53,23 +56,28 @@ export function NavbarOutside() {
               <SheetClose asChild>
               </SheetClose>
               <SheetClose asChild>
-                <Link href="/funkce" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
-                  Funkce
-                </Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link href="/o-projektu" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
-                  O nás
-                </Link>
-              </SheetClose>
-              <SheetClose asChild>
                 <Link href="/galerie" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
                   Galerie šablon
                 </Link>
               </SheetClose>
               <SheetClose asChild>
+                <Link href="/funkce" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                  Funkce
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
                 <Link href="/kontrola-platnosti" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
                   Kontrola platnosti
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link href="/o-projektu" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                  O projektu
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link href="/kontakt" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                  Kontakt
                 </Link>
               </SheetClose>
             </div>

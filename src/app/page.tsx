@@ -7,35 +7,28 @@ export default async function Home() {
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">
-        {/* Landing Page Navbar */}
         <NavbarOutside />
-        {/* Hero Section */}
         <section className="flex flex-col items-center justify-center flex-1 px-6 pt-32 pb-16">
           <header className="text-center max-w-4xl mx-auto space-y-6">
-            {/* Main Heading */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Certifikátor
               </span>
             </h1>
 
-            {/* Subheading */}
             <h2 className="text-xl md:text-2xl lg:text-3xl text-gray-600 font-medium leading-relaxed max-w-3xl mx-auto">
               Jednotné prostředí pro tvorbu, správu, rozeslání a&nbsp;validaci certifikátů!
             </h2>
 
-            {/* Description */}
             <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto">
               Vytvářejte profesionální certifikáty s vlastním designem, spravujte šablony,
               automaticky rozesílejte držitelům a ověřujte jejich pravost.
             </p>
           </header>
 
-          {/* CTA Buttons — session-aware */}
           <HeroCTA />
         </section>
 
-        {/* Features Preview Section */}
         <section className="container mx-auto px-6 py-12 pb-20">
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Feature 1 */}
@@ -49,7 +42,6 @@ export default async function Home() {
               <p className="text-gray-600">Vytvářejte certifikáty podle svých představ s intuitivním editorem</p>
             </div>
 
-            {/* Feature 2 */}
             <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
               <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-[#A64858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +52,6 @@ export default async function Home() {
               <p className="text-gray-600">Import z Excelu a hromadné rozeslání certifikátů emailem</p>
             </div>
 
-            {/* Feature 3 */}
             <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
               <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-[#771D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +64,6 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* FooterOutside */}
         <FooterOutside />
       </main>
     </HydrateClient>
