@@ -2,13 +2,17 @@
 
 import React, { useState } from "react";
 import {
+  ArrowRight,
   Copy,
+  Heart,
+  Loader2,
   MoreHorizontal,
   PencilLine,
   Plus,
   Search,
   Trash,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,24 +37,50 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface UserTemplate {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  description: string | null;
+  canvasData: unknown;
+  placeholders: unknown;
+  previewImageUrl: string | null;
+  isPublic: boolean;
+  isVerified: boolean;
+  downloads: number;
+  deletedAt: Date | null;
+}
+
+interface FavoriteTemplate {
+  favoriteId: string;
+  templateId: string;
+  templateName: string;
+  templateDescription: string | null;
+  previewImageUrl: string | null;
+  authorName: string;
+  downloads: number;
+  isOfficial: boolean;
+  favoritedAt: Date;
+}
 
 interface TemplateSummaryProps {
-  userTemplates: {
-    id: string;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    description: string | null;
-    canvasData: unknown;
-    placeholders: unknown;
-    previewImageUrl: string | null;
-    isPublic: boolean;
-    isVerified: boolean;
-    downloads: number;
-    deletedAt: Date | null;
-  }[];
+  userTemplates: UserTemplate[];
+  favorites?: FavoriteTemplate[];
 }
+
+/** Unified row type for the table */
+type TemplateRow =
+  | { type: "own"; data: UserTemplate }
+  | { type: "gallery"; data: FavoriteTemplate };
 
 const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
   // Použijeme tRPC hook pro načtení dat
@@ -64,13 +94,28 @@ const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
   return <span>{count ?? 0}x</span>;
 };
 
-export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
+export function TemplateSummary({
+  userTemplates,
+  favorites = [],
+}: TemplateSummaryProps) {
   const [searchValue, setSearchValue] = useState<string>("");
   const [selectedSort, setSelectedSort] = useState<string>("nameAToZ");
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [currentTemplateId, setCurrentTemplateId] = useState<string>("");
   const utils = api.useUtils();
+  const router = useRouter();
   const hideTemplateMutation = api.templates.hideTemplate.useMutation();
+
+  const removeFavorite = api.templates.toggleFavorite.useMutation({
+    onSuccess: () => {
+      toast.success("Šablona odebrána z oblíbených");
+      void utils.templates.getUserFavorites.invalidate();
+      void utils.templates.getPublicTemplates.invalidate();
+    },
+    onError: () => {
+      toast.error("Nepodařilo se odebrat šablonu.");
+    },
+  });
 
   const hideTemplateFromUser = (templateId: string) => {
     hideTemplateMutation.mutate(
@@ -102,36 +147,56 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
     toast.success("ID šablony zkopírováno");
   };
 
-  const filteredTemplates = userTemplates
-    .filter((template) => {
+  // Build unified row list
+  const ownRows: TemplateRow[] = userTemplates.map((t) => ({
+    type: "own" as const,
+    data: t,
+  }));
+  const favRows: TemplateRow[] = favorites.map((f) => ({
+    type: "gallery" as const,
+    data: f,
+  }));
+
+  const getRowName = (row: TemplateRow) =>
+    row.type === "own" ? row.data.name : row.data.templateName;
+  const getRowDescription = (row: TemplateRow) =>
+    row.type === "own" ? row.data.description : `od ${row.data.authorName}`;
+  const getRowId = (row: TemplateRow) =>
+    row.type === "own" ? row.data.id : row.data.templateId;
+  const getRowPreview = (row: TemplateRow) =>
+    row.type === "own" ? row.data.previewImageUrl : row.data.previewImageUrl;
+  const getRowDate = (row: TemplateRow) =>
+    row.type === "own" ? row.data.createdAt : row.data.favoritedAt;
+
+  const filteredTemplates = [...ownRows, ...favRows]
+    .filter((row) => {
       const searchLower = searchValue.toLowerCase();
-      const createdDate = new Date(template.createdAt).toLocaleDateString(
-        "cs-CZ",
-      );
+      const name = getRowName(row).toLowerCase();
+      const desc = (getRowDescription(row) ?? "").toLowerCase();
+      const id = getRowId(row).toLowerCase();
+      const date = new Date(getRowDate(row)).toLocaleDateString("cs-CZ");
 
       return (
-        template.name.toLowerCase().includes(searchLower) || // Jméno
-        template.id.toLowerCase().includes(searchLower) || // ID šablony
-        (template.description?.toLowerCase() ?? "").includes(
-          searchValue.toLowerCase(),
-        ) || // Popis
-        createdDate.includes(searchValue) // Datum vytvoření
+        name.includes(searchLower) ||
+        id.includes(searchLower) ||
+        desc.includes(searchLower) ||
+        date.includes(searchValue)
       );
     })
     .sort((a, b) => {
+      const nameA = getRowName(a);
+      const nameB = getRowName(b);
+      const dateA = new Date(getRowDate(a)).getTime();
+      const dateB = new Date(getRowDate(b)).getTime();
       switch (selectedSort) {
         case "nameAToZ":
-          return a.name.localeCompare(b.name);
+          return nameA.localeCompare(nameB);
         case "nameZToA":
-          return b.name.localeCompare(a.name);
+          return nameB.localeCompare(nameA);
         case "creationDateNewest":
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+          return dateB - dateA;
         case "creationDateOldest":
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
+          return dateA - dateB;
         default:
           return 0;
       }
@@ -146,7 +211,7 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
 
   return (
     <>
-      {userTemplates.length === 0 ? (
+      {userTemplates.length === 0 && favorites.length === 0 ? (
         <div className="flex h-[75vh] min-h-full flex-col items-center justify-center rounded-lg border border-dashed text-center">
           <div className="bg-secondary mx-auto flex h-12 w-12 items-center justify-center rounded-full">
             <Plus className="size-6" />
@@ -237,122 +302,206 @@ export function TemplateSummary({ userTemplates }: TemplateSummaryProps) {
 
               {/* Rows */}
               <div className="flex flex-col">
-                {filteredTemplates.map((template) => (
-                  <div
-                    key={template.id}
-                    className="hover:bg-muted/30 grid grid-cols-[70px_1fr_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0 md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]"
-                  >
-                    {/* 1. Preview Image */}
-                    <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
-                      {template.previewImageUrl ? (
-                        <Image
-                          alt={template.name}
-                          src={template.previewImageUrl}
-                          className="object-cover"
-                          fill
-                          sizes="70px"
-                        />
-                      ) : (
-                        <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
-                          Bez náhledu
-                        </div>
-                      )}
-                    </div>
+                {filteredTemplates.map((row) => {
+                  const rowId = getRowId(row);
+                  const rowName = getRowName(row);
+                  const rowDesc = getRowDescription(row);
+                  const rowPreview = getRowPreview(row);
+                  const rowDate = getRowDate(row);
+                  const isGallery = row.type === "gallery";
 
-                    {/* 2. Name (All) + Mobile Meta */}
-                    <div className="flex flex-col gap-1 overflow-hidden">
-                      <Link href={`/dashboard/me-sablony/${template.id}`}>
-                        <span className={"cursor-pointer truncate"}>
-                          {template.name}
-                        </span>
-                      </Link>
-                      {/* Mobile Meta Info */}
-                      <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
-                        <span>
-                          {new Date(template.createdAt).toLocaleDateString(
-                            "cs-CZ",
+                  return (
+                    <div
+                      key={isGallery ? `fav-${rowId}` : rowId}
+                      className="hover:bg-muted/30 grid grid-cols-[70px_1fr_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0 md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]"
+                    >
+                      {/* 1. Preview Image */}
+                      <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
+                        {rowPreview ? (
+                          <Image
+                            alt={rowName}
+                            src={rowPreview}
+                            className="object-cover"
+                            fill
+                            sizes="70px"
+                          />
+                        ) : (
+                          <div className="text-muted-foreground flex h-full cursor-default items-center justify-center p-1 text-center text-[10px] leading-tight uppercase">
+                            Bez náhledu
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2. Name (All) + Mobile Meta + Gallery badge */}
+                      <div className="flex flex-col gap-1 overflow-hidden">
+                        <div className="flex items-center gap-1.5">
+                          {isGallery && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Heart
+                                    className="size-3.5"
+                                    color={"#fb2c36"}
+                                    fill={"#fb2c36"}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p>Vaše oblíbená šablona z galerie</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <TemplateUsageCounter templateId={template.id} />
+                          <Link
+                            href={
+                              isGallery
+                                ? `/galerie/${rowId}`
+                                : `/dashboard/me-sablony/${rowId}`
+                            }
+                          >
+                            <span className="cursor-pointer truncate">
+                              {rowName}
+                            </span>
+                          </Link>
+                        </div>
+                        {/* Mobile Meta Info */}
+                        <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
+                          {isGallery && (
+                            <span className="text-[10px] font-medium text-red-500">
+                              Z galerie
+                            </span>
+                          )}
+                          <span>
+                            {new Date(rowDate).toLocaleDateString("cs-CZ")}
+                          </span>
+                          {!isGallery && (
+                            <div className="flex items-center gap-1">
+                              <TemplateUsageCounter templateId={rowId} />
+                            </div>
+                          )}
+                          {isGallery && (
+                            <div className="flex items-center gap-1">
+                              <TemplateUsageCounter templateId={rowId} />
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
 
-                    {/* 3. Description (LG only) */}
-                    <span className="hidden truncate text-sm lg:block">
-                      {template.description ?? "-"}
-                    </span>
-
-                    {/* 4. Date (MD+) */}
-                    <span className={"hidden text-sm md:block"}>
-                      {new Date(template.createdAt).toLocaleDateString("cs-CZ")}
-                    </span>
-
-                    {/* 5. Usage (MD+) */}
-                    <div className={"hidden text-sm md:block"}>
-                      <TemplateUsageCounter templateId={template.id} />
-                    </div>
-
-                    {/* 6. ID (LG only) - Moved to end with Copy Button */}
-                    <div className="group hidden items-center gap-2 lg:flex">
-                      <span
-                        className="text-muted-foreground truncate font-mono text-[10px] select-none"
-                        title={template.id}
-                      >
-                        {template.id.substring(0, 8)}...
+                      {/* 3. Description (LG only) */}
+                      <span className="hidden truncate text-sm lg:block">
+                        {rowDesc ?? "-"}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={(e) => handleCopyId(template.id, e)}
-                        title="Zkopírovat ID"
-                      >
-                        <Copy className="size-3" />
-                      </Button>
-                    </div>
 
-                    {/* 7. Actions (All) */}
-                    <div
-                      className="flex justify-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreHorizontal className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side="bottom" align="start">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href={`/dashboard/me-sablony/${template.id}/upravit?returnToList=true`}
-                              className="flex cursor-pointer gap-2"
-                            >
-                              <PencilLine className="size-4" />
-                              <span>Upravit šablonu</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
-                            onClick={() => {
-                              setDeleteDialog(true);
-                              setCurrentTemplateId(template.id);
-                            }}
-                          >
-                            <Trash className="size-4" color="#e7000b" />
-                            <span>Smazat šablonu</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {/* 4. Date (MD+) */}
+                      <span className={"hidden text-sm md:block"}>
+                        {new Date(rowDate).toLocaleDateString("cs-CZ")}
+                      </span>
+
+                      {/* 5. Usage (MD+) */}
+                      <div className={"hidden text-sm md:block"}>
+                        <TemplateUsageCounter templateId={rowId} />
+                      </div>
+
+                      {/* 6. ID (LG only) */}
+                      <div className="group hidden items-center gap-2 lg:flex">
+                        <span
+                          className="text-muted-foreground truncate font-mono text-[10px] select-none"
+                          title={rowId}
+                        >
+                          {rowId.substring(0, 8)}...
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={(e) => handleCopyId(rowId, e)}
+                          title="Zkopírovat ID"
+                        >
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+
+                      {/* 7. Actions (All) */}
+                      <div
+                        className="flex justify-end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isGallery ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                              >
+                                <MoreHorizontal className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="bottom" align="start">
+                              <DropdownMenuItem
+                                className="flex cursor-pointer gap-2"
+                                onClick={() =>
+                                  router.push(
+                                    `/dashboard/me-certifikaty/novy?idSablony=${rowId}`,
+                                  )
+                                }
+                              >
+                                <ArrowRight className="size-4" />
+                                <span>Použít šablonu</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+                                disabled={removeFavorite.isPending}
+                                onClick={() =>
+                                  removeFavorite.mutate({ templateId: rowId })
+                                }
+                              >
+                                {removeFavorite.isPending ? (
+                                  <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                  <Trash className="size-4" color="#e7000b" />
+                                )}
+                                <span>Odebrat z oblíbených</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                              >
+                                <MoreHorizontal className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="bottom" align="start">
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/dashboard/me-sablony/${rowId}/upravit?returnToList=true`}
+                                  className="flex cursor-pointer gap-2"
+                                >
+                                  <PencilLine className="size-4" />
+                                  <span>Upravit šablonu</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+                                onClick={() => {
+                                  setDeleteDialog(true);
+                                  setCurrentTemplateId(rowId);
+                                }}
+                              >
+                                <Trash className="size-4" color="#e7000b" />
+                                <span>Smazat šablonu</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

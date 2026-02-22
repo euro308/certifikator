@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
+import { Search, ArrowUp, ArrowDown } from "lucide-react";
 import { GalleryTemplateCard } from "@/components/gallery/gallery-template-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     InputGroup,
     InputGroupAddon,
@@ -70,12 +71,29 @@ export function GalleryContent() {
     const visible = filtered.slice(0, visibleCount);
     const hasMore = visibleCount < filtered.length;
 
-    // Loading stav
+    // Loading stav – skeleton karty
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="mb-3 size-8 animate-spin text-gray-400" />
-                <span className="text-gray-500">Načítám šablony...</span>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
+                        <Skeleton className="aspect-[1.414/1] w-full" />
+                        <div className="flex flex-1 flex-col gap-3 p-4">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-full" />
+                            <Skeleton className="h-3 w-2/3" />
+                            <div className="flex items-center gap-2 mt-1">
+                                <Skeleton className="h-5 w-5 rounded-full" />
+                                <Skeleton className="h-3 w-20" />
+                                <div className="ml-auto flex gap-2">
+                                    <Skeleton className="h-3 w-8" />
+                                    <Skeleton className="h-3 w-8" />
+                                </div>
+                            </div>
+                            <Skeleton className="mt-auto h-8 w-full rounded-xl" />
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     }
