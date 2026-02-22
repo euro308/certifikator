@@ -22,7 +22,6 @@ const REGULAR_SHAPES = [
   "regularPolygon",
   "triangle",
 ];
-const LINE_SHAPES = ["line", "arrow"];
 
 export function ShapePropertiesSection() {
   const { selectedElement, updateElement } = useEditorContext();
@@ -37,8 +36,8 @@ export function ShapePropertiesSection() {
   // ===== SYNCHRONIZUJ STATE =====
   useEffect(() => {
     if (selectedElement?.type === "shape") {
-      setShapeWidth(selectedElement.width.toString());
-      setShapeHeight(selectedElement.height.toString());
+      setShapeWidth(Math.round(selectedElement.width).toString());
+      setShapeHeight(Math.round(selectedElement.height).toString());
 
       // Pro arrow
       if (selectedElement.shapeType === "arrow") {
@@ -54,7 +53,7 @@ export function ShapePropertiesSection() {
 
   const shape = selectedElement;
   const isRegular = REGULAR_SHAPES.includes(shape.shapeType);
-  const isLine = LINE_SHAPES.includes(shape.shapeType);
+  const isArrow = (shape.shapeType === 'arrow');
 
   // ===== HANDLERY =====
 
@@ -219,7 +218,7 @@ export function ShapePropertiesSection() {
         <CollapsibleContent>
           <div className="space-y-3">
             {/* Rozměry */}
-            {!isLine && (
+            {!isArrow && (
               <div className="grid grid-cols-2 gap-2">
                 {isRegular ? (
                   <div className="col-span-2 space-y-1">
@@ -348,76 +347,78 @@ export function ShapePropertiesSection() {
               )}
 
             {/* Výplň */}
+            <div className="space-y-1">
+              <Label htmlFor="shape-fill" className="text-xs">
+                Barva výplně
+              </Label>
+              <div className="flex gap-2">
+                <input
+                  id="fill-color"
+                  type="color"
+                  value={shape.fill}
+                  onChange={handleFillChange}
+                  onBlur={handleFillBlur} // Added
+                  className="h-8 w-8 cursor-pointer rounded border"
+                />
+                <Input
+                  id="shape-fill"
+                  type="text"
+                  value={shape.fill}
+                  onChange={handleFillChange}
+                  onBlur={handleFillBlur} // Added
+                  className="h-8 flex-1"
+                  placeholder="#000000 nebo transparent"
+                />
+              </div>
+            </div>
+
+            {/* Obrys */}
             {shape.shapeType !== "line" && (
               <div className="space-y-1">
-                <Label htmlFor="shape-fill" className="text-xs">
-                  Barva výplně
+                <Label htmlFor="shape-stroke" className="text-xs">
+                  {isArrow ? "Barva čáry" : "Barva obrysu"}
                 </Label>
                 <div className="flex gap-2">
                   <input
-                    id="fill-color"
+                    id="stroke-color"
                     type="color"
-                    value={shape.fill}
-                    onChange={handleFillChange}
-                    onBlur={handleFillBlur} // Added
+                    value={shape.stroke}
+                    onChange={handleStrokeChange}
+                    onBlur={handleStrokeBlur} // Added
                     className="h-8 w-8 cursor-pointer rounded border"
                   />
                   <Input
-                    id="shape-fill"
+                    id="shape-stroke"
                     type="text"
-                    value={shape.fill}
-                    onChange={handleFillChange}
-                    onBlur={handleFillBlur} // Added
+                    value={shape.stroke}
+                    onChange={handleStrokeChange}
+                    onBlur={handleStrokeBlur} // Added
                     className="h-8 flex-1"
-                    placeholder="#000000 nebo transparent"
+                    placeholder="#000000"
                   />
                 </div>
               </div>
             )}
 
-            {/* Obrys */}
-            <div className="space-y-1">
-              <Label htmlFor="shape-stroke" className="text-xs">
-                {isLine ? "Barva čáry" : "Barva obrysu"}
-              </Label>
-              <div className="flex gap-2">
-                <input
-                  id="stroke-color"
-                  type="color"
-                  value={shape.stroke}
-                  onChange={handleStrokeChange}
-                  onBlur={handleStrokeBlur} // Added
-                  className="h-8 w-8 cursor-pointer rounded border"
-                />
-                <Input
-                  id="shape-stroke"
-                  type="text"
-                  value={shape.stroke}
-                  onChange={handleStrokeChange}
-                  onBlur={handleStrokeBlur} // Added
-                  className="h-8 flex-1"
-                  placeholder="#000000"
-                />
-              </div>
-            </div>
-
             {/* Tloušťka obrysu */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="shape-stroke-width" className="text-xs">
-                  {isLine ? "Tloušťka čáry" : "Tloušťka obrysu"}
-                </Label>
-                <span className="text-xs">{shape.strokeWidth} px</span>
+            {shape.shapeType !== "line" && (
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="shape-stroke-width" className="text-xs">
+                    {isArrow ? "Tloušťka čáry" : "Tloušťka obrysu"}
+                  </Label>
+                  <span className="text-xs">{shape.strokeWidth} px</span>
+                </div>
+                <Slider
+                  value={[shape.strokeWidth]}
+                  min={0}
+                  max={30}
+                  step={1}
+                  onValueChange={handleStrokeWidthChange}
+                  onValueCommit={handleStrokeWidthCommit} // Added
+                />
               </div>
-              <Slider
-                value={[shape.strokeWidth]}
-                min={0}
-                max={30}
-                step={1}
-                onValueChange={handleStrokeWidthChange}
-                onValueCommit={handleStrokeWidthCommit} // Added
-              />
-            </div>
+            )}
           </div>
         </CollapsibleContent>
       </div>

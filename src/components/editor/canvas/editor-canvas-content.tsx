@@ -79,12 +79,12 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
           const oldScaleY = stageRef.current.scaleY();
           const oldX = stageRef.current.x();
           const oldY = stageRef.current.y();
-          
+
           // Resetujeme pohled, aby se vyexportovala celá šablona (ne jen viditelná část)
           // a aby nebyla posunutá
           stageRef.current.scale({ x: 1, y: 1 });
           stageRef.current.position({ x: 0, y: 0 });
-          
+
           const dataUrl = stageRef.current.toDataURL({
             x: 0,
             y: 0,
@@ -93,11 +93,11 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             pixelRatio: 1,
             mimeType: 'image/jpeg',
           });
-          
+
           // Obnovíme původní pohled
           stageRef.current.scale({ x: oldScaleX, y: oldScaleY });
           stageRef.current.position({ x: oldX, y: oldY });
-          
+
           return dataUrl;
         }
         return "";
@@ -389,37 +389,44 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
+    const signX = Math.sign(scaleX) || 1;
+    const signY = Math.sign(scaleY) || 1;
+    const absScaleX = Math.abs(scaleX);
+    const absScaleY = Math.abs(scaleY);
+
     // Reset node scale (protože ukládáme absolutní rozměry)
-    node.scaleX(1);
-    node.scaleY(1);
+    node.scaleX(signX);
+    node.scaleY(signY);
 
     const updates: AnyElementUpdate = {
-      x: node.x(),
-      y: node.y(),
-      rotation: node.rotation(),
+      x: Math.round(node.x()),
+      y: Math.round(node.y()),
+      rotation: Math.round(node.rotation() * 100) / 100,
+      scaleX: signX,
+      scaleY: signY,
     };
 
     if (element.type === 'text' || element.type === 'placeholder') {
-      updates.width = Math.max(20, node.width() * scaleX);
+      updates.width = Math.round(Math.max(20, node.width() * absScaleX));
       // Výška se u textu dopočítává automaticky nebo ji necháme
       // updates.height = ...
     }
-    else if (element.type === 'shape' && (element.shapeType === 'line' || element.shapeType === 'arrow')) {
-      // Pro čáry/šipky aplikujeme scale na body
+    else if (element.type === 'shape' && element.shapeType === 'arrow') {
+      // Pro šipky aplikujeme scale na body
       const points = element.points ?? [0, 0, 100, 100];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
       (updates as any).points = points.map((p: number, i: number) => {
-        return i % 2 === 0 ? p * scaleX : p * scaleY;
+        return Math.round(i % 2 === 0 ? p * absScaleX : p * absScaleY);
       });
     }
     else if (element.type === 'image') {
-      updates.width = node.width() * scaleX;
-      updates.height = node.height() * scaleY;
+      updates.width = Math.round(node.width() * absScaleX);
+      updates.height = Math.round(node.height() * absScaleY);
     }
     else {
       // Shapes
-      updates.width = node.width() * scaleX;
-      updates.height = node.height() * scaleY;
+      updates.width = Math.round(node.width() * absScaleX);
+      updates.height = Math.round(node.height() * absScaleY);
     }
 
     updateElement(id, updates);

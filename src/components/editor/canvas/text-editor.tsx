@@ -12,11 +12,11 @@ interface TextEditorProps {
 }
 
 function TextArea({
-                    textNode,
-                    onClose,
-                    onChange,
-                    initialValue,
-                  }: TextEditorProps) {
+  textNode,
+  onClose,
+  onChange,
+  initialValue,
+}: TextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -64,8 +64,15 @@ function TextArea({
     // Transform
     textarea.style.transformOrigin = "left top";
     const rotation = textNode.rotation();
-    if (rotation) {
-      textarea.style.transform = `rotateZ(${rotation}deg)`;
+    const scaleX = textNode.scaleX();
+    const scaleY = textNode.scaleY();
+
+    let transformStr = "";
+    if (rotation) transformStr += `rotateZ(${rotation}deg) `;
+    if (scaleX !== 1 || scaleY !== 1) transformStr += `scale(${scaleX}, ${scaleY})`;
+
+    if (transformStr) {
+      textarea.style.transform = transformStr.trim();
     }
 
     // ===== AUTO-RESIZE VÝŠKY =====

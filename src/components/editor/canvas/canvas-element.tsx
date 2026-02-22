@@ -115,8 +115,8 @@ export function CanvasElementRenderer({
         width: element.width,
         height: element.height,
         rotation: element.rotation,
-        scaleX: 1, // Reset scale, because we apply width/height directly
-        scaleY: 1,
+        scaleX: element.scaleX ?? 1,
+        scaleY: element.scaleY ?? 1,
         opacity: element.opacity,
         draggable: !element.locked && !isEditing && !isPanning,
         visible: element.visible && !isEditing, // Skrýt při editaci (pro text)
@@ -237,10 +237,10 @@ export function CanvasElementRenderer({
                     />
                 );
             case 'line':
+                // Nové čáry jsou tenké obdélníky
                 return (
-                    <Line
+                    <Rect
                         {...shapeProps}
-                        points={shapeEl.points ?? [0, 0, 100, 100]}
                     />
                 );
             case 'arrow':

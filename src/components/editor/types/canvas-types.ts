@@ -62,6 +62,8 @@ export interface BaseElement {
     width: number;
     height: number;
     rotation: number;
+    scaleX?: number;
+    scaleY?: number;
     opacity: number;
     visible: boolean;
     locked: boolean;

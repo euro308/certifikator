@@ -39,7 +39,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Check, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, RotateCcw, ZoomIn, ZoomOut, Info } from "lucide-react";
+import Link from "next/link";
 
 // =============================================================================
 // EDITOR FOOTER - Komponenta uvnitř EditorProvider (má přístup ke contextu)
@@ -92,7 +93,7 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
     <DialogFooter className="mt-4 flex-shrink-0 select-none">
       <div className="flex w-full items-center justify-between">
         {/* LEVÁ STRANA - Ovládání zoomu */}
-        <TooltipProvider delayDuration={300}>
+        <TooltipProvider>
           <div className="flex items-center gap-2">
             <Tooltip>
               {/* tabIndex={-1} zabraňuje automatickému focusu při otevření dialogu */}
@@ -155,7 +156,23 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
         </TooltipProvider>
 
         {/* PRAVÁ STRANA - Akční tlačítka */}
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/napoveda/editor" target="_blank" tabIndex={-1}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-50 dark:hover:bg-neutral-800">
+                    <Info className="size-5" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[300px] p-3" side="top" align="end">
+                <p className="font-semibold text-base mb-1">Tipy a triky k editoru</p>
+                <p className="text-sm text-muted-foreground">Objevte spoustu zajímavých funkcí našeho editoru, které Vám zrychlí práci.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <DialogClose asChild>
             <Button variant="outline">Zahodit</Button>
           </DialogClose>

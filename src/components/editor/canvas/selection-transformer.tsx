@@ -82,8 +82,8 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
 
   if (isSingleSelection) {
     if (onlyMiddleAnchors) {
-      enabledAnchors = ["middle-left", "middle-right"];
-      shouldKeepRatio = false; // Text a čáry měníme jen do šířky
+      enabledAnchors = ["middle-left", "middle-right", "top-center", "bottom-center"];
+      shouldKeepRatio = false; // Text, čáry a šipky – volná deformace
     } else if (allAnchors) {
       enabledAnchors = [
         "top-left", "top-center", "top-right",
@@ -92,8 +92,8 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
       ];
       shouldKeepRatio = false; // Obdélník/elipsa lze deformovat
     } else {
-        // Ostatní tvary (kruh, hvězda...) - jen rohy a zachovat poměr
-        shouldKeepRatio = true;
+      // Ostatní tvary (kruh, hvězda...) - jen rohy a zachovat poměr
+      shouldKeepRatio = true;
     }
   } else {
     // Multi-select: Povolit změnu velikosti všemi směry (rohy) a zachovat poměr?
@@ -103,8 +103,8 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
     // Většina editorů (Figma) zachovává ratio defaultně, shiftem vypíná.
     // Konva to má naopak (default false, shift true) nebo podle keepRatio.
     // Zde necháme keepRatio = false (respektive default chování), aby šlo skupinu roztahovat.
-    shouldKeepRatio = false; 
-    
+    shouldKeepRatio = false;
+
     // Pro multi-select povolíme rohy
     enabledAnchors = ["top-left", "top-right", "bottom-left", "bottom-right"];
   }

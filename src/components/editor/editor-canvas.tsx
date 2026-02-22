@@ -16,6 +16,9 @@ import {
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
 import {
   ChevronRight,
@@ -24,6 +27,10 @@ import {
   Square,
   Trash,
   Undo,
+  FlipHorizontal,
+  FlipVertical,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -69,6 +76,7 @@ export function EditorCanvas() {
     addElement,
     createShapeElement,
     selectedElement,
+    updateElement,
   } = useEditorContext();
 
   // Klávesové zkratky
@@ -112,6 +120,116 @@ export function EditorCanvas() {
     }
   };
 
+  const rotateAroundCenter = (el: any, angleDeg: number) => {
+    // 1. Najít střed bounding boxu prvku (bez natočení). Konva "x/y" je top-left pro většinu.
+    let cx = el.x;
+    let cy = el.y;
+
+    if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+      // Většina prvků (obdélníky, text, obrázky, line(která je rect)) má origin v top-left
+      // Střed v lokálních souřadnicích
+      const localCx = (el.width * (el.scaleX ?? 1)) / 2;
+      const localCy = (el.height * (el.scaleY ?? 1)) / 2;
+
+      // Natočení aktuálního stavu v radiánech
+      const currentRad = (el.rotation * Math.PI) / 180;
+
+      // Pozice středu globálně
+      cx = el.x + localCx * Math.cos(currentRad) - localCy * Math.sin(currentRad);
+      cy = el.y + localCx * Math.sin(currentRad) + localCy * Math.cos(currentRad);
+    }
+    // Pro centralizované prvky (kruhy) je el.x a el.y rovnou střed
+
+    // 2. Nová rotace
+    const newRotation = (el.rotation + angleDeg) % 360;
+
+    // Pokud to byla rotace zrovna o +/-90 a máme necentrovaný tvar, musíme najít novou pozici top-left
+    let newX = el.x;
+    let newY = el.y;
+
+    if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+      const newRad = (newRotation * Math.PI) / 180;
+      const localCx = (el.width * (el.scaleX ?? 1)) / 2;
+      const localCy = (el.height * (el.scaleY ?? 1)) / 2;
+
+      // Vrátíme se od středu zpět nahoru doleva (vzhledem k novému natočení)
+      newX = cx - localCx * Math.cos(newRad) + localCy * Math.sin(newRad);
+      newY = cy - localCx * Math.sin(newRad) - localCy * Math.cos(newRad);
+    }
+
+    // Ošetření záporných rotací (aby to nedávalo -90 ale 270 pro lepší čitelnost)
+    const normalizedRotation = newRotation < 0 ? 360 + newRotation : newRotation;
+
+    updateElement(el.id, {
+      rotation: normalizedRotation,
+      x: newX,
+      y: newY,
+    });
+  };
+
+  const rotateLeft = () => {
+    if (selectedElement) {
+      rotateAroundCenter(selectedElement, -90);
+    }
+  };
+
+  const rotateRight = () => {
+    if (selectedElement) {
+      rotateAroundCenter(selectedElement, 90);
+    }
+  };
+
+  const isCenteredShape = (type: string, shapeType?: string) => {
+    if (type !== 'shape') return false;
+    return ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(shapeType ?? '');
+  };
+
+  const flipVertical = () => {
+    if (selectedElement) {
+      const el = selectedElement;
+      const oldSY = el.scaleY ?? 1;
+      const newSY = -oldSY;
+
+      let newX = el.x;
+      let newY = el.y;
+
+      if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+        const rad = (el.rotation * Math.PI) / 180;
+        newX = el.x - (oldSY * el.height) * Math.sin(rad);
+        newY = el.y + (oldSY * el.height) * Math.cos(rad);
+      }
+
+      updateElement(el.id, {
+        scaleY: newSY,
+        x: newX,
+        y: newY,
+      });
+    }
+  };
+
+  const flipHorizontal = () => {
+    if (selectedElement) {
+      const el = selectedElement;
+      const oldSX = el.scaleX ?? 1;
+      const newSX = -oldSX;
+
+      let newX = el.x;
+      let newY = el.y;
+
+      if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+        const rad = (el.rotation * Math.PI) / 180;
+        newX = el.x + (oldSX * el.width) * Math.cos(rad);
+        newY = el.y + (oldSX * el.width) * Math.sin(rad);
+      }
+
+      updateElement(el.id, {
+        scaleX: newSX,
+        x: newX,
+        y: newY,
+      });
+    }
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger className="relative flex h-full flex-1 flex-col">
@@ -136,63 +254,97 @@ export function EditorCanvas() {
       </ContextMenuTrigger>
       <ContextMenuContent className="w-44">
         <ContextMenuGroup>
-          {/* Ukázat pouze, když je hover na plátně */}
+          {/* Ukázat pouze, když je hover na plátně (prázdno) */}
           {!selectedElement && (
-            <ContextMenuItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="flex justify-between items-center w-full">
-                  <span className="flex items-center gap-2">
-                    <Square className="size-4" />
-                    Přidat tvar
-                  </span>
-                    <ChevronRight className="size-4 opacity-50" />
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" side="right" align="start">
-                  <DropdownMenuLabel>Základní tvary</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {KONVA_SHAPES.map((shape) => (
-                      <DropdownMenuItem
-                        key={shape.type}
-                        onClick={() => createShapeElement(shape.type)}
-                        className="cursor-pointer"
-                      >
-                        {shape.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </ContextMenuItem>
-          )}
+            <>
+              <ContextMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex justify-between items-center w-full">
+                      <span className="flex items-center gap-2">
+                        <Square className="size-4" />
+                        Přidat tvar
+                      </span>
+                      <ChevronRight className="size-4 opacity-50" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" side="right" align="start">
+                    <DropdownMenuLabel>Základní tvary</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {KONVA_SHAPES.map((shape) => (
+                        <DropdownMenuItem
+                          key={shape.type}
+                          onClick={() => createShapeElement(shape.type)}
+                          className="cursor-pointer"
+                        >
+                          {shape.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </ContextMenuItem>
 
+              <ContextMenuItem disabled={!canUndo} onClick={undo}>
+                <Undo className={"size-4"} color="#000000" />
+                Vrátit změny
+              </ContextMenuItem>
+
+              <ContextMenuItem disabled={!canRedo} onClick={redo}>
+                <Redo className={"size-4"} color="#000000" />
+                Obnovit změny
+              </ContextMenuItem>
+            </>
+          )}
 
           {/* Ukáže se pouze, když je hover na nějakém elementu */}
           {selectedElement && (
-            <ContextMenuItem onClick={copyElement}>
-              <Copy className={"size-4"} color="#000000"/>
-              Kopírovat prvek
-            </ContextMenuItem>
-          )}
+            <>
+              <ContextMenuItem onClick={copyElement}>
+                <Copy className={"size-4"} color="#000000" />
+                Kopírovat prvek
+              </ContextMenuItem>
 
-          <ContextMenuItem disabled={!canUndo} onClick={undo}>
-            <Undo className={"size-4"} color="#000000"/>
-            Vrátit změny
-          </ContextMenuItem>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger className="flex items-center gap-2">
+                  <RotateCw className="size-4" color="#000000" />
+                  <span>Otočit</span>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-48">
+                  <ContextMenuItem onClick={rotateLeft}>
+                    <RotateCcw className="size-4 mr-2" />
+                    Otočit o 90° doleva
+                  </ContextMenuItem>
+                  <ContextMenuItem onClick={rotateRight}>
+                    <RotateCw className="size-4 mr-2" />
+                    Otočit o 90° doprava
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
 
-          <ContextMenuItem disabled={!canRedo} onClick={redo}>
-            <Redo className={"size-4"} color="#000000"/>
-            Obnovit změny
-          </ContextMenuItem>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger className="flex items-center gap-2">
+                  <FlipHorizontal className="size-4" color="#000000" />
+                  <span>Překlopit</span>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-48">
+                  <ContextMenuItem onClick={flipVertical}>
+                    <FlipVertical className="size-4 mr-2" />
+                    Překlopit svisle
+                  </ContextMenuItem>
+                  <ContextMenuItem onClick={flipHorizontal}>
+                    <FlipHorizontal className="size-4 mr-2" />
+                    Překlopit vodorovně
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
 
-          {/* Ukáže se pouze, když je hover na nějakém elementu */}
-          {selectedElement && (
-            <ContextMenuItem onClick={() => deleteElement(selectedElement.id)}>
-              <Trash className={"size-4"} color="#e7000b"/>
-              <span className="text-red-600">Smazat prvek</span>
-            </ContextMenuItem>
+              <ContextMenuItem onClick={() => deleteElement(selectedElement.id)}>
+                <Trash className={"size-4"} color="#e7000b" />
+                <span className="text-red-600">Smazat prvek</span>
+              </ContextMenuItem>
+            </>
           )}
         </ContextMenuGroup>
       </ContextMenuContent>

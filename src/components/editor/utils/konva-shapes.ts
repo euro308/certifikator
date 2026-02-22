@@ -40,7 +40,7 @@ export const KONVA_SHAPES: ShapeDefinition[] = [
     {
         type: 'line',
         label: 'Čára',
-        description: 'Vytvoří čáru (Konva.Line). Může být jednoduchá, lomená, spline nebo blob.',
+        description: 'Vytvoří čáru (tenký obdélník pro lepší manipulaci).',
     },
     {
         type: 'arrow',

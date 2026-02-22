@@ -61,8 +61,8 @@ export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
     width: element.width,
     height: element.height,
     rotation: element.rotation,
-    scaleX: 1,
-    scaleY: 1,
+    scaleX: element.scaleX ?? 1,
+    scaleY: element.scaleY ?? 1,
     opacity: element.opacity,
     draggable: false,
     listening: false, // Vypne interakci

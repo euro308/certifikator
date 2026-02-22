@@ -302,7 +302,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
       const centerPos = getCenteredPosition(0, 0);
       finalX = centerPos.x;
       finalY = centerPos.y;
-    } else if (shapeType === 'arrow' || shapeType === 'line') {
+    } else if (shapeType === 'arrow') {
       const centerPos = getCenteredPosition(100, 0);
       finalX = centerPos.x;
       finalY = centerPos.y;
@@ -368,7 +368,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
         shapeSpecificProps = { points: [0, 0, 100, 0], pointerLength: 15, pointerWidth: 15 };
         break;
       case 'line':
-        shapeSpecificProps = { points: [0, 0, 100, 0] };
+        shapeSpecificProps = { width: 300, height: 4, fill: '#000000', strokeWidth: 0 };
         break;
       case 'rect':
         shapeSpecificProps = { width: 200, height: 100 };
@@ -438,9 +438,21 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
 
   /** Získá seznam všech placeholderů */
   const getPlaceholders = useCallback((): string[] => {
-    return elements
-      .filter((el): el is PlaceholderElement => el.type === 'placeholder')
-      .map(el => el.placeholderKey);
+    const keys = new Set<string>();
+
+    elements.forEach(el => {
+      if (el.type === 'placeholder') {
+        const cleanKey = el.placeholderKey.replace(/^{{|}}$/g, '').trim();
+        keys.add(cleanKey);
+      } else if (el.type === 'text') {
+        const matches = [...el.text.matchAll(/\{\{([^}]+)\}\}/g)];
+        matches.forEach(match => {
+          if (match[1]) keys.add(match[1].trim());
+        });
+      }
+    });
+
+    return Array.from(keys);
   }, [elements]);
 
   /** Získá data pro export */
@@ -463,7 +475,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
   /** Uloží šablonu */
   const saveTemplate = useCallback(() => {
     const data = getExportData();
-    
+
     // Pokud máme zaregistrovaný callback pro obrázek, vygenerujeme ho
     if (getPreviewImageCallbackRef.current) {
       try {

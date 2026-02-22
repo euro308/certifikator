@@ -429,7 +429,7 @@ export default function NovyCertifikat() {
         // Nahrazení placeholderů
         elementsCopy.forEach((el) => {
           if (el.type === "placeholder") {
-            const pKey = el.placeholderKey;
+            const pKey = el.placeholderKey.replace(/^{{|}}$/g, "").trim();
             const colName = mapping[pKey];
 
             if (colName && row[colName] !== undefined) {
@@ -440,6 +440,24 @@ export default function NovyCertifikat() {
                   ? String(val)
                   : "";
             }
+          } else if (el.type === "text") {
+            let newText = el.text;
+            const matches = [...newText.matchAll(/\{\{([^}]+)\}\}/g)];
+            matches.forEach((match) => {
+              const pKey = match[1]?.trim();
+              if (!pKey) return;
+              const colName = mapping[pKey];
+              if (colName && row[colName] !== undefined) {
+                const val = row[colName];
+                newText = newText.replace(
+                  match[0],
+                  typeof val === "string" || typeof val === "number"
+                    ? String(val)
+                    : ""
+                );
+              }
+            });
+            el.text = newText;
           }
         });
 
@@ -468,11 +486,23 @@ export default function NovyCertifikat() {
       ) as CanvasElement[];
       elementsCopy.forEach((el) => {
         if (el.type === "placeholder") {
-          const pKey = el.placeholderKey;
+          const pKey = el.placeholderKey.replace(/^{{|}}$/g, "").trim();
           const val = singleData[pKey];
           if (val) {
             el.displayText = val;
           }
+        } else if (el.type === "text") {
+          let newText = el.text;
+          const matches = [...newText.matchAll(/\{\{([^}]+)\}\}/g)];
+          matches.forEach((match) => {
+            const pKey = match[1]?.trim();
+            if (!pKey) return;
+            const val = singleData[pKey];
+            if (val) {
+              newText = newText.replace(match[0], String(val));
+            }
+          });
+          el.text = newText;
         }
       });
 
