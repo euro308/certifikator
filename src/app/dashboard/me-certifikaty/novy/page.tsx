@@ -177,11 +177,10 @@ export default function NovyCertifikat() {
     templates !== undefined &&
     !templates.some((t) => t.id === galleryTemplateId);
 
-  const { data: galleryTemplate } =
-    api.templates.getTemplatePublic.useQuery(
-      { templateId: galleryTemplateId! },
-      { enabled: isGalleryId },
-    );
+  const { data: galleryTemplate } = api.templates.getTemplatePublic.useQuery(
+    { templateId: galleryTemplateId! },
+    { enabled: isGalleryId },
+  );
 
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
@@ -442,7 +441,7 @@ export default function NovyCertifikat() {
             }
           } else if (el.type === "text") {
             let newText = el.text;
-            const matches = [...newText.matchAll(/\{\{([^}]+)\}\}/g)];
+            const matches = [...newText.matchAll(/\{\{([^}]+)}}/g)];
             matches.forEach((match) => {
               const pKey = match[1]?.trim();
               if (!pKey) return;
@@ -453,7 +452,7 @@ export default function NovyCertifikat() {
                   match[0],
                   typeof val === "string" || typeof val === "number"
                     ? String(val)
-                    : ""
+                    : "",
                 );
               }
             });
@@ -493,7 +492,7 @@ export default function NovyCertifikat() {
           }
         } else if (el.type === "text") {
           let newText = el.text;
-          const matches = [...newText.matchAll(/\{\{([^}]+)\}\}/g)];
+          const matches = [...newText.matchAll(/\{\{([^}]+)}}/g)];
           matches.forEach((match) => {
             const pKey = match[1]?.trim();
             if (!pKey) return;
@@ -700,12 +699,13 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${displayedCertificates.length === 1
-            ? "mx-auto max-w-3xl grid-cols-1"
-            : displayedCertificates.length === 2
-              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            }`}
+          className={`grid gap-6 ${
+            displayedCertificates.length === 1
+              ? "mx-auto max-w-3xl grid-cols-1"
+              : displayedCertificates.length === 2
+                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -851,10 +851,11 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
-                        ? "bg-primary/5 border-primary/20"
-                        : "bg-white"
-                        } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-white"
+                      } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}
@@ -981,7 +982,8 @@ export default function NovyCertifikat() {
                           key={galleryTemplate.id}
                           value={galleryTemplate.id}
                         >
-                          {galleryTemplate.name} (Z galerie – {galleryTemplate.authorName})
+                          {galleryTemplate.name} (Z galerie –{" "}
+                          {galleryTemplate.authorName})
                         </SelectItem>
                       )}
                       {templates?.map((template) => (
@@ -1060,11 +1062,27 @@ export default function NovyCertifikat() {
 
           <Card className="border-primary/50 shadow-md">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm">
-                  2
-                </span>
-                {mode === "bulk" ? "Nahrání dat a mapování" : "Vyplnění údajů"}
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm">
+                    2
+                  </span>
+                  {mode === "bulk"
+                    ? "Nahrání dat a mapování"
+                    : "Vyplnění údajů"}
+                </div>
+                {mode === "bulk" && (
+                  <Link
+                    href={"/napoveda/tabulka"}
+                    className={
+                      "text-muted-foreground text-sm underline hover:text-black"
+                    }
+                    target={"_blank"}
+                    tabIndex={-1}
+                  >
+                    Jak by měla tabulka vypadat?
+                  </Link>
+                )}
               </CardTitle>
               <CardDescription>
                 {mode === "bulk"
