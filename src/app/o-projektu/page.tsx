@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function InfoOProjektu() {
   return (
-    <main className="flex min-h-screen w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">
+    <main className="flex min-h-screen w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify">
       <NavbarOutside />
 
       <div className="flex-1 px-4 pt-28 pb-16">
@@ -16,14 +16,14 @@ export default function InfoOProjektu() {
           </h1>
 
           <div className="flex flex-col gap-6 text-lg">
-            <span className="text-justify text-gray-700">
+            <span className="text-gray-700">
               Webové prostředí Certifikátor vytváří jediný autor – student
               čtvrtého ročníku střední školy Adam. Projekt slouží jako jeho
               maturitní práce a zároveň jako praktický nástroj, který má
               usnadnit práci při tvorbě certifikátů.
             </span>
 
-            <span className="text-justify text-gray-700">
+            <span className="text-gray-700">
               Impulzem ke vzniku aplikace byla zkušenost z praxe. Adamova
               maminka ve své práci často připravuje desítky až stovky
               certifikátů a ruční přepisování jmen či dalších údajů u každého
@@ -33,7 +33,7 @@ export default function InfoOProjektu() {
               maturitní projekt, který spojuje školní zadání s reálným využitím.
             </span>
 
-            <span className="text-justify text-gray-700">
+            <span className="text-gray-700">
               Certifikátor je postaven na frameworku{" "}
               <a
                 href={"https://nextjs.org/"}
@@ -103,7 +103,7 @@ export default function InfoOProjektu() {
               množstvím certifikátů.
             </span>
 
-            <span className="text-justify text-gray-700">
+            <span className="text-gray-700">
               Podrobný přehled funkcí aplikace naleznete na stránce{" "}
               <Link
                 href={"/funkce"}

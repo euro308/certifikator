@@ -32,6 +32,7 @@ import {
   RotateCcw,
   RotateCw,
 } from "lucide-react";
+import type { CanvasElement } from "./types/canvas-types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,7 +121,7 @@ export function EditorCanvas() {
     }
   };
 
-  const rotateAroundCenter = (el: any, angleDeg: number) => {
+  const rotateAroundCenter = (el: CanvasElement, angleDeg: number) => {
     // 1. Najít střed bounding boxu prvku (bez natočení). Konva "x/y" je top-left pro většinu.
     let cx = el.x;
     let cy = el.y;
@@ -186,7 +187,7 @@ export function EditorCanvas() {
 
   const flipVertical = () => {
     if (selectedElement) {
-      const el = selectedElement;
+      const el: CanvasElement = selectedElement;
       const oldSY = el.scaleY ?? 1;
       const newSY = -oldSY;
 
@@ -209,7 +210,7 @@ export function EditorCanvas() {
 
   const flipHorizontal = () => {
     if (selectedElement) {
-      const el = selectedElement;
+      const el: CanvasElement = selectedElement;
       const oldSX = el.scaleX ?? 1;
       const newSX = -oldSX;
 

@@ -445,7 +445,7 @@ export function EditorProvider({ children, onSave, initialData }: EditorProvider
         const cleanKey = el.placeholderKey.replace(/^{{|}}$/g, '').trim();
         keys.add(cleanKey);
       } else if (el.type === 'text') {
-        const matches = [...el.text.matchAll(/\{\{([^}]+)\}\}/g)];
+        const matches = [...el.text.matchAll(/\{\{([^}]+)}}/g)];
         matches.forEach(match => {
           if (match[1]) keys.add(match[1].trim());
         });

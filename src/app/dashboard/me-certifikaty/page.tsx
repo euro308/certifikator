@@ -18,7 +18,7 @@ export default function MeCertifikaty() {
             Moje certifikáty
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Přehled všech vámi vytvořených certifikátů.
+            Přehled všech Vámi vytvořených certifikátů.
           </p>
         </div>
         <Button asChild>

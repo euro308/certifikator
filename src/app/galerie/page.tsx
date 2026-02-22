@@ -15,7 +15,7 @@ export default function Galerie() {
                         </span>
                     </h1>
                     <p className="mx-auto mb-10 max-w-2xl text-center text-lg text-gray-600">
-                        Prohlédněte si šablony vytvořené komunitou. Líbí se vám nějaká?
+                        Prohlédněte si šablony vytvořené komunitou. Líbí se Vám nějaká?
                         Rovnou ji použijte nebo si ji přidejte do oblíbených.
                     </p>
 

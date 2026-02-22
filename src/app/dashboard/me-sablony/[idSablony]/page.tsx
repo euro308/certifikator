@@ -154,7 +154,7 @@ export default function DetailSablony() {
               </Badge>
             </div>
             <p className="text-muted-foreground mt-2 text-lg">
-              Detail a správa vaší šablony.
+              Detail a správa Vaší šablony.
             </p>
           </div>
 

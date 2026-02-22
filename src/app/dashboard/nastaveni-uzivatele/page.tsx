@@ -139,7 +139,7 @@ export default function NastaveniUzivatele() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Nastavení uživatele</h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          Správa vašeho účtu a nastavení zabezpečení.
+          Správa Vašeho účtu a nastavení zabezpečení.
         </p>
       </div>
 

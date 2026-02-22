@@ -19,7 +19,7 @@ export default function MeSablony() {
             Moje šablony
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Přehled všech vámi vytvořených šablon.
+            Přehled všech Vámi vytvořených šablon.
           </p>
         </div>
         <Button asChild className="w-full md:w-auto">

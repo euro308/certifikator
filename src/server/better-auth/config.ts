@@ -17,7 +17,7 @@ export const auth = betterAuth({
       void resend.emails.send({
         from: "Certifikátor <info@certifikator.eu>",
         to: [user.email],
-        subject: "Obnovení vašeho hesla",
+        subject: "Obnovení Vašeho hesla",
         react: EmailTemplate({
           emailType: "FORGOT_PASSWORD",
           resetLink: url,

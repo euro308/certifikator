@@ -118,7 +118,7 @@ function PrihlaseniContent() {
               </span>
             </FieldLegend>
             <FieldDescription className="text-[0.95rem] text-gray-600 lg:text-base xl:text-lg">
-              Přihlaste se pomocí vaší e-mailové adresy a hesla
+              Přihlaste se pomocí Vaší e-mailové adresy a hesla
             </FieldDescription>
 
             <FieldGroup>

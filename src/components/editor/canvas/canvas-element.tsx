@@ -3,7 +3,7 @@
 // =============================================================================
 
 import React from 'react';
-import { Text, Rect, Circle, Ellipse, Wedge, Line, Arrow, Arc, Ring, Star, RegularPolygon, Image } from 'react-konva';
+import { Text, Rect, Circle, Ellipse, Wedge, Arrow, Arc, Ring, Star, RegularPolygon, Image } from 'react-konva';
 import useImage from 'use-image';
 import type Konva from 'konva';
 import type {

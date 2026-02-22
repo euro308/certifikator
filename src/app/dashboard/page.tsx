@@ -114,7 +114,7 @@ export default async function Dashboard() {
           Vítejte zpět! 👋
         </h1>
         <p className="text-muted-foreground text-lg">
-          Zde je přehled vaší aktivity
+          Zde je přehled Vaší aktivity
         </p>
       </div>
 

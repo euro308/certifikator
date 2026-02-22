@@ -161,14 +161,27 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link href="/napoveda/editor" target="_blank" tabIndex={-1}>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-50 dark:hover:bg-neutral-800">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                  >
                     <Info className="size-5" />
                   </Button>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[300px] p-3" side="top" align="end">
-                <p className="font-semibold text-base mb-1">Tipy a triky k editoru</p>
-                <p className="text-sm text-muted-foreground">Objevte spoustu zajímavých funkcí našeho editoru, které Vám zrychlí práci.</p>
+              <TooltipContent
+                className="max-w-[300px] p-3"
+                side="top"
+                align="end"
+              >
+                <p className="mb-1 text-base font-semibold">
+                  Tipy a triky k editoru
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  Objevte spoustu zajímavých funkcí našeho editoru, které Vám
+                  zrychlí práci.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -176,11 +189,7 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
           <DialogClose asChild>
             <Button variant="outline">Zahodit</Button>
           </DialogClose>
-          <Button
-            onClick={handleSave}
-            id={"saveButton"}
-            disabled={isSaving}
-          >
+          <Button onClick={handleSave} id={"saveButton"} disabled={isSaving}>
             {isSaving ? "Ukládám..." : "Uložit šablonu"}
           </Button>
         </div>
@@ -211,17 +220,18 @@ export function EditorDialog({
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = useCallback((data: TemplateExportData) => {
-    console.log("=== ULOŽENÁ DATA ŠABLONY ===");
-    console.log(JSON.stringify(data, null, 2));
-    console.log("============================");
+  const handleSave = useCallback(
+    (data: TemplateExportData) => {
+      console.log("=== ULOŽENÁ DATA ŠABLONY ===");
+      console.log(JSON.stringify(data, null, 2));
+      console.log("============================");
 
-    if (saveMockCanvas) {
-      saveMockCanvas(data);
-    }
-  }, [saveMockCanvas]);
-
-
+      if (saveMockCanvas) {
+        saveMockCanvas(data);
+      }
+    },
+    [saveMockCanvas],
+  );
 
   /**
    * Handler pro pokus o zavření dialogu (kromě uložení)
@@ -265,14 +275,26 @@ export function EditorDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <div className="flex justify-start items-center gap-4">
+        <div className="flex items-center justify-start gap-4">
           <DialogTrigger asChild>
-            {canvasData ? <Button variant="outline" className="cursor-pointer">Upravit design</Button> : <Button variant="default" className="cursor-pointer">Otevřít editor</Button>}
+            {canvasData ? (
+              <Button variant="outline" className="cursor-pointer">
+                Upravit design
+              </Button>
+            ) : (
+              <Button variant="default" className="cursor-pointer">
+                Otevřít editor
+              </Button>
+            )}
           </DialogTrigger>
-          {canvasData ? <div className="flex items-center gap-2">
-            <Check color="#00a63e" className="size-4" />
-            <span className="text-green-600 text-base">Designový koncept uložen!</span>
-          </div> : null}
+          {canvasData ? (
+            <div className="flex items-center gap-2">
+              <Check color="#00a63e" className="size-4" />
+              <span className="text-base text-green-600">
+                Designový koncept uložen!
+              </span>
+            </div>
+          ) : null}
         </div>
 
         <DialogContent

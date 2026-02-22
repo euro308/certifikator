@@ -1,6 +1,6 @@
 import { NavbarOutside } from "@/components/navbar-outside";
 import { FooterOutside } from "@/components/footer-outside";
-import { Keyboard, Type, MousePointerClick, Zap, Eye, Command, Layers } from "lucide-react";
+import { Keyboard, Type, MousePointerClick, Zap, Layers } from "lucide-react";
 import React from "react";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -86,7 +86,7 @@ export default function NapovedaEditor() {
                 <div className="flex-1 space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Proměnné přímo uvnitř textu</h3>
                   <p className="text-gray-600">
-                    Místo skládání jména vedle zbytku věty pomocí klasických "Placeholder" bloků, můžete obojí nakombinovat přímo do normálního textu!
+                    Místo skládání jména vedle zbytku věty pomocí klasických &#34;Placeholder&#34; bloků, můžete obojí nakombinovat přímo do normálního textu!
                   </p>
                   <p className="text-gray-600">
                     Stačí přidat textový blok a napsat do něj proměnnou (nebo více proměnných) uzavřenou ve dvou složených závorkách, například <kbd className="px-1.5 py-0.5 rounded border bg-gray-50 text-xs font-mono">{"{{"}Jmeno{"}}"}</kbd>.
@@ -149,7 +149,7 @@ export default function NapovedaEditor() {
                 <div className="rounded-2xl border bg-white p-6 shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Chytrá přichytávací vodítka</h3>
                   <p className="text-gray-600 text-sm mb-4">
-                    Při pohybu objektů se automaticky objevují růžová vodítka. Ta vám pomohu objekt bleskově zarovnat na střed certifikátu, nebo jej lícovat vzhledem k okrajům a středům jiných objektů na plátně.
+                    Při pohybu objektů se automaticky objevují různá vodítka. Ta Vám pomohou objekt bleskově zarovnat na střed plátna, nebo jej přilepit k okrajům a středům jiných objektů na plátně.
                   </p>
                   <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border flex items-center justify-center shrink-0">
                     <Image
