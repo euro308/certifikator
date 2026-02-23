@@ -283,6 +283,7 @@ export const templatesRouter = createTRPCRouter({
         createdAt: templates.createdAt,
         userId: templates.userId,
         authorName: user.name,
+        authorImage: user.image,
       })
       .from(templates)
       .innerJoin(user, eq(templates.userId, user.id))
@@ -349,6 +350,7 @@ export const templatesRouter = createTRPCRouter({
           createdAt: templates.createdAt,
           updatedAt: templates.updatedAt,
           authorName: user.name,
+          authorImage: user.image,
         })
         .from(templates)
         .innerJoin(user, eq(templates.userId, user.id))
@@ -460,6 +462,7 @@ export const templatesRouter = createTRPCRouter({
         isVerified: templates.isVerified,
         authorId: templates.userId,
         authorName: user.name,
+        authorImage: user.image,
       })
       .from(templateFavorites)
       .innerJoin(templates, eq(templateFavorites.templateId, templates.id))
