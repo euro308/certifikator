@@ -1,7 +1,8 @@
 "use client";
 
-import { BadgeCheck, Download, Heart, ArrowRight, Loader2 } from "lucide-react";
+import { BadgeCheck, Download, Heart, ArrowRight, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "@/trpc/react";
@@ -22,6 +23,7 @@ interface GalleryTemplate {
     favoritesCount: number;
     isFavorited: boolean;
     isOfficial: boolean;
+    authorImage?: string | null;
 }
 
 export function GalleryTemplateCard({ template }: { template: GalleryTemplate }) {
@@ -58,6 +60,13 @@ export function GalleryTemplateCard({ template }: { template: GalleryTemplate })
         }
         router.push(`/dashboard/me-certifikaty/novy?idSablony=${template.id}`);
     };
+
+    const initials = template.authorName
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "U";
 
     return (
         <div className="group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:shadow-lg">
@@ -124,9 +133,12 @@ export function GalleryTemplateCard({ template }: { template: GalleryTemplate })
 
                 {/* Autor + statistiky na jednom řádku */}
                 <div className="mb-4 flex items-center gap-1.5">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500">
-                        {template.authorName.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar className="h-5 w-5 border">
+                        <AvatarImage src={template.authorImage || undefined} alt={template.authorName} className="object-cover" />
+                        <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                            {initials || <User className="size-3" />}
+                        </AvatarFallback>
+                    </Avatar>
                     <span className="truncate text-xs text-gray-500">{template.authorName}</span>
 
                     <div className="ml-auto flex items-center gap-3 text-xs text-gray-400">

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavbarOutside } from "@/components/navbar-outside";
 import { FooterOutside } from "@/components/footer-outside";
 import { GalleryContent } from "@/components/gallery/gallery-content";
@@ -19,7 +20,9 @@ export default function Galerie() {
                         Rovnou ji použijte nebo si ji přidejte do oblíbených.
                     </p>
 
-                    <GalleryContent />
+                    <Suspense fallback={<div className="text-center py-10">Načítání galerie...</div>}>
+                        <GalleryContent />
+                    </Suspense>
                 </div>
             </div>
 

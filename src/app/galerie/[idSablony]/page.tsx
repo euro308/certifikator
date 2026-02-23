@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { authClient } from "@/server/better-auth/client";
 import { NavbarOutside } from "@/components/navbar-outside";
@@ -159,7 +160,20 @@ export default function GalleryTemplateDetail() {
                     Oficiální šablona od Týmu Certifikátor
                   </span>
                 ) : (
-                  <>Šablona od {template.authorName}</>
+                  <span className="inline-flex items-center gap-2">
+                    <Avatar className="h-6 w-6 border bg-white">
+                      <AvatarImage src={template.authorImage || undefined} alt={template.authorName} className="object-cover" />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                        {template.authorName
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2) || <User className="size-3" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>Šablona od {template.authorName}</span>
+                  </span>
                 )}
               </p>
             </div>
@@ -243,7 +257,7 @@ export default function GalleryTemplateDetail() {
                       <span className="text-muted-foreground flex items-center">
                         <User className="mr-2 size-4" /> Autor
                       </span>
-                      <span>{template.authorName}</span>
+                      <Link href={`./?search=${template.authorName}`} className={"underline hover:text-muted-foreground"}>{template.authorName}</Link>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground flex items-center">
