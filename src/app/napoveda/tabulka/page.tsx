@@ -4,7 +4,6 @@ import {
   Table,
   FileSpreadsheet,
   Columns,
-  Trash2,
   CheckCircle2,
   AlertTriangle,
   Gauge,
