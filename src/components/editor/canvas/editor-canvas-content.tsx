@@ -85,6 +85,10 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
           stageRef.current.scale({ x: 1, y: 1 });
           stageRef.current.position({ x: 0, y: 0 });
 
+          // Skryjeme transformační prvky (ošetří transformer v uloženém náhledu šablony)
+          const transformers = stageRef.current.find('Transformer');
+          transformers.forEach((t) => t.hide());
+
           const dataUrl = stageRef.current.toDataURL({
             x: 0,
             y: 0,
@@ -93,6 +97,9 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             pixelRatio: 1,
             mimeType: 'image/jpeg',
           });
+
+          // Obnovíme zobrazení transformačních prvků
+          transformers.forEach((t) => t.show());
 
           // Obnovíme původní pohled
           stageRef.current.scale({ x: oldScaleX, y: oldScaleY });
