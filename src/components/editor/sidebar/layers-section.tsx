@@ -105,7 +105,7 @@ export function LayersSection() {
               // ===== REVERSE pro zobrazení (nahoře = vepředu) =====
               [...elements].reverse().map((el) => {
                 // Najdi skutečný index v PŮVODNÍM poli
-                const realIndex = elements.findIndex(e => e.id === el.id);
+                const realIndex = elements.findIndex((e) => e.id === el.id);
                 const isTop = realIndex === elements.length - 1; // Poslední = vepředu
                 const isBottom = realIndex === 0; // První = vzadu
 
@@ -116,7 +116,11 @@ export function LayersSection() {
                   >
                     <div className={"flex items-center justify-start gap-2"}>
                       {correctIcon(el)}
-                      <span className={"max-w-[104px] overflow-hidden whitespace-nowrap select-none text-ellipsis"}>
+                      <span
+                        className={
+                          "max-w-[104px] overflow-hidden text-ellipsis whitespace-nowrap select-none"
+                        }
+                      >
                         {el.name}
                       </span>
                     </div>
@@ -127,7 +131,7 @@ export function LayersSection() {
                         className={`size-4 transition-colors ${
                           isTop
                             ? "text-muted-foreground cursor-not-allowed"
-                            : "cursor-pointer hover:text-primary"
+                            : "hover:text-primary cursor-pointer"
                         }`}
                         onClick={() => {
                           if (!isTop) {
@@ -141,7 +145,7 @@ export function LayersSection() {
                         className={`size-4 transition-colors ${
                           isTop
                             ? "text-muted-foreground cursor-not-allowed"
-                            : "cursor-pointer hover:text-primary"
+                            : "hover:text-primary cursor-pointer"
                         }`}
                         onClick={() => {
                           if (!isTop) {
@@ -155,7 +159,7 @@ export function LayersSection() {
                         className={`size-4 transition-colors ${
                           isBottom
                             ? "text-muted-foreground cursor-not-allowed"
-                            : "cursor-pointer hover:text-primary"
+                            : "hover:text-primary cursor-pointer"
                         }`}
                         onClick={() => {
                           if (!isBottom) {
@@ -169,7 +173,7 @@ export function LayersSection() {
                         className={`size-4 transition-colors ${
                           isBottom
                             ? "text-muted-foreground cursor-not-allowed"
-                            : "cursor-pointer hover:text-primary"
+                            : "hover:text-primary cursor-pointer"
                         }`}
                         onClick={() => {
                           if (!isBottom) {
@@ -180,7 +184,9 @@ export function LayersSection() {
 
                       {/* ===== SMAZÁNÍ ===== */}
                       <Trash
-                        className={"size-4 cursor-pointer hover:text-red-600 transition-colors"}
+                        className={
+                          "size-4 cursor-pointer transition-colors hover:text-red-600"
+                        }
                         color={"#ff0000"}
                         onClick={() => deleteElement(el.id)}
                       />

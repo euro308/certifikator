@@ -1,18 +1,22 @@
-import { useCallback, useState } from 'react';
-import { type CanvasElement, CANVAS_WIDTH, CANVAS_HEIGHT } from '../types/canvas-types';
+import { useCallback, useState } from "react";
+import {
+  type CanvasElement,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+} from "../types/canvas-types";
 
 // --- KONFIGURACE ---
 const SNAP_THRESHOLD = 5;
 
 // --- TYPY ---
-export type Orientation = 'V' | 'H';
+export type Orientation = "V" | "H";
 
 export interface SnapLine {
   orientation: Orientation;
   position: number;
   diff?: number;
-  type?: 'start' | 'center' | 'end';
-  source?: 'canvas' | 'element';
+  type?: "start" | "center" | "end";
+  source?: "canvas" | "element";
 }
 
 export interface SnapResult {
@@ -41,18 +45,27 @@ export interface ElementBounds {
 function getNormalizedBox(el: ElementBounds) {
   // Seznam tvarů, které mají anchor ve středu (stejný jako v EditorContext)
   const isCenteredShape =
-    el.type === 'shape' &&
-    ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(el.shapeType ?? '');
+    el.type === "shape" &&
+    [
+      "circle",
+      "ellipse",
+      "wedge",
+      "arc",
+      "ring",
+      "star",
+      "regularPolygon",
+      "triangle",
+    ].includes(el.shapeType ?? "");
 
   // Pokud je to centered shape, musíme přepočítat x/y na levý horní roh
   if (isCenteredShape) {
     return {
-      x: el.x - (el.width / 2),
-      y: el.y - (el.height / 2),
+      x: el.x - el.width / 2,
+      y: el.y - el.height / 2,
       width: el.width,
       height: el.height,
       centerX: el.x,
-      centerY: el.y
+      centerY: el.y,
     };
   }
 
@@ -62,8 +75,8 @@ function getNormalizedBox(el: ElementBounds) {
     y: el.y,
     width: el.width,
     height: el.height,
-    centerX: el.x + (el.width / 2),
-    centerY: el.y + (el.height / 2)
+    centerX: el.x + el.width / 2,
+    centerY: el.y + el.height / 2,
   };
 }
 
@@ -73,7 +86,7 @@ function getLineGuideStops(
   elements: CanvasElement[],
   skipId: string | string[] | null,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ) {
   // 1. Okraje plátna a střed plátna
   const vertical = [0, canvasWidth / 2, canvasWidth];
@@ -82,9 +95,9 @@ function getLineGuideStops(
   // 2. Ostatní elementy
   elements.forEach((el) => {
     if (Array.isArray(skipId)) {
-        if (skipId.includes(el.id)) return;
+      if (skipId.includes(el.id)) return;
     } else if (el.id === skipId) {
-        return;
+      return;
     }
 
     // Získáme normalizovaný box (vždy left-top a width-height)
@@ -104,14 +117,14 @@ function getObjectSnappingEdges(inputBounds: ElementBounds) {
 
   return {
     vertical: [
-      { guide: box.x, offset: 0, type: 'start' },        // Levý okraj
-      { guide: box.centerX, offset: box.width / 2, type: 'center' }, // Střed
-      { guide: box.x + box.width, offset: box.width, type: 'end' },  // Pravý okraj
+      { guide: box.x, offset: 0, type: "start" }, // Levý okraj
+      { guide: box.centerX, offset: box.width / 2, type: "center" }, // Střed
+      { guide: box.x + box.width, offset: box.width, type: "end" }, // Pravý okraj
     ],
     horizontal: [
-      { guide: box.y, offset: 0, type: 'start' },        // Horní okraj
-      { guide: box.centerY, offset: box.height / 2, type: 'center' }, // Střed
-      { guide: box.y + box.height, offset: box.height, type: 'end' }, // Dolní okraj
+      { guide: box.y, offset: 0, type: "start" }, // Horní okraj
+      { guide: box.centerY, offset: box.height / 2, type: "center" }, // Střed
+      { guide: box.y + box.height, offset: box.height, type: "end" }, // Dolní okraj
     ],
   };
 }
@@ -119,10 +132,20 @@ function getObjectSnappingEdges(inputBounds: ElementBounds) {
 function getGuides(
   lineGuideStops: { vertical: number[]; horizontal: number[] },
   itemBounds: ReturnType<typeof getObjectSnappingEdges>,
-  threshold: number
+  threshold: number,
 ) {
-  const resultV: { lineGuide: number; offset: number; diff: number; type: NonNullable<SnapLine['type']> }[] = [];
-  const resultH: { lineGuide: number; offset: number; diff: number; type: NonNullable<SnapLine['type']> }[] = [];
+  const resultV: {
+    lineGuide: number;
+    offset: number;
+    diff: number;
+    type: NonNullable<SnapLine["type"]>;
+  }[] = [];
+  const resultH: {
+    lineGuide: number;
+    offset: number;
+    diff: number;
+    type: NonNullable<SnapLine["type"]>;
+  }[] = [];
 
   lineGuideStops.vertical.forEach((lineGuide) => {
     itemBounds.vertical.forEach((itemBound) => {
@@ -132,7 +155,7 @@ function getGuides(
           lineGuide,
           offset: itemBound.offset,
           diff,
-          type: itemBound.type as NonNullable<SnapLine['type']>
+          type: itemBound.type as NonNullable<SnapLine["type"]>,
         });
       }
     });
@@ -146,7 +169,7 @@ function getGuides(
           lineGuide,
           offset: itemBound.offset,
           diff,
-          type: itemBound.type as NonNullable<SnapLine['type']>
+          type: itemBound.type as NonNullable<SnapLine["type"]>,
         });
       }
     });
@@ -163,20 +186,20 @@ function getGuides(
 
   if (minV) {
     guides.push({
-      orientation: 'V',
+      orientation: "V",
       position: minV.lineGuide,
       diff: minV.diff,
-      type: minV.type
+      type: minV.type,
     });
     snapOffsetX = minV.lineGuide - minV.offset;
   }
 
   if (minH) {
     guides.push({
-      orientation: 'H',
+      orientation: "H",
       position: minH.lineGuide,
       diff: minH.diff,
-      type: minH.type
+      type: minH.type,
     });
     snapOffsetY = minH.lineGuide - minH.offset;
   }
@@ -190,7 +213,7 @@ export function getCenteredPosition(
   elementWidth: number,
   elementHeight: number,
   canvasWidth: number = CANVAS_WIDTH,
-  canvasHeight: number = CANVAS_HEIGHT
+  canvasHeight: number = CANVAS_HEIGHT,
 ) {
   return {
     x: (canvasWidth - elementWidth) / 2,
@@ -202,7 +225,7 @@ export function getResizeSnapPositions(
   elements: CanvasElement[],
   skipIds: string[],
   canvasWidth: number = CANVAS_WIDTH,
-  canvasHeight: number = CANVAS_HEIGHT
+  canvasHeight: number = CANVAS_HEIGHT,
 ) {
   return getLineGuideStops(elements, skipIds, canvasWidth, canvasHeight);
 }
@@ -218,13 +241,12 @@ interface UseSnapToCenterOptions {
 }
 
 export function useSnapToCenter({
-                                  threshold = SNAP_THRESHOLD,
-                                  canvasWidth = CANVAS_WIDTH,
-                                  canvasHeight = CANVAS_HEIGHT,
-                                  elements,
-                                  enabled = true,
-                                }: UseSnapToCenterOptions) {
-
+  threshold = SNAP_THRESHOLD,
+  canvasWidth = CANVAS_WIDTH,
+  canvasHeight = CANVAS_HEIGHT,
+  elements,
+  enabled = true,
+}: UseSnapToCenterOptions) {
   const [guides, setGuides] = useState<SnapLine[]>([]);
 
   const checkSnap = useCallback(
@@ -234,13 +256,22 @@ export function useSnapToCenter({
       }
 
       // 1. Zjistit cíle (ostatní prvky + plátno)
-      const stops = getLineGuideStops(elements, activeId, canvasWidth, canvasHeight);
+      const stops = getLineGuideStops(
+        elements,
+        activeId,
+        canvasWidth,
+        canvasHeight,
+      );
 
       // 2. Zjistit hrany hýbaného objektu (nyní bere v potaz i typ tvaru)
       const edges = getObjectSnappingEdges(bounds);
 
       // 3. Spočítat snap
-      const { guides: detectedGuides, snapOffsetX, snapOffsetY } = getGuides(stops, edges, threshold);
+      const {
+        guides: detectedGuides,
+        snapOffsetX,
+        snapOffsetY,
+      } = getGuides(stops, edges, threshold);
 
       setGuides(detectedGuides);
 
@@ -252,17 +283,27 @@ export function useSnapToCenter({
       let finalY = bounds.y;
 
       // Zjistíme, jestli hýbeme s centered shape
-      const isCenteredDrag = bounds.type === 'shape' &&
-        ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(bounds.shapeType ?? '');
+      const isCenteredDrag =
+        bounds.type === "shape" &&
+        [
+          "circle",
+          "ellipse",
+          "wedge",
+          "arc",
+          "ring",
+          "star",
+          "regularPolygon",
+          "triangle",
+        ].includes(bounds.shapeType ?? "");
 
       if (snapOffsetX !== null) {
         // snapOffsetX je kde má být levý okraj.
         // Pokud je centered, musíme přičíst poloměr, abychom vrátili střed.
-        finalX = isCenteredDrag ? snapOffsetX + (bounds.width / 2) : snapOffsetX;
+        finalX = isCenteredDrag ? snapOffsetX + bounds.width / 2 : snapOffsetX;
       }
 
       if (snapOffsetY !== null) {
-        finalY = isCenteredDrag ? snapOffsetY + (bounds.height / 2) : snapOffsetY;
+        finalY = isCenteredDrag ? snapOffsetY + bounds.height / 2 : snapOffsetY;
       }
 
       return {
@@ -271,7 +312,7 @@ export function useSnapToCenter({
         guides: detectedGuides,
       };
     },
-    [enabled, elements, canvasWidth, canvasHeight, threshold]
+    [enabled, elements, canvasWidth, canvasHeight, threshold],
   );
 
   const clearGuides = useCallback(() => {

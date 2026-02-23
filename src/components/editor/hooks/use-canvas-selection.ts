@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
-import type { CanvasElement, ElementUpdate } from '../types/canvas-types';
+import { useCallback, useEffect, useState, useMemo } from "react";
+import type { CanvasElement, ElementUpdate } from "../types/canvas-types";
 
 /**
  * Hook pro správu výběru prvků na plátně a klávesnicové ovládání
@@ -39,19 +39,17 @@ interface UseCanvasSelectionReturn {
   handleElementClick: (id: string) => void;
 }
 
-export function useCanvasSelection(options: UseCanvasSelectionOptions): UseCanvasSelectionReturn {
-  const {
-    elements,
-    onElementsChange,
-    keyboardEnabled = true,
-  } = options;
+export function useCanvasSelection(
+  options: UseCanvasSelectionOptions,
+): UseCanvasSelectionReturn {
+  const { elements, onElementsChange, keyboardEnabled = true } = options;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Najdi vybraný prvek
   const selectedElement = useMemo(() => {
     if (!selectedId) return null;
-    return elements.find(el => el.id === selectedId) ?? null;
+    return elements.find((el) => el.id === selectedId) ?? null;
   }, [selectedId, elements]);
 
   /**
@@ -71,18 +69,21 @@ export function useCanvasSelection(options: UseCanvasSelectionOptions): UseCanva
   /**
    * Aktualizuje vlastnosti vybraného prvku
    */
-  const updateSelectedElement = useCallback((updates: ElementUpdate) => {
-    if (!selectedId) return;
+  const updateSelectedElement = useCallback(
+    (updates: ElementUpdate) => {
+      if (!selectedId) return;
 
-    const updatedElements = elements.map(el => {
-      if (el.id === selectedId) {
-        return { ...el, ...updates } as CanvasElement;
-      }
-      return el;
-    });
+      const updatedElements = elements.map((el) => {
+        if (el.id === selectedId) {
+          return { ...el, ...updates } as CanvasElement;
+        }
+        return el;
+      });
 
-    onElementsChange(updatedElements);
-  }, [selectedId, elements, onElementsChange]);
+      onElementsChange(updatedElements);
+    },
+    [selectedId, elements, onElementsChange],
+  );
 
   /**
    * Smaže vybraný prvek
@@ -90,7 +91,7 @@ export function useCanvasSelection(options: UseCanvasSelectionOptions): UseCanva
   const deleteSelectedElement = useCallback(() => {
     if (!selectedId) return;
 
-    const updatedElements = elements.filter(el => el.id !== selectedId);
+    const updatedElements = elements.filter((el) => el.id !== selectedId);
     onElementsChange(updatedElements);
     setSelectedId(null);
   }, [selectedId, elements, onElementsChange]);
@@ -105,9 +106,12 @@ export function useCanvasSelection(options: UseCanvasSelectionOptions): UseCanva
   /**
    * Handler pro kliknutí na prvek
    */
-  const handleElementClick = useCallback((id: string) => {
-    selectElement(id);
-  }, [selectElement]);
+  const handleElementClick = useCallback(
+    (id: string) => {
+      selectElement(id);
+    },
+    [selectElement],
+  );
 
   /**
    * Klávesnicové ovládání
@@ -118,46 +122,46 @@ export function useCanvasSelection(options: UseCanvasSelectionOptions): UseCanva
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignoruj, pokud je focus v input/textarea
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
         return;
       }
 
       const moveAmount = e.shiftKey ? 10 : 1;
 
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           updateSelectedElement({ y: (selectedElement?.y ?? 0) - moveAmount });
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           updateSelectedElement({ y: (selectedElement?.y ?? 0) + moveAmount });
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           e.preventDefault();
           updateSelectedElement({ x: (selectedElement?.x ?? 0) - moveAmount });
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           e.preventDefault();
           updateSelectedElement({ x: (selectedElement?.x ?? 0) + moveAmount });
           break;
-        case 'Delete':
-        case 'Backspace':
+        case "Delete":
+        case "Backspace":
           // Pouze Delete/Backspace bez kombinace s jinými klávesami
           if (!e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
             deleteSelectedElement();
           }
           break;
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           clearSelection();
           break;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     keyboardEnabled,
     selectedId,

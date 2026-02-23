@@ -18,42 +18,41 @@ interface DeleteTemplateDialogProps {
   isDeleting: boolean;
 }
 
-export function DeleteDialog({type, open, onOpenChange, onConfirm, onCancel, isDeleting} : DeleteTemplateDialogProps) {
-  if(type === 'certificate') {
+export function DeleteDialog({
+  type,
+  open,
+  onOpenChange,
+  onConfirm,
+  onCancel,
+  isDeleting,
+}: DeleteTemplateDialogProps) {
+  if (type === "certificate") {
     return (
-      <AlertDialog
-        open={open}
-        onOpenChange={onOpenChange}
-      >
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Opravdu chcete certifikát smazat?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Opravdu chcete certifikát smazat?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Tato akce je nevratná. Smazáním certifikátu jej zneplatníte a nebude jej možné nadále verifikovat pomocí tajného klíče.
+              Tato akce je nevratná. Smazáním certifikátu jej zneplatníte a
+              nebude jej možné nadále verifikovat pomocí tajného klíče.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={onCancel}>
-              Jít zpět
-            </AlertDialogCancel>
-            <Button
-              onClick={onConfirm}
-              disabled={isDeleting}
-            >
+            <AlertDialogCancel onClick={onCancel}>Jít zpět</AlertDialogCancel>
+            <Button onClick={onConfirm} disabled={isDeleting}>
               {isDeleting ? "Mažu..." : "Smazat certifikát"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    )
+    );
   }
 
-  if(type === 'template') {
+  if (type === "template") {
     return (
-      <AlertDialog
-        open={open}
-        onOpenChange={onOpenChange}
-      >
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Opravdu chcete šablonu smazat?</AlertDialogTitle>
@@ -63,18 +62,13 @@ export function DeleteDialog({type, open, onOpenChange, onConfirm, onCancel, isD
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={onCancel}>
-              Jít zpět
-            </AlertDialogCancel>
-            <Button
-              onClick={onConfirm}
-              disabled={isDeleting}
-            >
+            <AlertDialogCancel onClick={onCancel}>Jít zpět</AlertDialogCancel>
+            <Button onClick={onConfirm} disabled={isDeleting}>
               {isDeleting ? "Mažu..." : "Smazat šablonu"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    )
+    );
   }
 }

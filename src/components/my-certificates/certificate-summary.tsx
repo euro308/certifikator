@@ -349,7 +349,7 @@ export function CertificateSummary({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="bottom" align="start">
                           <DropdownMenuItem
-                            className="focus:bg-gray-100 flex cursor-pointer gap-2"
+                            className="flex cursor-pointer gap-2 focus:bg-gray-100"
                             onClick={() => {
                               setSelectedCertificate(certificate);
                               setIsEmailDialogOpen(true);

@@ -7,7 +7,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Tipy a triky k editoru | Certifikátor",
-  description: "Objevte spoustu užitečných funkcí a klávesových zkratek, které Vám zrychlí práci s naším editorem certifikátů.",
+  description:
+    "Objevte spoustu užitečných funkcí a klávesových zkratek, které Vám zrychlí práci s naším editorem certifikátů.",
 };
 
 export default function NapovedaEditor() {
@@ -17,26 +18,29 @@ export default function NapovedaEditor() {
 
       <div className="flex-1 px-4 pt-28 pb-16">
         <div className="mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600 mb-4">
+          <div className="mb-12 text-center">
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600">
               <Zap className="h-6 w-6" />
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl mb-4">
+            <h1 className="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Tipy a triky k editoru
               </span>
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Zefektivněte si práci a tvořte krásné certifikáty ještě rychleji s našimi tipy a skrytými vychytávkami.
+            <p className="mx-auto max-w-2xl text-lg text-gray-600">
+              Zefektivněte si práci a tvořte krásné certifikáty ještě rychleji s
+              našimi tipy a skrytými vychytávkami.
             </p>
           </div>
 
           <div className="space-y-12">
             {/* Klávesové zkratky */}
             <section>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="mb-6 flex items-center gap-3">
                 <Keyboard className="h-8 w-8 text-neutral-800" />
-                <h2 className="text-2xl font-bold tracking-tight">Klávesové zkratky</h2>
+                <h2 className="text-2xl font-bold tracking-tight">
+                  Klávesové zkratky
+                </h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -77,23 +81,36 @@ export default function NapovedaEditor() {
 
             {/* Proměnné v textu */}
             <section>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="mb-6 flex items-center gap-3">
                 <Type className="h-8 w-8 text-blue-600" />
-                <h2 className="text-2xl font-bold tracking-tight">Inteligentní textové hodnoty</h2>
+                <h2 className="text-2xl font-bold tracking-tight">
+                  Inteligentní textové hodnoty
+                </h2>
               </div>
 
-              <div className="rounded-2xl border bg-white p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center">
+              <div className="flex flex-col items-center gap-6 rounded-2xl border bg-white p-6 shadow-sm md:flex-row">
                 <div className="flex-1 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Proměnné přímo uvnitř textu</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Proměnné přímo uvnitř textu
+                  </h3>
                   <p className="text-gray-600">
-                    Místo skládání jména vedle zbytku věty pomocí klasických &#34;Placeholder&#34; bloků, můžete obojí nakombinovat přímo do normálního textu!
+                    Místo skládání jména vedle zbytku věty pomocí klasických
+                    &#34;Placeholder&#34; bloků, můžete obojí nakombinovat přímo
+                    do normálního textu!
                   </p>
                   <p className="text-gray-600">
-                    Stačí přidat textový blok a napsat do něj proměnnou (nebo více proměnných) uzavřenou ve dvou složených závorkách, například <kbd className="px-1.5 py-0.5 rounded border bg-gray-50 text-xs font-mono">{"{{"}Jmeno{"}}"}</kbd>.
-                    Editor text před generováním projde, klíč si automaticky založí jako sloupeček, a doplní za něj hodnoty stejným stylem fontu v celém odstavci!
+                    Stačí přidat textový blok a napsat do něj proměnnou (nebo
+                    více proměnných) uzavřenou ve dvou složených závorkách,
+                    například{" "}
+                    <kbd className="rounded border bg-gray-50 px-1.5 py-0.5 font-mono text-xs">
+                      {"{{"}Jmeno{"}}"}
+                    </kbd>
+                    . Editor text před generováním projde, klíč si automaticky
+                    založí jako sloupeček, a doplní za něj hodnoty stejným
+                    stylem fontu v celém odstavci!
                   </p>
                 </div>
-                <div className="relative w-full md:w-5/12 aspect-video bg-gray-100 rounded-xl overflow-hidden border flex items-center justify-center shrink-0">
+                <div className="relative flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 md:w-5/12">
                   <Image
                     src="/napoveda-editor/promenne.gif"
                     alt="Ukázka chytrých proměnných v textu"
@@ -107,13 +124,15 @@ export default function NapovedaEditor() {
 
             {/* Rychlé akce a kontextové menu */}
             <section>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="mb-6 flex items-center gap-3">
                 <MousePointerClick className="h-8 w-8 text-amber-500" />
-                <h2 className="text-2xl font-bold tracking-tight">Kontextové menu</h2>
+                <h2 className="text-2xl font-bold tracking-tight">
+                  Kontextové menu
+                </h2>
               </div>
 
-              <div className="rounded-2xl border bg-white p-6 shadow-sm flex flex-col-reverse md:flex-row gap-6 items-center">
-                <div className="relative w-full md:w-5/12 aspect-video bg-gray-100 rounded-xl overflow-hidden border flex items-center justify-center shrink-0">
+              <div className="flex flex-col-reverse items-center gap-6 rounded-2xl border bg-white p-6 shadow-sm md:flex-row">
+                <div className="relative flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 md:w-5/12">
                   <Image
                     src="/napoveda-editor/kontext.gif"
                     alt="Ukázka kontextového menu editoru"
@@ -123,15 +142,24 @@ export default function NapovedaEditor() {
                   />
                 </div>
                 <div className="flex-1 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Rychlé volby přes pravé tlačítko myši</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Rychlé volby přes pravé tlačítko myši
+                  </h3>
                   <ul className="space-y-2 text-gray-600">
                     <li className="flex gap-2">
                       <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                      <span><strong>Klik do prázdna:</strong> Otevře nabídku pro přidání nového tvaru a textu rovnou tam, kde máte myš.</span>
+                      <span>
+                        <strong>Klik do prázdna:</strong> Otevře nabídku pro
+                        přidání nového tvaru a textu rovnou tam, kde máte myš.
+                      </span>
                     </li>
                     <li className="flex gap-2">
                       <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                      <span><strong>Klik na prvek:</strong> Umožní prvek bleskově smazat, zkopírovat, pootočit po 90 stupních, nebo zrcadlově překlopit!</span>
+                      <span>
+                        <strong>Klik na prvek:</strong> Umožní prvek bleskově
+                        smazat, zkopírovat, pootočit po 90 stupních, nebo
+                        zrcadlově překlopit!
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -140,18 +168,24 @@ export default function NapovedaEditor() {
 
             {/* Vodítka a vrstvy */}
             <section>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="mb-6 flex items-center gap-3">
                 <Layers className="h-8 w-8 text-emerald-600" />
-                <h2 className="text-2xl font-bold tracking-tight">Pokročilý layout</h2>
+                <h2 className="text-2xl font-bold tracking-tight">
+                  Pokročilý layout
+                </h2>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Chytrá přichytávací vodítka</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Při pohybu objektů se automaticky objevují různá vodítka. Ta Vám pomohou objekt bleskově zarovnat na střed plátna, nebo jej přilepit k okrajům a středům jiných objektů na plátně.
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Chytrá přichytávací vodítka
+                  </h3>
+                  <p className="mb-4 text-sm text-gray-600">
+                    Při pohybu objektů se automaticky objevují různá vodítka. Ta
+                    Vám pomohou objekt bleskově zarovnat na střed plátna, nebo
+                    jej přilepit k okrajům a středům jiných objektů na plátně.
                   </p>
-                  <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border flex items-center justify-center shrink-0">
+                  <div className="relative flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-gray-100">
                     <Image
                       src="/napoveda-editor/voditka.gif"
                       alt="Ukázka přichytávacích vodítek"
@@ -163,11 +197,17 @@ export default function NapovedaEditor() {
                 </div>
 
                 <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Myš a pohyb po pracovní ploše</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Nevidíte na detaily? Kolečkem myši si můžete plochu <strong>přiblížit a oddálit</strong>. A pokud zmáčknete <strong>prostřední tlačítko myši</strong> (kolečko), můžete plátno uchopit a po ploše libovolně <strong>posouvat</strong> (tzv. Panování).
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Myš a pohyb po pracovní ploše
+                  </h3>
+                  <p className="mb-4 text-sm text-gray-600">
+                    Nevidíte na detaily? Kolečkem myši si můžete plochu{" "}
+                    <strong>přiblížit a oddálit</strong>. A pokud zmáčknete{" "}
+                    <strong>prostřední tlačítko myši</strong> (kolečko), můžete
+                    plátno uchopit a po ploše libovolně{" "}
+                    <strong>posouvat</strong> (tzv. Panování).
                   </p>
-                  <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border flex items-center justify-center shrink-0">
+                  <div className="relative flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-gray-100">
                     <Image
                       src="/napoveda-editor/pohyb.gif"
                       alt="Ukázka posouvání a přibližování plochy"
@@ -179,7 +219,6 @@ export default function NapovedaEditor() {
                 </div>
               </div>
             </section>
-
           </div>
         </div>
       </div>
@@ -189,13 +228,15 @@ export default function NapovedaEditor() {
   );
 }
 
-function ShortcutCard({ keys, desc }: { keys: string[], desc: string }) {
+function ShortcutCard({ keys, desc }: { keys: string[]; desc: string }) {
   return (
     <div className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex shrink-0 items-center gap-1">
         {keys.map((key, i) => (
           <React.Fragment key={i}>
-            {i > 0 && <span className="text-gray-400 text-xs font-semibold">+</span>}
+            {i > 0 && (
+              <span className="text-xs font-semibold text-gray-400">+</span>
+            )}
             <kbd className="inline-flex min-w-[30px] items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-900 shadow-[0_2px_0_0_rgba(229,231,235,1)]">
               {key}
             </kbd>

@@ -24,14 +24,14 @@ export function UserButton() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
 
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            setIsLoggingOut(false);
-            router.push("/");
-          },
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          setIsLoggingOut(false);
+          router.push("/");
         },
-      });
+      },
+    });
   };
 
   if (isPending) {
@@ -49,23 +49,29 @@ export function UserButton() {
   if (!session?.user) return null;
 
   const user = session.user;
-  const initials = user.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || user.email?.charAt(0).toUpperCase() || "U";
+  const initials =
+    user.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ||
+    user.email?.charAt(0).toUpperCase() ||
+    "U";
 
   return (
     <>
-      {isLoggingOut && <LoaderOverlay/>}
+      {isLoggingOut && <LoaderOverlay />}
 
       <DropdownMenu>
-        <DropdownMenuTrigger className="outline-none cursor-pointer hover:bg-black/5 p-2 rounded-[0.5rem] transition">
-          <div className="flex items-center gap-3 transition-opacity cursor-pointer select-none">
+        <DropdownMenuTrigger className="cursor-pointer rounded-[0.5rem] p-2 transition outline-none hover:bg-black/5">
+          <div className="flex cursor-pointer items-center gap-3 transition-opacity select-none">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.image ?? undefined} alt={user.name || "User"} />
-              <AvatarFallback className="bg-gradient-primary text-white font-semibold">
+              <AvatarImage
+                src={user.image ?? undefined}
+                alt={user.name || "User"}
+              />
+              <AvatarFallback className="bg-gradient-primary font-semibold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -74,20 +80,21 @@ export function UserButton() {
               <span className="text-base font-semibold text-gray-900">
                 {user.name || "Uživatel"}
               </span>
-              <span className="text-sm text-gray-500">
-                {user.email}
-              </span>
+              <span className="text-sm text-gray-500">{user.email}</span>
             </div>
           </div>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-70 h-[10.25rem]">
+        <DropdownMenuContent align="end" className="h-[10.25rem] w-70">
           {/* User info header */}
           <DropdownMenuLabel className="font-normal">
             <div className="flex items-center gap-3 py-1">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user.image ?? undefined} alt={user.name || "User"} />
-                <AvatarFallback className="bg-gradient-primary text-white font-semibold text-base">
+                <AvatarImage
+                  src={user.image ?? undefined}
+                  alt={user.name || "User"}
+                />
+                <AvatarFallback className="bg-gradient-primary text-base font-semibold text-white">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -95,9 +102,7 @@ export function UserButton() {
                 <span className="text-base font-semibold text-gray-900">
                   {user.name || "Uživatel"}
                 </span>
-                <span className="text-sm text-gray-500">
-                  {user.email}
-                </span>
+                <span className="text-sm text-gray-500">{user.email}</span>
               </div>
             </div>
           </DropdownMenuLabel>
@@ -109,14 +114,14 @@ export function UserButton() {
             onClick={() => router.push("/dashboard/nastaveni-uzivatele")}
             className="cursor-pointer py-2 text-base"
           >
-            <Settings className="mr-2 size-[1.25rem]"/>
+            <Settings className="mr-2 size-[1.25rem]" />
             <span>Nastavení</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="cursor-pointer py-2 0 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+            className="0 cursor-pointer py-2 text-base disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogOut className="mr-2 size-[1.25rem]" />
             <span>Odhlásit se</span>

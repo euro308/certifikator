@@ -27,9 +27,9 @@ export function CertificatePreviewStage({
   // Výpočet měřítka pro malý náhled
   const previewScale = width / CANVAS_WIDTH;
   const previewHeight = CANVAS_HEIGHT * previewScale;
-  
+
   const [certificatePreview, setCertificatePreview] = useState(false);
-  
+
   // State pro rozměry dialogu
   const [dialogDimensions, setDialogDimensions] = useState({
     width: CANVAS_WIDTH,
@@ -50,7 +50,10 @@ export function CertificatePreviewStage({
         // Maximální rozměry - odečteme padding dialogu a okna
         const maxWidth = Math.min(window.innerWidth - 80, 1200); // Max 1200px nebo okno minus padding
         // Zmenšíme maximální výšku na 85% výšky okna, aby dialog nebyl "přes celou obrazovku" na výšku
-        const maxHeight = Math.min(window.innerHeight - 120, window.innerHeight * 0.85);
+        const maxHeight = Math.min(
+          window.innerHeight - 120,
+          window.innerHeight * 0.85,
+        );
 
         // Zkusíme napasovat podle šířky
         let newWidth = maxWidth;
@@ -121,14 +124,17 @@ export function CertificatePreviewStage({
         open={certificatePreview}
         onOpenChange={(open) => setCertificatePreview(open)}
       >
-        <DialogContent className="max-w-fit w-auto overflow-hidden p-6">
+        <DialogContent className="w-auto max-w-fit overflow-hidden p-6">
           <DialogHeader className="mb-2">
             <DialogTitle>Detail certifikátu</DialogTitle>
           </DialogHeader>
-          
-          <div 
+
+          <div
             className="overflow-hidden rounded border shadow-sm"
-            style={{ width: dialogDimensions.width, height: dialogDimensions.height }}
+            style={{
+              width: dialogDimensions.width,
+              height: dialogDimensions.height,
+            }}
           >
             <Stage
               width={dialogDimensions.width}

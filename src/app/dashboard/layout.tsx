@@ -8,8 +8,8 @@ import React from "react";
 import { BreadcrumbsByPathname } from "@/components/breadcrumbs-by-pathname";
 
 export default async function DashboardLayout({
-                                                children,
-                                              }: {
+  children,
+}: {
   children: React.ReactNode;
 }) {
   const session = await auth.api.getSession({
@@ -23,8 +23,8 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <NavbarInside />
-      <main className="flex-1 w-full pt-22 lg:pt-28 pb-10">
-        <BreadcrumbsByPathname/>
+      <main className="w-full flex-1 pt-22 pb-10 lg:pt-28">
+        <BreadcrumbsByPathname />
         {children}
       </main>
       <FooterInside />

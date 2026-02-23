@@ -1,12 +1,15 @@
-import { useState, useCallback, useRef } from 'react';
-import type { CanvasElement } from '../types/canvas-types';
+import { useState, useCallback, useRef } from "react";
+import type { CanvasElement } from "../types/canvas-types";
 
 interface UseUndoRedoProps {
   initialElements: CanvasElement[];
   maxHistory?: number;
 }
 
-export function useUndoRedo({ initialElements = [], maxHistory = 50 }: UseUndoRedoProps) {
+export function useUndoRedo({
+  initialElements = [],
+  maxHistory = 50,
+}: UseUndoRedoProps) {
   // Historie stavů (pole polí elementů)
   // Používáme useRef pro samotnou historii, abychom nezpůsobovali re-rendery při každém pushi
   // Ale potřebujeme re-render pro update tlačítek undo/redo, takže index je state
@@ -18,23 +21,25 @@ export function useUndoRedo({ initialElements = [], maxHistory = 50 }: UseUndoRe
    * Mělo by se volat POUZE když uživatel dokončí akci (onDragEnd, onTransformEnd),
    * ne při každém pohybu myší!
    */
-  const addToHistory = useCallback((newElements: CanvasElement[]) => {
-    // Pokud jsme uprostřed historie a uděláme změnu, zahodíme "budoucnost"
-    const newHistory = historyRef.current.slice(0, currentIndex + 1);
+  const addToHistory = useCallback(
+    (newElements: CanvasElement[]) => {
+      // Pokud jsme uprostřed historie a uděláme změnu, zahodíme "budoucnost"
+      const newHistory = historyRef.current.slice(0, currentIndex + 1);
 
-    newHistory.push(newElements);
+      newHistory.push(newElements);
 
-    // Omezit velikost historie
-    if (newHistory.length > maxHistory) {
-      newHistory.shift();
-    }
+      // Omezit velikost historie
+      if (newHistory.length > maxHistory) {
+        newHistory.shift();
+      }
 
-    historyRef.current = newHistory;
-    // Nastavíme index na konec (na nový stav) - ale pozor, setIndex je asynchronní
-    // Pro undo/redo to nevadí, ale musíme vědět, že current index v refu odpovídá délce-1
-    setCurrentIndex(newHistory.length - 1);
-
-  }, [currentIndex, maxHistory]);
+      historyRef.current = newHistory;
+      // Nastavíme index na konec (na nový stav) - ale pozor, setIndex je asynchronní
+      // Pro undo/redo to nevadí, ale musíme vědět, že current index v refu odpovídá délce-1
+      setCurrentIndex(newHistory.length - 1);
+    },
+    [currentIndex, maxHistory],
+  );
 
   const undo = useCallback(() => {
     if (currentIndex > 0) {
@@ -65,6 +70,6 @@ export function useUndoRedo({ initialElements = [], maxHistory = 50 }: UseUndoRe
     redo,
     canUndo: currentIndex > 0,
     canRedo: currentIndex < historyRef.current.length - 1,
-    resetHistory
+    resetHistory,
   };
 }

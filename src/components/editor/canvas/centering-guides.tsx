@@ -1,5 +1,5 @@
-import React from 'react';
-import { Line } from 'react-konva';
+import React from "react";
+import { Line } from "react-konva";
 import type { SnapLine } from "@/components/editor/hooks/use-snap-to-center";
 
 interface CenteringGuidesProps {
@@ -10,11 +10,11 @@ interface CenteringGuidesProps {
 }
 
 export function CenteringGuides({
-                                  guides,
-                                  canvasWidth,
-                                  canvasHeight,
-                                  lineColor = 'rgb(0, 161, 255)', // Klasická "Konva/Figma" modrá
-                                }: CenteringGuidesProps) {
+  guides,
+  canvasWidth,
+  canvasHeight,
+  lineColor = "rgb(0, 161, 255)", // Klasická "Konva/Figma" modrá
+}: CenteringGuidesProps) {
   if (!guides || guides.length === 0) {
     return null;
   }
@@ -26,7 +26,7 @@ export function CenteringGuides({
         // Pro Vertikální: X je fixní (position), Y jde od 0 do výšky plátna
         // Pro Horizontální: Y je fixní (position), X jde od 0 do šířky plátna
         const points =
-          guide.orientation === 'V'
+          guide.orientation === "V"
             ? [guide.position, 0, guide.position, canvasHeight]
             : [0, guide.position, canvasWidth, guide.position];
 

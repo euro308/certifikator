@@ -287,9 +287,7 @@ export const templatesRouter = createTRPCRouter({
       })
       .from(templates)
       .innerJoin(user, eq(templates.userId, user.id))
-      .where(
-        and(eq(templates.isPublic, true), isNull(templates.deletedAt)),
-      )
+      .where(and(eq(templates.isPublic, true), isNull(templates.deletedAt)))
       .orderBy(desc(templates.createdAt));
 
     // Fetch favorites count per template

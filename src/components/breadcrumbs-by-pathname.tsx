@@ -78,7 +78,10 @@ export function BreadcrumbsByPathname() {
   }
 
   // If on home/dashboard root only, or if the only segment is "dashboard"
-  if (breadcrumbs.length === 0 || (pathSegments.length === 1 && pathSegments[0] === "dashboard")) {
+  if (
+    breadcrumbs.length === 0 ||
+    (pathSegments.length === 1 && pathSegments[0] === "dashboard")
+  ) {
     return null;
   }
 

@@ -101,7 +101,6 @@ export function EditorCanvas() {
     return () => resizeObserver.disconnect();
   }, []);
 
-
   // Zobrazení zoomu v procentech
   const zoomPercent = Math.round(zoom * 100);
 
@@ -126,7 +125,9 @@ export function EditorCanvas() {
     let cx = el.x;
     let cy = el.y;
 
-    if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+    if (
+      !isCenteredShape(el.type, el.type === "shape" ? el.shapeType : undefined)
+    ) {
       // Většina prvků (obdélníky, text, obrázky, line(která je rect)) má origin v top-left
       // Střed v lokálních souřadnicích
       const localCx = (el.width * (el.scaleX ?? 1)) / 2;
@@ -136,8 +137,10 @@ export function EditorCanvas() {
       const currentRad = (el.rotation * Math.PI) / 180;
 
       // Pozice středu globálně
-      cx = el.x + localCx * Math.cos(currentRad) - localCy * Math.sin(currentRad);
-      cy = el.y + localCx * Math.sin(currentRad) + localCy * Math.cos(currentRad);
+      cx =
+        el.x + localCx * Math.cos(currentRad) - localCy * Math.sin(currentRad);
+      cy =
+        el.y + localCx * Math.sin(currentRad) + localCy * Math.cos(currentRad);
     }
     // Pro centralizované prvky (kruhy) je el.x a el.y rovnou střed
 
@@ -148,7 +151,9 @@ export function EditorCanvas() {
     let newX = el.x;
     let newY = el.y;
 
-    if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+    if (
+      !isCenteredShape(el.type, el.type === "shape" ? el.shapeType : undefined)
+    ) {
       const newRad = (newRotation * Math.PI) / 180;
       const localCx = (el.width * (el.scaleX ?? 1)) / 2;
       const localCy = (el.height * (el.scaleY ?? 1)) / 2;
@@ -159,7 +164,8 @@ export function EditorCanvas() {
     }
 
     // Ošetření záporných rotací (aby to nedávalo -90 ale 270 pro lepší čitelnost)
-    const normalizedRotation = newRotation < 0 ? 360 + newRotation : newRotation;
+    const normalizedRotation =
+      newRotation < 0 ? 360 + newRotation : newRotation;
 
     updateElement(el.id, {
       rotation: normalizedRotation,
@@ -181,8 +187,17 @@ export function EditorCanvas() {
   };
 
   const isCenteredShape = (type: string, shapeType?: string) => {
-    if (type !== 'shape') return false;
-    return ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(shapeType ?? '');
+    if (type !== "shape") return false;
+    return [
+      "circle",
+      "ellipse",
+      "wedge",
+      "arc",
+      "ring",
+      "star",
+      "regularPolygon",
+      "triangle",
+    ].includes(shapeType ?? "");
   };
 
   const flipVertical = () => {
@@ -194,10 +209,15 @@ export function EditorCanvas() {
       let newX = el.x;
       let newY = el.y;
 
-      if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+      if (
+        !isCenteredShape(
+          el.type,
+          el.type === "shape" ? el.shapeType : undefined,
+        )
+      ) {
         const rad = (el.rotation * Math.PI) / 180;
-        newX = el.x - (oldSY * el.height) * Math.sin(rad);
-        newY = el.y + (oldSY * el.height) * Math.cos(rad);
+        newX = el.x - oldSY * el.height * Math.sin(rad);
+        newY = el.y + oldSY * el.height * Math.cos(rad);
       }
 
       updateElement(el.id, {
@@ -217,10 +237,15 @@ export function EditorCanvas() {
       let newX = el.x;
       let newY = el.y;
 
-      if (!isCenteredShape(el.type, el.type === 'shape' ? el.shapeType : undefined)) {
+      if (
+        !isCenteredShape(
+          el.type,
+          el.type === "shape" ? el.shapeType : undefined,
+        )
+      ) {
         const rad = (el.rotation * Math.PI) / 180;
-        newX = el.x + (oldSX * el.width) * Math.cos(rad);
-        newY = el.y + (oldSX * el.width) * Math.sin(rad);
+        newX = el.x + oldSX * el.width * Math.cos(rad);
+        newY = el.y + oldSX * el.width * Math.sin(rad);
       }
 
       updateElement(el.id, {
@@ -261,7 +286,7 @@ export function EditorCanvas() {
               <ContextMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex justify-between items-center w-full">
+                    <div className="flex w-full items-center justify-between">
                       <span className="flex items-center gap-2">
                         <Square className="size-4" />
                         Přidat tvar
@@ -269,7 +294,11 @@ export function EditorCanvas() {
                       <ChevronRight className="size-4 opacity-50" />
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" side="right" align="start">
+                  <DropdownMenuContent
+                    className="w-56"
+                    side="right"
+                    align="start"
+                  >
                     <DropdownMenuLabel>Základní tvary</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <div className="max-h-[300px] overflow-y-auto">
@@ -314,11 +343,11 @@ export function EditorCanvas() {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
                   <ContextMenuItem onClick={rotateLeft}>
-                    <RotateCcw className="size-4 mr-2" />
+                    <RotateCcw className="mr-2 size-4" />
                     Otočit o 90° doleva
                   </ContextMenuItem>
                   <ContextMenuItem onClick={rotateRight}>
-                    <RotateCw className="size-4 mr-2" />
+                    <RotateCw className="mr-2 size-4" />
                     Otočit o 90° doprava
                   </ContextMenuItem>
                 </ContextMenuSubContent>
@@ -331,17 +360,19 @@ export function EditorCanvas() {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
                   <ContextMenuItem onClick={flipVertical}>
-                    <FlipVertical className="size-4 mr-2" />
+                    <FlipVertical className="mr-2 size-4" />
                     Překlopit svisle
                   </ContextMenuItem>
                   <ContextMenuItem onClick={flipHorizontal}>
-                    <FlipHorizontal className="size-4 mr-2" />
+                    <FlipHorizontal className="mr-2 size-4" />
                     Překlopit vodorovně
                   </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
 
-              <ContextMenuItem onClick={() => deleteElement(selectedElement.id)}>
+              <ContextMenuItem
+                onClick={() => deleteElement(selectedElement.id)}
+              >
                 <Trash className={"size-4"} color="#e7000b" />
                 <span className="text-red-600">Smazat prvek</span>
               </ContextMenuItem>

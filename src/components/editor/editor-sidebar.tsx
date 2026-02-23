@@ -2,15 +2,15 @@
 // EDITOR SIDEBAR - Levý panel s nástroji
 // =============================================================================
 
-'use client';
+"use client";
 
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { TextFormattingSection } from './sidebar/text-formatting-section';
-import { AddElementSection } from './sidebar/add-element-section';
-import { AddShapeSection } from './sidebar/add-shape-section';
-import { ShapePropertiesSection } from './sidebar/shape-properties-section';
-import { LayersSection } from './sidebar/layers-section';
+import { TextFormattingSection } from "./sidebar/text-formatting-section";
+import { AddElementSection } from "./sidebar/add-element-section";
+import { AddShapeSection } from "./sidebar/add-shape-section";
+import { ShapePropertiesSection } from "./sidebar/shape-properties-section";
+import { LayersSection } from "./sidebar/layers-section";
 
 /**
  * Levý panel editoru
@@ -21,12 +21,10 @@ import { LayersSection } from './sidebar/layers-section';
  * - (další sekce budou doplněny)
  */
 export function EditorSidebar() {
-
   return (
-    <div className="w-72 flex-shrink-0 border-r bg-background">
+    <div className="bg-background w-72 flex-shrink-0 border-r">
       <ScrollArea className="h-full">
-        <div className="p-4 space-y-4">
-
+        <div className="space-y-4 p-4">
           {/* SEKCE: Přidat prvek */}
           <AddElementSection />
           <AddShapeSection />
@@ -39,7 +37,6 @@ export function EditorSidebar() {
 
           {/* SEKCE: Vrstvy */}
           <LayersSection />
-
         </div>
       </ScrollArea>
     </div>

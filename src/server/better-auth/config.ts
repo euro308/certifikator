@@ -41,12 +41,15 @@ export const auth = betterAuth({
           FAILED_TO_UPDATE_USER: "Nepodařilo se aktualizovat uživatele",
           USER_ALREADY_EXISTS: "Uživatel již existuje",
           USER_EMAIL_NOT_FOUND: "Email uživatele nenalezen",
-          USER_ALREADY_HAS_PASSWORD: "Uživatel již má heslo. Pro smazání účtu ho zadejte.",
-          USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Uživatel již existuje. Použijte jiný email.",
+          USER_ALREADY_HAS_PASSWORD:
+            "Uživatel již má heslo. Pro smazání účtu ho zadejte.",
+          USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+            "Uživatel již existuje. Použijte jiný email.",
 
           FAILED_TO_CREATE_SESSION: "Nepodařilo se vytvořit relaci",
           FAILED_TO_GET_SESSION: "Nepodařilo se získat relaci",
-          SESSION_EXPIRED: "Platnost relace vypršela. Pro provedení této akce se znovu přihlaste.",
+          SESSION_EXPIRED:
+            "Platnost relace vypršela. Pro provedení této akce se znovu přihlaste.",
 
           INVALID_PASSWORD: "Neplatné heslo",
           INVALID_EMAIL: "Neplatný email",

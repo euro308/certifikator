@@ -26,12 +26,12 @@ export function CertificateThumbnailGenerator({
   // 1. Preload images to ensure they are ready for capture
   useEffect(() => {
     let isMounted = true;
-    
+
     const loadImages = async () => {
       const imageElements = elements.filter(
-        (el): el is ImageElement => el.type === "image"
+        (el): el is ImageElement => el.type === "image",
       );
-      
+
       if (imageElements.length === 0) {
         if (isMounted) setImagesLoaded(true);
         return;
@@ -52,8 +52,10 @@ export function CertificateThumbnailGenerator({
     };
 
     void loadImages();
-    
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, [elements]);
 
   // 2. Capture stage once images are loaded and stage is rendered
@@ -72,7 +74,7 @@ export function CertificateThumbnailGenerator({
             console.error("Failed to generate thumbnail", e);
             // Even if failed, call onGenerate to move to next (maybe with empty string or retry?)
             // For now, let's assume success or just skip
-            onGenerate(""); 
+            onGenerate("");
           }
         }
       }, 100); // 100ms delay should be enough after images are loaded
@@ -84,12 +86,15 @@ export function CertificateThumbnailGenerator({
   if (!imagesLoaded) return null;
 
   return (
-    <div style={{ position: "absolute", top: -10000, left: -10000, visibility: "hidden" }}>
-      <Stage
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        ref={stageRef}
-      >
+    <div
+      style={{
+        position: "absolute",
+        top: -10000,
+        left: -10000,
+        visibility: "hidden",
+      }}
+    >
+      <Stage width={CANVAS_WIDTH} height={CANVAS_HEIGHT} ref={stageRef}>
         <Layer>
           <Rect
             x={0}

@@ -2,7 +2,7 @@
 // EDITOR CANVAS CONTENT - Vnitřní implementace Konva plátna
 // =============================================================================
 
-'use client';
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Layer, Rect, Stage } from "react-konva";
@@ -12,14 +12,17 @@ import { TextEditor } from "./text-editor";
 import { CenteringGuides } from "./centering-guides";
 import { SelectionTransformer } from "./selection-transformer";
 import { CanvasElementRenderer } from "./canvas-element";
-import { type ElementBounds, useSnapToCenter } from "../hooks/use-snap-to-center";
+import {
+  type ElementBounds,
+  useSnapToCenter,
+} from "../hooks/use-snap-to-center";
 import { useCanvasZoom } from "../hooks/use-canvas-zoom";
 import {
   type AnyElementUpdate,
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   type PlaceholderElement,
-  type TextElement
+  type TextElement,
 } from "../types/canvas-types";
 
 interface EditorCanvasContentProps {
@@ -30,7 +33,10 @@ interface EditorCanvasContentProps {
 /**
  * Vnitřní obsah plátna s Konva
  */
-export function EditorCanvasContent({ containerWidth, containerHeight }: EditorCanvasContentProps) {
+export function EditorCanvasContent({
+  containerWidth,
+  containerHeight,
+}: EditorCanvasContentProps) {
   const stageRef = useRef<Konva.Stage>(null);
 
   // Stav pro editaci textu
@@ -86,7 +92,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
           stageRef.current.position({ x: 0, y: 0 });
 
           // Skryjeme transformační prvky (ošetří transformer v uloženém náhledu šablony)
-          const transformers = stageRef.current.find('Transformer');
+          const transformers = stageRef.current.find("Transformer");
           transformers.forEach((t) => t.hide());
 
           const dataUrl = stageRef.current.toDataURL({
@@ -95,7 +101,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
             pixelRatio: 1,
-            mimeType: 'image/jpeg',
+            mimeType: "image/jpeg",
           });
 
           // Obnovíme zobrazení transformačních prvků
@@ -113,7 +119,9 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   }, [setGetPreviewImageCallback]);
 
   // Hook pro snapping
-  const { checkSnap, guides, hideGuides, showGuides } = useSnapToCenter({ elements });
+  const { checkSnap, guides, hideGuides, showGuides } = useSnapToCenter({
+    elements,
+  });
 
   // ==========================================================================
   // VÝPOČET SCALE A POZICE
@@ -122,7 +130,11 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   const padding = 40;
   const availableWidth = containerWidth - padding * 2;
   const availableHeight = containerHeight - padding * 2;
-  const baseScale = Math.min(availableWidth / CANVAS_WIDTH, availableHeight / CANVAS_HEIGHT, 1);
+  const baseScale = Math.min(
+    availableWidth / CANVAS_WIDTH,
+    availableHeight / CANVAS_HEIGHT,
+    1,
+  );
 
   const finalScale = baseScale * zoom;
 
@@ -152,156 +164,175 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   // MOUSE HANDLERS (PANNING & SELECTION)
   // ==========================================================================
 
-  const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    // 1. Middle mouse button -> PANNING
-    if (e.evt.button === 1) {
-      e.evt.preventDefault();
-      setIsPanning(true);
-      lastPanPosition.current = { x: e.evt.clientX, y: e.evt.clientY };
-      const stage = stageRef.current;
-      if (stage) stage.container().style.cursor = 'grabbing';
-      return;
-    }
-
-    // 2. Left mouse button on EMPTY space -> SELECTION RECT
-    // Ignorujeme, pokud klikáme na transformer nebo prvek (to řeší handleElementClick/Drag)
-    const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === 'background';
-
-    if (e.evt.button === 0 && clickedOnEmpty) {
-      // Zrušíme výběr, pokud nedržíme Shift/Ctrl (standardní chování)
-      // Ale pozor: handleStageClick se volá při "click", toto je "mousedown".
-      // Pokud tady zrušíme výběr, uživatel neuvidí, že se něco děje, dokud nezačne táhnout.
-      // Raději to necháme na handleStageClick pro prosté kliknutí,
-      // a zde pouze připravíme výběr.
-
-      const stage = stageRef.current;
-      if (!stage) return;
-
-      // Získáme pointer relativně k Stage (v souřadnicích scény - Layeru)
-      // Použijeme absolutní transformaci a její inverzi pro převod z screen coords do world coords
-      const transform = stage.getAbsoluteTransform().copy().invert();
-      const pos = transform.point(stage.getPointerPosition()!);
-
-      if (pos) {
-        setIsSelecting(true);
-        isSelectingRef.current = true;
-        setSelectionRect({
-          visible: true,
-          x1: pos.x,
-          y1: pos.y,
-          x2: pos.x,
-          y2: pos.y,
-        });
-      }
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    // Panning
-    if (isPanning && lastPanPosition.current) {
-      const dx = e.evt.clientX - lastPanPosition.current.x;
-      const dy = e.evt.clientY - lastPanPosition.current.y;
-      setPan({
-        x: pan.x + dx,
-        y: pan.y + dy,
-      });
-      lastPanPosition.current = { x: e.evt.clientX, y: e.evt.clientY };
-      return;
-    }
-
-    // Selection Rect
-    if (isSelecting) {
-      const stage = stageRef.current;
-      if (!stage) return;
-
-      const transform = stage.getAbsoluteTransform().copy().invert();
-      const pos = transform.point(stage.getPointerPosition()!);
-
-      if (pos) {
-        setSelectionRect(prev => ({
-          ...prev,
-          x2: pos.x,
-          y2: pos.y,
-        }));
-      }
-    }
-  }, [isPanning, isSelecting, pan, setPan]);
-
-  const handleMouseUp = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    // Panning end
-    if (isPanning) {
-      setIsPanning(false);
-      lastPanPosition.current = null;
-      const stage = stageRef.current;
-      if (stage) stage.container().style.cursor = 'default';
-      return;
-    }
-
-    // Selection Rect end
-    if (isSelecting) {
-      setIsSelecting(false);
-      isSelectingRef.current = false;
-      setSelectionRect(prev => ({ ...prev, visible: false })); // Skryjeme hned
-
-      const stage = stageRef.current;
-      if (!stage) return;
-
-      // Pokud byl výběr velmi malý (jen kliknutí), neřešíme ho zde (řeší handleStageClick)
-      const dist = Math.sqrt(
-        Math.pow(selectionRect.x2 - selectionRect.x1, 2) +
-        Math.pow(selectionRect.y2 - selectionRect.y1, 2)
-      );
-
-      if (dist < 5) {
+  const handleMouseDown = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // 1. Middle mouse button -> PANNING
+      if (e.evt.button === 1) {
+        e.evt.preventDefault();
+        setIsPanning(true);
+        lastPanPosition.current = { x: e.evt.clientX, y: e.evt.clientY };
+        const stage = stageRef.current;
+        if (stage) stage.container().style.cursor = "grabbing";
         return;
       }
 
-      // Vypočítat box výběru (normalizovaný na kladnou šířku/výšku)
-      const selBox = {
-        x: Math.min(selectionRect.x1, selectionRect.x2),
-        y: Math.min(selectionRect.y1, selectionRect.y2),
-        width: Math.abs(selectionRect.x2 - selectionRect.x1),
-        height: Math.abs(selectionRect.y2 - selectionRect.y1),
-      };
+      // 2. Left mouse button on EMPTY space -> SELECTION RECT
+      // Ignorujeme, pokud klikáme na transformer nebo prvek (to řeší handleElementClick/Drag)
+      const clickedOnEmpty =
+        e.target === e.target.getStage() || e.target.name() === "background";
 
-      const foundIds: string[] = [];
-      const layer = stage.getLayers()[0];
+      if (e.evt.button === 0 && clickedOnEmpty) {
+        // Zrušíme výběr, pokud nedržíme Shift/Ctrl (standardní chování)
+        // Ale pozor: handleStageClick se volá při "click", toto je "mousedown".
+        // Pokud tady zrušíme výběr, uživatel neuvidí, že se něco děje, dokud nezačne táhnout.
+        // Raději to necháme na handleStageClick pro prosté kliknutí,
+        // a zde pouze připravíme výběr.
 
-      if (layer) {
-        elements.forEach(el => {
-          const node = layer.findOne(`#${el.id}`);
-          if (node) {
-            // Získáme bounding box elementu relativně k layeru (stejný souřadný systém jako selBox)
-            const nodeRect = node.getClientRect({ relativeTo: layer });
+        const stage = stageRef.current;
+        if (!stage) return;
 
-            // Manuální kontrola průniku (AABB)
-            const hasIntersection = !(
-              nodeRect.x > selBox.x + selBox.width ||
-              nodeRect.x + nodeRect.width < selBox.x ||
-              nodeRect.y > selBox.y + selBox.height ||
-              nodeRect.y + nodeRect.height < selBox.y
-            );
+        // Získáme pointer relativně k Stage (v souřadnicích scény - Layeru)
+        // Použijeme absolutní transformaci a její inverzi pro převod z screen coords do world coords
+        const transform = stage.getAbsoluteTransform().copy().invert();
+        const pos = transform.point(stage.getPointerPosition()!);
 
-            if (hasIntersection) {
-              foundIds.push(el.id);
-            }
-          }
+        if (pos) {
+          setIsSelecting(true);
+          isSelectingRef.current = true;
+          setSelectionRect({
+            visible: true,
+            x1: pos.x,
+            y1: pos.y,
+            x2: pos.x,
+            y2: pos.y,
+          });
+        }
+      }
+    },
+    [],
+  );
+
+  const handleMouseMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // Panning
+      if (isPanning && lastPanPosition.current) {
+        const dx = e.evt.clientX - lastPanPosition.current.x;
+        const dy = e.evt.clientY - lastPanPosition.current.y;
+        setPan({
+          x: pan.x + dx,
+          y: pan.y + dy,
         });
+        lastPanPosition.current = { x: e.evt.clientX, y: e.evt.clientY };
+        return;
       }
 
-      // Shift key logika pro přidání k výběru?
-      // Pro jednoduchost teď: výběr nahradí starý výběr, pokud nedržíme Shift/Ctrl
-      const isMultiKey = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
+      // Selection Rect
+      if (isSelecting) {
+        const stage = stageRef.current;
+        if (!stage) return;
 
-      if (isMultiKey) {
-        // Přidáme unikátní
-        const newSelection = Array.from(new Set([...selectedIds, ...foundIds]));
-        setSelectedIds(newSelection);
-      } else {
-        setSelectedIds(foundIds);
+        const transform = stage.getAbsoluteTransform().copy().invert();
+        const pos = transform.point(stage.getPointerPosition()!);
+
+        if (pos) {
+          setSelectionRect((prev) => ({
+            ...prev,
+            x2: pos.x,
+            y2: pos.y,
+          }));
+        }
       }
-    }
-  }, [isPanning, isSelecting, selectionRect, elements, selectedIds, setSelectedIds]);
+    },
+    [isPanning, isSelecting, pan, setPan],
+  );
+
+  const handleMouseUp = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      // Panning end
+      if (isPanning) {
+        setIsPanning(false);
+        lastPanPosition.current = null;
+        const stage = stageRef.current;
+        if (stage) stage.container().style.cursor = "default";
+        return;
+      }
+
+      // Selection Rect end
+      if (isSelecting) {
+        setIsSelecting(false);
+        isSelectingRef.current = false;
+        setSelectionRect((prev) => ({ ...prev, visible: false })); // Skryjeme hned
+
+        const stage = stageRef.current;
+        if (!stage) return;
+
+        // Pokud byl výběr velmi malý (jen kliknutí), neřešíme ho zde (řeší handleStageClick)
+        const dist = Math.sqrt(
+          Math.pow(selectionRect.x2 - selectionRect.x1, 2) +
+            Math.pow(selectionRect.y2 - selectionRect.y1, 2),
+        );
+
+        if (dist < 5) {
+          return;
+        }
+
+        // Vypočítat box výběru (normalizovaný na kladnou šířku/výšku)
+        const selBox = {
+          x: Math.min(selectionRect.x1, selectionRect.x2),
+          y: Math.min(selectionRect.y1, selectionRect.y2),
+          width: Math.abs(selectionRect.x2 - selectionRect.x1),
+          height: Math.abs(selectionRect.y2 - selectionRect.y1),
+        };
+
+        const foundIds: string[] = [];
+        const layer = stage.getLayers()[0];
+
+        if (layer) {
+          elements.forEach((el) => {
+            const node = layer.findOne(`#${el.id}`);
+            if (node) {
+              // Získáme bounding box elementu relativně k layeru (stejný souřadný systém jako selBox)
+              const nodeRect = node.getClientRect({ relativeTo: layer });
+
+              // Manuální kontrola průniku (AABB)
+              const hasIntersection = !(
+                nodeRect.x > selBox.x + selBox.width ||
+                nodeRect.x + nodeRect.width < selBox.x ||
+                nodeRect.y > selBox.y + selBox.height ||
+                nodeRect.y + nodeRect.height < selBox.y
+              );
+
+              if (hasIntersection) {
+                foundIds.push(el.id);
+              }
+            }
+          });
+        }
+
+        // Shift key logika pro přidání k výběru?
+        // Pro jednoduchost teď: výběr nahradí starý výběr, pokud nedržíme Shift/Ctrl
+        const isMultiKey = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
+
+        if (isMultiKey) {
+          // Přidáme unikátní
+          const newSelection = Array.from(
+            new Set([...selectedIds, ...foundIds]),
+          );
+          setSelectedIds(newSelection);
+        } else {
+          setSelectedIds(foundIds);
+        }
+      }
+    },
+    [
+      isPanning,
+      isSelecting,
+      selectionRect,
+      elements,
+      selectedIds,
+      setSelectedIds,
+    ],
+  );
 
   // Global mouse up handling
   useEffect(() => {
@@ -313,11 +344,11 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
       if (isSelecting) {
         setIsSelecting(false);
         isSelectingRef.current = false;
-        setSelectionRect(prev => ({ ...prev, visible: false }));
+        setSelectionRect((prev) => ({ ...prev, visible: false }));
       }
     };
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, [isPanning, isSelecting]);
 
   // Zamezení kontextového menu
@@ -327,31 +358,41 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     const preventContextMenu = (e: MouseEvent) => {
       if (e.button === 1) e.preventDefault();
     };
-    container.addEventListener('auxclick', preventContextMenu);
-    return () => container.removeEventListener('auxclick', preventContextMenu);
+    container.addEventListener("auxclick", preventContextMenu);
+    return () => container.removeEventListener("auxclick", preventContextMenu);
   }, []);
 
   // ==========================================================================
   // TEXT EDITING
   // ==========================================================================
 
-  const handleTextDblClick = useCallback((element: TextElement, e: Konva.KonvaEventObject<MouseEvent>) => {
-    editingTextNodeRef.current = e.target as Konva.Text;
-    setEditingId(element.id);
-  }, []);
+  const handleTextDblClick = useCallback(
+    (element: TextElement, e: Konva.KonvaEventObject<MouseEvent>) => {
+      editingTextNodeRef.current = e.target as Konva.Text;
+      setEditingId(element.id);
+    },
+    [],
+  );
 
-  const handleTextChange = useCallback((newText: string, newHeight: number) => {
-    if (editingId) {
-      const element = elements.find(el => el.id === editingId);
-      if (!element) return;
-      if (element.type === 'text') {
-        updateElement(editingId, { text: newText, height: newHeight });
-      } else if (element.type === 'placeholder') {
-        const cleanKey = newText.replace(/^{{|}}$/g, '');
-        updateElement(editingId, { placeholderKey: cleanKey, displayText: `{{${cleanKey}}}`, height: newHeight });
+  const handleTextChange = useCallback(
+    (newText: string, newHeight: number) => {
+      if (editingId) {
+        const element = elements.find((el) => el.id === editingId);
+        if (!element) return;
+        if (element.type === "text") {
+          updateElement(editingId, { text: newText, height: newHeight });
+        } else if (element.type === "placeholder") {
+          const cleanKey = newText.replace(/^{{|}}$/g, "");
+          updateElement(editingId, {
+            placeholderKey: cleanKey,
+            displayText: `{{${cleanKey}}}`,
+            height: newHeight,
+          });
+        }
       }
-    }
-  }, [editingId, elements, updateElement]);
+    },
+    [editingId, elements, updateElement],
+  );
 
   const handleTextEditorClose = useCallback(() => {
     editingTextNodeRef.current = null;
@@ -365,91 +406,97 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
   // Transformer sám modifikuje properties uzlů (x, y, scaleX, rotation...).
   // My musíme tyto změny promítnout do React state v onTransformEnd.
 
-  const handleTransform = useCallback((id: string, e: Konva.KonvaEventObject<Event>) => {
-    const node = e.target;
-    const element = elements.find(el => el.id === id);
-    if (!element) return;
+  const handleTransform = useCallback(
+    (id: string, e: Konva.KonvaEventObject<Event>) => {
+      const node = e.target;
+      const element = elements.find((el) => el.id === id);
+      if (!element) return;
 
-    // Pro text a placeholder chceme měnit šířku (zalamování), ne font size (škálování)
-    if (element.type === 'text' || element.type === 'placeholder') {
-      const scaleX = node.scaleX();
+      // Pro text a placeholder chceme měnit šířku (zalamování), ne font size (škálování)
+      if (element.type === "text" || element.type === "placeholder") {
+        const scaleX = node.scaleX();
 
-      // Pokud došlo ke změně scale (roztahování), aplikujeme to do width a resetujeme scale
-      if (scaleX !== 1) {
-        // Aplikujeme scale do width
-        const newWidth = Math.max(20, node.width() * scaleX);
-        node.width(newWidth);
+        // Pokud došlo ke změně scale (roztahování), aplikujeme to do width a resetujeme scale
+        if (scaleX !== 1) {
+          // Aplikujeme scale do width
+          const newWidth = Math.max(20, node.width() * scaleX);
+          node.width(newWidth);
 
-        // Reset scale na 1
-        node.scaleX(1);
-        node.scaleY(1);
+          // Reset scale na 1
+          node.scaleX(1);
+          node.scaleY(1);
+        }
       }
-    }
-  }, [elements]);
+    },
+    [elements],
+  );
 
-  const onShapeTransformEnd = useCallback((id: string, e: Konva.KonvaEventObject<Event>) => {
-    const node = e.target;
-    const element = elements.find(el => el.id === id);
-    if (!element) return;
+  const onShapeTransformEnd = useCallback(
+    (id: string, e: Konva.KonvaEventObject<Event>) => {
+      const node = e.target;
+      const element = elements.find((el) => el.id === id);
+      if (!element) return;
 
-    // Reset scale an update width/height/points
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
+      // Reset scale an update width/height/points
+      const scaleX = node.scaleX();
+      const scaleY = node.scaleY();
 
-    const signX = Math.sign(scaleX) || 1;
-    const signY = Math.sign(scaleY) || 1;
-    const absScaleX = Math.abs(scaleX);
-    const absScaleY = Math.abs(scaleY);
+      const signX = Math.sign(scaleX) || 1;
+      const signY = Math.sign(scaleY) || 1;
+      const absScaleX = Math.abs(scaleX);
+      const absScaleY = Math.abs(scaleY);
 
-    // Reset node scale (protože ukládáme absolutní rozměry)
-    node.scaleX(signX);
-    node.scaleY(signY);
+      // Reset node scale (protože ukládáme absolutní rozměry)
+      node.scaleX(signX);
+      node.scaleY(signY);
 
-    const updates: AnyElementUpdate = {
-      x: Math.round(node.x()),
-      y: Math.round(node.y()),
-      rotation: Math.round(node.rotation() * 100) / 100,
-      scaleX: signX,
-      scaleY: signY,
-    };
+      const updates: AnyElementUpdate = {
+        x: Math.round(node.x()),
+        y: Math.round(node.y()),
+        rotation: Math.round(node.rotation() * 100) / 100,
+        scaleX: signX,
+        scaleY: signY,
+      };
 
-    if (element.type === 'text' || element.type === 'placeholder') {
-      updates.width = Math.round(Math.max(20, node.width() * absScaleX));
-      // Výška se u textu dopočítává automaticky nebo ji necháme
-      // updates.height = ...
-    }
-    else if (element.type === 'shape' && element.shapeType === 'arrow') {
-      // Pro šipky aplikujeme scale na body
-      const points = element.points ?? [0, 0, 100, 100];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      (updates as any).points = points.map((p: number, i: number) => {
-        return Math.round(i % 2 === 0 ? p * absScaleX : p * absScaleY);
-      });
-    }
-    else if (element.type === 'image') {
-      updates.width = Math.round(node.width() * absScaleX);
-      updates.height = Math.round(node.height() * absScaleY);
-    }
-    else {
-      // Shapes
-      updates.width = Math.round(node.width() * absScaleX);
-      updates.height = Math.round(node.height() * absScaleY);
-    }
+      if (element.type === "text" || element.type === "placeholder") {
+        updates.width = Math.round(Math.max(20, node.width() * absScaleX));
+        // Výška se u textu dopočítává automaticky nebo ji necháme
+        // updates.height = ...
+      } else if (element.type === "shape" && element.shapeType === "arrow") {
+        // Pro šipky aplikujeme scale na body
+        const points = element.points ?? [0, 0, 100, 100];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (updates as any).points = points.map((p: number, i: number) => {
+          return Math.round(i % 2 === 0 ? p * absScaleX : p * absScaleY);
+        });
+      } else if (element.type === "image") {
+        updates.width = Math.round(node.width() * absScaleX);
+        updates.height = Math.round(node.height() * absScaleY);
+      } else {
+        // Shapes
+        updates.width = Math.round(node.width() * absScaleX);
+        updates.height = Math.round(node.height() * absScaleY);
+      }
 
-    updateElement(id, updates);
-  }, [elements, updateElement]);
+      updateElement(id, updates);
+    },
+    [elements, updateElement],
+  );
 
   // ==========================================================================
   // DRAG & DROP + SNAPPING
   // ==========================================================================
 
-  const handleDragStart = (id: string, e: Konva.KonvaEventObject<DragEvent>) => {
+  const handleDragStart = (
+    id: string,
+    e: Konva.KonvaEventObject<DragEvent>,
+  ) => {
     // Uložíme startovní pozice všech vybraných prvků
     const startPos: Record<string, { x: number; y: number }> = {};
     const layer = e.target.getLayer();
 
     if (selectedIds.includes(id) && layer) {
-      selectedIds.forEach(selId => {
+      selectedIds.forEach((selId) => {
         const node = layer.findOne(`#${selId}`);
         if (node) {
           startPos[selId] = { x: node.x(), y: node.y() };
@@ -470,7 +517,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // Pokud nemáme vybráno více prvků, použijeme jednoduchou logiku (stávající)
     if (selectedIds.length <= 1) {
-      const element = elements.find(el => el.id === id);
+      const element = elements.find((el) => el.id === id);
       if (!element) return;
 
       const bounds: ElementBounds = {
@@ -480,7 +527,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
         height: node.height() * node.scaleY(),
         rotation: node.rotation(),
         type: element.type,
-        shapeType: element.type === 'shape' ? element.shapeType : undefined
+        shapeType: element.type === "shape" ? element.shapeType : undefined,
       };
       const result = checkSnap(bounds, id);
       node.position({ x: result.x, y: result.y });
@@ -502,13 +549,16 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // 2. Vypočítáme "Virtual Bounding Box" celé skupiny na nové pozici
     // Projdeme všechny vybrané prvky a zjistíme jejich (hypotetický) bounding box po aplikaci dx, dy
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
 
-    selectedIds.forEach(selId => {
+    selectedIds.forEach((selId) => {
       const original = dragStartPosRef.current[selId];
       if (!original) return;
 
-      const el = elements.find(item => item.id === selId);
+      const el = elements.find((item) => item.id === selId);
       // Musíme najít Node pro získání šířky/výšky (kvůli scale)
       const n = layer.findOne(`#${selId}`);
 
@@ -524,8 +574,18 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
         let left = newX;
         let top = newY;
 
-        const isCentered = el.type === 'shape' &&
-          ['circle', 'ellipse', 'wedge', 'arc', 'ring', 'star', 'regularPolygon', 'triangle'].includes(el.shapeType);
+        const isCentered =
+          el.type === "shape" &&
+          [
+            "circle",
+            "ellipse",
+            "wedge",
+            "arc",
+            "ring",
+            "star",
+            "regularPolygon",
+            "triangle",
+          ].includes(el.shapeType);
 
         if (isCentered) {
           left = newX - w / 2;
@@ -547,8 +607,8 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
       width: maxX - minX,
       height: maxY - minY,
       rotation: 0,
-      type: 'shape', // Fiktivní typ aby prošel typovou kontrolou
-      shapeType: 'rect'
+      type: "shape", // Fiktivní typ aby prošel typovou kontrolou
+      shapeType: "rect",
     };
 
     // checkSnap vrátí opravené x/y pro levý horní roh groupBounds
@@ -564,13 +624,13 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     const finalDy = dy + snapDy;
 
     // 5. Aplikujeme pohyb na všechny vybrané prvky (VČETNĚ toho taženého!)
-    selectedIds.forEach(selId => {
+    selectedIds.forEach((selId) => {
       const n = layer.findOne(`#${selId}`);
       const original = dragStartPosRef.current[selId];
       if (n && original) {
         n.position({
           x: original.x + finalDx,
-          y: original.y + finalDy
+          y: original.y + finalDy,
         });
       }
     });
@@ -583,7 +643,7 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
 
     // Pokud je vybráno více prvků, musíme aktualizovat všechny
     if (selectedIds.length > 1 && selectedIds.includes(id)) {
-      selectedIds.forEach(selId => {
+      selectedIds.forEach((selId) => {
         const node = layer.findOne(`#${selId}`);
         if (node) {
           updateElement(selId, {
@@ -611,14 +671,18 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
     // Používáme ref, protože state update může být asynchronní
     if (isSelectingRef.current) return;
 
-    const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === 'background';
+    const clickedOnEmpty =
+      e.target === e.target.getStage() || e.target.name() === "background";
     if (clickedOnEmpty) {
       // Deselect all
       setSelectedIds([]);
     }
   };
 
-  const handleElementClick = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleElementClick = (
+    id: string,
+    e: Konva.KonvaEventObject<MouseEvent>,
+  ) => {
     e.cancelBubble = true;
 
     const isMultiKey = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
@@ -686,9 +750,10 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             isSelected={selectedIds.includes(element.id)}
             isEditing={editingId === element.id}
             isPanning={isPanning}
-
             // Callbacky
-            onSelect={(_id) => { /* handled by onClick directly now */ }}
+            onSelect={(_id) => {
+              /* handled by onClick directly now */
+            }}
             onClick={handleElementClick}
             onDblClick={handleTextDblClick}
             onDragStart={(e) => handleDragStart(element.id, e)} // Přidáno
@@ -713,8 +778,12 @@ export function EditorCanvasContent({ containerWidth, containerHeight }: EditorC
             onChange={handleTextChange}
             onClose={handleTextEditorClose}
             initialValue={
-              elements.find(el => el.id === editingId)?.type === 'placeholder'
-                ? (elements.find(el => el.id === editingId) as PlaceholderElement).placeholderKey
+              elements.find((el) => el.id === editingId)?.type === "placeholder"
+                ? (
+                    elements.find(
+                      (el) => el.id === editingId,
+                    ) as PlaceholderElement
+                  ).placeholderKey
                 : undefined
             }
           />

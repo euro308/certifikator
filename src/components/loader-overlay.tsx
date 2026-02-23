@@ -9,7 +9,7 @@ export function LoaderOverlay({ className }: LoaderOverlayProps) {
   return (
     <div
       className={cn(
-        "absolute top-0 left-0 w-screen h-screen bg-white/75 flex justify-center items-center rounded-md z-10",
+        "absolute top-0 left-0 z-10 flex h-screen w-screen items-center justify-center rounded-md bg-white/75",
         className,
       )}
     >

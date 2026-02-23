@@ -17,12 +17,7 @@ import {
   Loader2,
   User,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -162,8 +157,12 @@ export default function GalleryTemplateDetail() {
                 ) : (
                   <span className="inline-flex items-center gap-2">
                     <Avatar className="h-6 w-6 border bg-white">
-                      <AvatarImage src={template.authorImage ?? undefined} alt={template.authorName} className="object-cover" />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                      <AvatarImage
+                        src={template.authorImage ?? undefined}
+                        alt={template.authorName}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                         {template.authorName
                           ?.split(" ")
                           .map((n) => n[0])
@@ -184,17 +183,23 @@ export default function GalleryTemplateDetail() {
                   variant="outline"
                   onClick={handleFavoriteClick}
                   disabled={toggleFavorite.isPending}
-                  className={`gap-2 ${template.isFavorited
-                    ? "border-red-300 text-red-500 hover:bg-red-50 hover:text-red-600"
-                    : "hover:text-red-500"
-                    }`}
+                  className={`gap-2 ${
+                    template.isFavorited
+                      ? "border-red-300 text-red-500 hover:bg-red-50 hover:text-red-600"
+                      : "hover:text-red-500"
+                  }`}
                 >
                   {toggleFavorite.isPending ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Heart className="size-4" fill={template.isFavorited ? "currentColor" : "none"} />
+                    <Heart
+                      className="size-4"
+                      fill={template.isFavorited ? "currentColor" : "none"}
+                    />
                   )}
-                  {template.isFavorited ? "Odebrat z oblíbených" : "Přidat do oblíbených"}
+                  {template.isFavorited
+                    ? "Odebrat z oblíbených"
+                    : "Přidat do oblíbených"}
                 </Button>
               )}
               <Button
@@ -202,7 +207,7 @@ export default function GalleryTemplateDetail() {
                 className={
                   isOwn
                     ? "border border-[#E65758] bg-transparent text-[#E65758] hover:bg-[#E65758]/5"
-                    : "bg-[#E65758] hover:bg-[#d44647] text-white"
+                    : "bg-[#E65758] text-white hover:bg-[#d44647]"
                 }
               >
                 <ArrowRight className="mr-2 size-4" />
@@ -245,7 +250,7 @@ export default function GalleryTemplateDetail() {
                     <span className="text-muted-foreground text-sm font-medium">
                       Popis
                     </span>
-                    <p className="text-sm leading-relaxed whitespace-normal break-words">
+                    <p className="text-sm leading-relaxed break-words whitespace-normal">
                       {template.description ?? "Bez popisu"}
                     </p>
                   </div>
@@ -257,7 +262,12 @@ export default function GalleryTemplateDetail() {
                       <span className="text-muted-foreground flex items-center">
                         <User className="mr-2 size-4" /> Autor
                       </span>
-                      <Link href={`./?search=${template.authorName}`} className={"underline hover:text-muted-foreground"}>{template.authorName}</Link>
+                      <Link
+                        href={`./?search=${template.authorName}`}
+                        className={"hover:text-muted-foreground underline"}
+                      >
+                        {template.authorName}
+                      </Link>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground flex items-center">
@@ -276,8 +286,8 @@ export default function GalleryTemplateDetail() {
                       <span>
                         {template.updatedAt
                           ? new Date(template.updatedAt).toLocaleDateString(
-                            "cs-CZ",
-                          )
+                              "cs-CZ",
+                            )
                           : "-"}
                       </span>
                     </div>
@@ -301,7 +311,6 @@ export default function GalleryTemplateDetail() {
                   </div>
                 </CardContent>
               </Card>
-
             </div>
           </div>
         </div>

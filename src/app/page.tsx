@@ -8,21 +8,23 @@ export default async function Home() {
     <HydrateClient>
       <main className="flex min-h-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">
         <NavbarOutside />
-        <section className="flex flex-col items-center justify-center flex-1 px-6 pt-32 pb-16">
-          <header className="text-center max-w-4xl mx-auto space-y-6">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">
+        <section className="flex flex-1 flex-col items-center justify-center px-6 pt-32 pb-16">
+          <header className="mx-auto max-w-4xl space-y-6 text-center">
+            <h1 className="text-5xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Certifikátor
               </span>
             </h1>
 
-            <h2 className="text-xl md:text-2xl lg:text-3xl text-gray-600 font-medium leading-relaxed max-w-3xl mx-auto">
-              Jednotné prostředí pro tvorbu, správu, rozeslání a&nbsp;validaci certifikátů!
+            <h2 className="mx-auto max-w-3xl text-xl leading-relaxed font-medium text-gray-600 md:text-2xl lg:text-3xl">
+              Jednotné prostředí pro tvorbu, správu, rozeslání a&nbsp;validaci
+              certifikátů!
             </h2>
 
-            <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto">
-              Vytvářejte profesionální certifikáty s vlastním designem, spravujte šablony,
-              automaticky rozesílejte držitelům a ověřujte jejich pravost.
+            <p className="mx-auto max-w-2xl text-base text-gray-500 md:text-lg">
+              Vytvářejte profesionální certifikáty s vlastním designem,
+              spravujte šablony, automaticky rozesílejte držitelům a ověřujte
+              jejich pravost.
             </p>
           </header>
 
@@ -30,36 +32,80 @@ export default async function Home() {
         </section>
 
         <section className="container mx-auto px-6 py-12 pb-20">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {/* Feature 1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#E65758]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
+                <svg
+                  className="h-6 w-6 text-[#E65758]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900">Vlastní design</h3>
-              <p className="text-gray-600">Vytvářejte certifikáty podle svých představ s intuitivním editorem</p>
+              <h3 className="mb-2 text-xl font-bold text-gray-900">
+                Vlastní design
+              </h3>
+              <p className="text-gray-600">
+                Vytvářejte certifikáty podle svých představ s intuitivním
+                editorem
+              </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-              <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#A64858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+            <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100">
+                <svg
+                  className="h-6 w-6 text-[#A64858]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900">Automatické rozesílání</h3>
-              <p className="text-gray-600">Import z Excelu a hromadné rozeslání certifikátů emailem</p>
+              <h3 className="mb-2 text-xl font-bold text-gray-900">
+                Automatické rozesílání
+              </h3>
+              <p className="text-gray-600">
+                Import z Excelu a hromadné rozeslání certifikátů emailem
+              </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#771D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
+                <svg
+                  className="h-6 w-6 text-[#771D32]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900">Validace pravosti</h3>
-              <p className="text-gray-600">Každý certifikát má unikátní identifikační klíč pro ověření autenticity</p>
+              <h3 className="mb-2 text-xl font-bold text-gray-900">
+                Validace pravosti
+              </h3>
+              <p className="text-gray-600">
+                Každý certifikát má unikátní identifikační klíč pro ověření
+                autenticity
+              </p>
             </div>
           </div>
         </section>

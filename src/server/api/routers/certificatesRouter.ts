@@ -121,9 +121,7 @@ export const certificatesRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       const certificate = await db.query.certificates.findFirst({
-        where: and(
-          eq(certificates.validationToken, input.validationToken),
-        ),
+        where: and(eq(certificates.validationToken, input.validationToken)),
       });
 
       if (!certificate) {
@@ -215,7 +213,10 @@ export const certificatesRouter = createTRPCRouter({
           Math.random().toString(36).substring(2, 15),
       }));
 
-      const result = await db.insert(certificates).values(valuesWithToken).returning();
+      const result = await db
+        .insert(certificates)
+        .values(valuesWithToken)
+        .returning();
 
       // Increment downloads for each unique foreign template used
       const uniqueTemplateIds = [...new Set(input.map((c) => c.templateId))];

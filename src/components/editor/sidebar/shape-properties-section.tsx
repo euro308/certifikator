@@ -53,7 +53,7 @@ export function ShapePropertiesSection() {
 
   const shape = selectedElement;
   const isRegular = REGULAR_SHAPES.includes(shape.shapeType);
-  const isArrow = (shape.shapeType === 'arrow');
+  const isArrow = shape.shapeType === "arrow";
 
   // ===== HANDLERY =====
 
@@ -328,23 +328,23 @@ export function ShapePropertiesSection() {
             {(shape.shapeType === "arc" ||
               shape.shapeType === "ring" ||
               shape.shapeType === "star") && (
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label className="text-xs">Vnitřní rádius</Label>
-                    <span className="text-muted-foreground text-xs">
-                      {shape.innerRadius} px
-                    </span>
-                  </div>
-                  <Slider
-                    value={[shape.innerRadius ?? 20]}
-                    min={0}
-                    max={Math.max(100, (shape.innerRadius ?? 50) - 1)}
-                    step={1}
-                    onValueChange={handleInnerRadiusChange}
-                    onValueCommit={handleInnerRadiusCommit} // Added
-                  />
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label className="text-xs">Vnitřní rádius</Label>
+                  <span className="text-muted-foreground text-xs">
+                    {shape.innerRadius} px
+                  </span>
                 </div>
-              )}
+                <Slider
+                  value={[shape.innerRadius ?? 20]}
+                  min={0}
+                  max={Math.max(100, (shape.innerRadius ?? 50) - 1)}
+                  step={1}
+                  onValueChange={handleInnerRadiusChange}
+                  onValueCommit={handleInnerRadiusCommit} // Added
+                />
+              </div>
+            )}
 
             {/* Výplň */}
             <div className="space-y-1">

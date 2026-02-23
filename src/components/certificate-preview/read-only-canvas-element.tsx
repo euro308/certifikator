@@ -42,12 +42,7 @@ function ReadOnlyImageElement({
   if (status === "loading") return null;
   if (status === "failed") return null;
 
-  return (
-    <KonvaImage
-      {...commonProps}
-      image={image}
-    />
-  );
+  return <KonvaImage {...commonProps} image={image} />;
 }
 
 // =============================================================================

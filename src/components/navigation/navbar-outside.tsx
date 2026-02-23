@@ -12,15 +12,18 @@ import { Menu } from "lucide-react";
 
 export function NavbarOutside() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-md">
+    <nav className="fixed top-0 right-0 left-0 z-50 border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link href={"/public"} className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <Link
+          href={"/public"}
+          className="bg-gradient-primary bg-clip-text text-3xl font-bold text-transparent"
+        >
           Certifikátor
         </Link>
 
         {/* Desktop menu - skrytý na mobilu */}
-        <div className="hidden md:flex gap-2 bg-white">
+        <div className="hidden gap-2 bg-white md:flex">
           <Button variant="ghost" className="hover:bg-red-50">
             <Link href={"/galerie"}>Galerie šablon</Link>
           </Button>
@@ -52,31 +55,45 @@ export function NavbarOutside() {
             </SheetHeader>
 
             {/* Mobile menu items */}
-            <div className="flex flex-col gap-2 mt-6 flex-1">
+            <div className="mt-6 flex flex-1 flex-col gap-2">
+              <SheetClose asChild></SheetClose>
               <SheetClose asChild>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link href="/galerie" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                <Link
+                  href="/galerie"
+                  className="rounded-lg px-4 py-3 text-lg font-medium transition-colors hover:bg-red-50 hover:text-[#E65758]"
+                >
                   Galerie šablon
                 </Link>
               </SheetClose>
               <SheetClose asChild>
-                <Link href="/funkce" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                <Link
+                  href="/funkce"
+                  className="rounded-lg px-4 py-3 text-lg font-medium transition-colors hover:bg-red-50 hover:text-[#E65758]"
+                >
                   Funkce
                 </Link>
               </SheetClose>
               <SheetClose asChild>
-                <Link href="/kontrola-platnosti" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                <Link
+                  href="/kontrola-platnosti"
+                  className="rounded-lg px-4 py-3 text-lg font-medium transition-colors hover:bg-red-50 hover:text-[#E65758]"
+                >
                   Kontrola platnosti
                 </Link>
               </SheetClose>
               <SheetClose asChild>
-                <Link href="/o-projektu" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                <Link
+                  href="/o-projektu"
+                  className="rounded-lg px-4 py-3 text-lg font-medium transition-colors hover:bg-red-50 hover:text-[#E65758]"
+                >
                   O projektu
                 </Link>
               </SheetClose>
               <SheetClose asChild>
-                <Link href="/kontakt" className="text-lg font-medium hover:text-[#E65758] transition-colors py-3 px-4 hover:bg-red-50 rounded-lg">
+                <Link
+                  href="/kontakt"
+                  className="rounded-lg px-4 py-3 text-lg font-medium transition-colors hover:bg-red-50 hover:text-[#E65758]"
+                >
                   Kontakt
                 </Link>
               </SheetClose>

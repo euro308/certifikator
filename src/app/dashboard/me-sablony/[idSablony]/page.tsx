@@ -212,7 +212,7 @@ export default function DetailSablony() {
                   <span className="text-muted-foreground text-sm font-medium">
                     Popis
                   </span>
-                  <p className="text-sm leading-relaxed whitespace-normal break-words">
+                  <p className="text-sm leading-relaxed break-words whitespace-normal">
                     {template.description ?? "Bez popisu"}
                   </p>
                 </div>

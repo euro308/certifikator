@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function NapovedaTabulka() {
   return (
-    <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify ">
+    <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify">
       <NavbarOutside />
 
       <div className="flex-1 px-4 pt-28 pb-16">
@@ -182,8 +182,8 @@ export default function NapovedaTabulka() {
                     Pro bezchybné propsání údajů na certifikát je klíčové mít v
                     buňkách pouze čistý text. Zkontrolujte, zda Vaše data
                     neobsahují zbytečné mezery na konci slov (např.{" "}
-                    <code>&#34;Jan Novák &nbsp; &nbsp;&#34;</code>), které by rozhodily
-                    centrování textu na výsledném certifikátu.
+                    <code>&#34;Jan Novák &nbsp; &nbsp;&#34;</code>), které by
+                    rozhodily centrování textu na výsledném certifikátu.
                   </p>
                   <p className="mt-2 text-gray-600">
                     Pokud v tabulce používáte Excelové vzorce (např.{" "}

@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/emails/email-template";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "@/server/api/trpc";
 import { auth } from "@/server/better-auth/config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -76,7 +80,7 @@ export const emailsRouter = createTRPCRouter({
           react: EmailTemplate({
             emailType: "CERTIFICATE_SENT",
             validationToken: input.validationToken,
-            username: input.username
+            username: input.username,
           }),
           attachments: [
             {
@@ -84,7 +88,7 @@ export const emailsRouter = createTRPCRouter({
               content: input.certificateUrl.split(",")[1],
               contentType: "image/png",
             },
-        ]
+          ],
         });
 
         return { success: true };
@@ -114,7 +118,7 @@ export const emailsRouter = createTRPCRouter({
       const results = await Promise.allSettled(
         input.recipients.map(async (recipient) => {
           try {
-             await resend.emails.send({
+            await resend.emails.send({
               from: "Certifikátor <info@certifikator.eu>",
               to: recipient.email,
               subject: "Obdrželi jste nový certifikát",
@@ -129,17 +133,26 @@ export const emailsRouter = createTRPCRouter({
                   content: recipient.certificateUrl.split(",")[1],
                   contentType: "image/png",
                 },
-              ]
+              ],
             });
             return { email: recipient.email, status: "fulfilled" };
           } catch (error) {
-            console.error(`Nastala chyba při odesílání e-mailu na ${recipient.email}:`, error);
+            console.error(
+              `Nastala chyba při odesílání e-mailu na ${recipient.email}:`,
+              error,
+            );
             throw error;
           }
         }),
       );
-      
-      const successCount = results.filter((r) => r.status === "fulfilled").length;
-      return { success: true, sentCount: successCount, total: input.recipients.length };
+
+      const successCount = results.filter(
+        (r) => r.status === "fulfilled",
+      ).length;
+      return {
+        success: true,
+        sentCount: successCount,
+        total: input.recipients.length,
+      };
     }),
 });

@@ -73,8 +73,8 @@ export default function NovaSablona() {
       return;
     }
 
-    if(canvasData.placeholders.length <= 0) {
-      alert("Šablona neobsahuje žádné proměnné!")
+    if (canvasData.placeholders.length <= 0) {
+      alert("Šablona neobsahuje žádné proměnné!");
       return;
     }
 
@@ -112,99 +112,95 @@ export default function NovaSablona() {
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           Vytvořit šablonu
         </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
+        <p className="text-muted-foreground mt-2 text-lg">
           Vytvořte novou šablonu pro své certifikáty.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Název šablony
-            </h2>
-            <Input
-              type="text"
-              id="name"
-              placeholder="Název"
-              required={true}
-              onChange={(e) => setTemplateName(e.target.value)}
-              className="text-base"
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-gray-800">Název šablony</h2>
+          <Input
+            type="text"
+            id="name"
+            placeholder="Název"
+            required={true}
+            onChange={(e) => setTemplateName(e.target.value)}
+            className="text-base"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-gray-800">Popis šablony</h2>
+          <Textarea
+            className="h-24 resize-none text-base"
+            placeholder="Popis šablony"
+            onChange={(e) => setTemplateDescription(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Vzhled šablony
+          </h2>
+          <span className="mb-3 block text-sm text-gray-600">
+            Vytvořte si, jak bude šablona vypadat.
+          </span>
+          <EditorDialog
+            canvasData={canvasData}
+            saveMockCanvas={saveMockCanvas}
+          />
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-gray-800">Viditelnost</h2>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="willBePublic"
+              onChange={(state) => setIsPublic(state as unknown as boolean)}
             />
-          </div>
-
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Popis šablony
-            </h2>
-            <Textarea
-              className="h-24 resize-none text-base"
-              placeholder="Popis šablony"
-              onChange={(e) => setTemplateDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Vzhled šablony
-            </h2>
-            <span className="mb-3 block text-sm text-gray-600">
-              Vytvořte si, jak bude šablona vypadat.
-            </span>
-            <EditorDialog
-              canvasData={canvasData}
-              saveMockCanvas={saveMockCanvas}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-gray-800">Viditelnost</h2>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="willBePublic"
-                onChange={(state) => setIsPublic(state as unknown as boolean)}
-              />
-              <Label
-                htmlFor="willBePublic"
-                className="cursor-pointer text-sm font-medium"
-              >
-                Chcete šablonu zveřejnit?
-              </Label>
-            </div>
-            <span className="mt-2 block text-sm text-gray-600">
-              Pokud zaškrtnete, šablona bude po vytvoření dostupná k použití ve
-              veřejné galerii.
-            </span>
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button
-              type="submit"
-              variant="default"
-              className="w-28 cursor-pointer"
-              disabled={mutation.isPending}
+            <Label
+              htmlFor="willBePublic"
+              className="cursor-pointer text-sm font-medium"
             >
-              {mutation.isPending ? "Ukládám..." : "Vytvořit"}
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="w-28 cursor-pointer"
-              onClick={(e) => {
-                // Custom confirm pro Next.js Link
-                if (hasUnsavedChanges) {
-                  const confirm = window.confirm(
-                    "Máte neuložené změny. Opravdu chcete odejít?",
-                  );
-                  if (!confirm) {
-                    e.preventDefault();
-                  }
+              Chcete šablonu zveřejnit?
+            </Label>
+          </div>
+          <span className="mt-2 block text-sm text-gray-600">
+            Pokud zaškrtnete, šablona bude po vytvoření dostupná k použití ve
+            veřejné galerii.
+          </span>
+        </div>
+
+        <div className="flex gap-2 pt-4">
+          <Button
+            type="submit"
+            variant="default"
+            className="w-28 cursor-pointer"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Ukládám..." : "Vytvořit"}
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="w-28 cursor-pointer"
+            onClick={(e) => {
+              // Custom confirm pro Next.js Link
+              if (hasUnsavedChanges) {
+                const confirm = window.confirm(
+                  "Máte neuložené změny. Opravdu chcete odejít?",
+                );
+                if (!confirm) {
+                  e.preventDefault();
                 }
-              }}
-            >
-              <Link href="/dashboard/me-sablony">Zrušit</Link>
-            </Button>
-          </div>
-        </form>
-      </div>
+              }
+            }}
+          >
+            <Link href="/dashboard/me-sablony">Zrušit</Link>
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

@@ -59,8 +59,8 @@ export default function KontrolaPlatnosti() {
             </span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-center text-lg text-gray-600">
-            Zde si můžete ověřit, zda je Váš certifikát platný. Jednoduše zadejte
-            identifikační klíč, který Vám byl zaslán v původním e-mailu
+            Zde si můžete ověřit, zda je Váš certifikát platný. Jednoduše
+            zadejte identifikační klíč, který Vám byl zaslán v původním e-mailu
             s certifikátem.
           </p>
 
@@ -116,8 +116,8 @@ export default function KontrolaPlatnosti() {
                 Certifikát nenalezen
               </h2>
               <p className="text-gray-600">
-                Certifikát s tímto identifikačním klíčem nebyl nalezen. Zkontrolujte,
-                zda jste zadali správný kód z e-mailu.
+                Certifikát s tímto identifikačním klíčem nebyl nalezen.
+                Zkontrolujte, zda jste zadali správný kód z e-mailu.
               </p>
             </div>
           )}
@@ -200,7 +200,7 @@ export default function KontrolaPlatnosti() {
                   <Hash className="size-5 shrink-0 text-gray-400" />
                   <div>
                     <p className="text-xs text-gray-500">ID certifikátu</p>
-                    <p className="break-all font-mono text-sm text-gray-600">
+                    <p className="font-mono text-sm break-all text-gray-600">
                       {certificate.id}
                     </p>
                   </div>

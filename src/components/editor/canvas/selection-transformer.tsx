@@ -8,7 +8,10 @@ import { useEffect, useRef } from "react";
 import { Transformer } from "react-konva";
 import type Konva from "konva";
 import { useEditorContext } from "../editor-context";
-import { getResizeSnapPositions, type SnapLine } from "../hooks/use-snap-to-center";
+import {
+  getResizeSnapPositions,
+  type SnapLine,
+} from "../hooks/use-snap-to-center";
 
 interface SelectionTransformerProps {
   editingId: string | null;
@@ -20,7 +23,11 @@ interface SelectionTransformerProps {
  * Komponenta pro zobrazení transformeru kolem vybraných prvků.
  * Zajišťuje automatické připojení k vybraným uzlům.
  */
-export function SelectionTransformer({ editingId, hideGuides, showGuides }: SelectionTransformerProps) {
+export function SelectionTransformer({
+  editingId,
+  hideGuides,
+  showGuides,
+}: SelectionTransformerProps) {
   const transformerRef = useRef<Konva.Transformer>(null);
   const { selectedIds, elements, selectedElement } = useEditorContext();
 
@@ -31,7 +38,11 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
 
     // Pokud editujeme text, skryjeme transformer
     // (pouze pokud je vybrán právě jeden prvek a je to ten editovaný)
-    if (editingId && selectedIds.includes(editingId) && selectedIds.length === 1) {
+    if (
+      editingId &&
+      selectedIds.includes(editingId) &&
+      selectedIds.length === 1
+    ) {
       transformer.nodes([]);
       return;
     }
@@ -68,13 +79,16 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
     isSingleSelection &&
     (selectedElement?.type === "text" ||
       selectedElement?.type === "placeholder" ||
-      (selectedElement?.type === "shape" && selectedElement?.shapeType === "line") ||
-      (selectedElement?.type === "shape" && selectedElement?.shapeType === "arrow"));
+      (selectedElement?.type === "shape" &&
+        selectedElement?.shapeType === "line") ||
+      (selectedElement?.type === "shape" &&
+        selectedElement?.shapeType === "arrow"));
 
   const allAnchors =
     isSingleSelection &&
     selectedElement?.type === "shape" &&
-    (selectedElement?.shapeType === "rect" || selectedElement?.shapeType === "ellipse");
+    (selectedElement?.shapeType === "rect" ||
+      selectedElement?.shapeType === "ellipse");
 
   // Default: pouze rohy (pro většinu tvarů nebo multi-select)
   let enabledAnchors = ["top-left", "top-right", "bottom-left", "bottom-right"];
@@ -82,13 +96,23 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
 
   if (isSingleSelection) {
     if (onlyMiddleAnchors) {
-      enabledAnchors = ["middle-left", "middle-right", "top-center", "bottom-center"];
+      enabledAnchors = [
+        "middle-left",
+        "middle-right",
+        "top-center",
+        "bottom-center",
+      ];
       shouldKeepRatio = false; // Text, čáry a šipky – volná deformace
     } else if (allAnchors) {
       enabledAnchors = [
-        "top-left", "top-center", "top-right",
-        "middle-left", "middle-right",
-        "bottom-left", "bottom-center", "bottom-right",
+        "top-left",
+        "top-center",
+        "top-right",
+        "middle-left",
+        "middle-right",
+        "bottom-left",
+        "bottom-center",
+        "bottom-right",
       ];
       shouldKeepRatio = false; // Obdélník/elipsa lze deformovat
     } else {
@@ -125,11 +149,9 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
       rotateAnchorOffset={25}
       rotateEnabled={true}
       ignoreStroke={true}
-
       // Dynamické props
       keepRatio={shouldKeepRatio}
       enabledAnchors={enabledAnchors}
-
       onTransformEnd={handleTransformEnd}
       boundBoxFunc={(oldBox, newBox) => {
         if (newBox.width < 10 || newBox.height < 10) {
@@ -137,14 +159,14 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
         }
         return newBox;
       }}
-
       // Snapování povolíme i pro multi select
       anchorDragBoundFunc={(_oldPos, newPos) => {
         const transformer = transformerRef.current;
         if (!transformer) return newPos;
 
         // Snap pokud máme selectedIds a showGuides/hideGuides
-        if (selectedIds.length === 0 || !showGuides || !hideGuides) return newPos;
+        if (selectedIds.length === 0 || !showGuides || !hideGuides)
+          return newPos;
 
         const layer = transformer.getLayer();
         if (!layer) return newPos;
@@ -173,7 +195,11 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
         }
         if (bestSnapX !== null) {
           snappedX = bestSnapX;
-          activeGuides.push({ orientation: 'V', position: bestSnapX, type: 'center' });
+          activeGuides.push({
+            orientation: "V",
+            position: bestSnapX,
+            type: "center",
+          });
         }
 
         // Snap Y
@@ -188,7 +214,11 @@ export function SelectionTransformer({ editingId, hideGuides, showGuides }: Sele
         }
         if (bestSnapY !== null) {
           snappedY = bestSnapY;
-          activeGuides.push({ orientation: 'H', position: bestSnapY, type: 'center' });
+          activeGuides.push({
+            orientation: "H",
+            position: bestSnapY,
+            type: "center",
+          });
         }
 
         if (activeGuides.length > 0) {

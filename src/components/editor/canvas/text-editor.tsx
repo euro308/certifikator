@@ -69,7 +69,8 @@ function TextArea({
 
     let transformStr = "";
     if (rotation) transformStr += `rotateZ(${rotation}deg) `;
-    if (scaleX !== 1 || scaleY !== 1) transformStr += `scale(${scaleX}, ${scaleY})`;
+    if (scaleX !== 1 || scaleY !== 1)
+      transformStr += `scale(${scaleX}, ${scaleY})`;
 
     if (transformStr) {
       textarea.style.transform = transformStr.trim();
@@ -77,13 +78,16 @@ function TextArea({
 
     // ===== AUTO-RESIZE VÝŠKY =====
     const updateHeight = () => {
-      textarea.style.height = 'auto';
+      textarea.style.height = "auto";
       const scrollHeight = textarea.scrollHeight;
 
       // ===== MINIMÁLNÍ VÝŠKA = 1 řádek =====
       const minHeight = Math.ceil(fontSize * lineHeight);
       const finalHeight = Math.max(scrollHeight, minHeight);
-      const totalHeight = finalHeight === textNode.fontSize() * 2 ? textNode.fontSize() : finalHeight;
+      const totalHeight =
+        finalHeight === textNode.fontSize() * 2
+          ? textNode.fontSize()
+          : finalHeight;
 
       textarea.style.height = `${totalHeight}px`;
     };
@@ -96,13 +100,16 @@ function TextArea({
     // ===== HANDLERS =====
 
     const saveAndClose = () => {
-      textarea.style.height = 'auto';
+      textarea.style.height = "auto";
       const scrollHeight = textarea.scrollHeight;
 
       // Minimální výška = 1 řádek
       const minHeight = Math.ceil(fontSize * lineHeight);
       const finalHeight = Math.max(scrollHeight, minHeight);
-      const totalHeight = finalHeight === textNode.fontSize() * 2 ? textNode.fontSize() : finalHeight;
+      const totalHeight =
+        finalHeight === textNode.fontSize() * 2
+          ? textNode.fontSize()
+          : finalHeight;
 
       onChange(textarea.value, totalHeight);
       onClose();
