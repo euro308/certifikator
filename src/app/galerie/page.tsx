@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
 import { GalleryContent } from "@/components/gallery/gallery-content";
 
 export default function Galerie() {

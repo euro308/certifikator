@@ -2,7 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { EmailTemplate } from "@/components/email-template";
+import { EmailTemplate } from "@/components/emails/email-template";
 import { cn } from "@/lib/utils";
 
 interface EmailSettingsFormProps {

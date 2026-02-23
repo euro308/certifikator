@@ -40,7 +40,7 @@ import type { CanvasElement } from "@/components/editor/types/canvas-types";
 import { authClient } from "@/server/better-auth/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { EmailSettingsForm } from "@/components/email-settings-form";
+import { EmailSettingsForm } from "@/components/emails/email-settings-form";
 
 // Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(

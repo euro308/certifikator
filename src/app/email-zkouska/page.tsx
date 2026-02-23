@@ -1,4 +1,4 @@
-import { EmailTemplate } from "@/components/email-template";
+import { EmailTemplate } from "@/components/emails/email-template";
 
 export default function EmailZkouska() {
   return (

@@ -1,4 +1,4 @@
-import { Loader } from "./loader";
+import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 
 interface LoaderOverlayProps {

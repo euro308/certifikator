@@ -1,7 +1,7 @@
 "use client";
 
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";

@@ -15,7 +15,7 @@ export function NavbarOutside() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link href={"/"} className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <Link href={"/public"} className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           Certifikátor
         </Link>
 

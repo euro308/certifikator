@@ -1,5 +1,5 @@
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
 import { Keyboard, Type, MousePointerClick, Zap, Layers } from "lucide-react";
 import React from "react";
 import Image from "next/image";

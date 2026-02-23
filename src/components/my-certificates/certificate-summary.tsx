@@ -26,7 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ResendEmailDialog } from "@/components/resend-email-dialog";
+import { ResendEmailDialog } from "@/components/emails/resend-email-dialog";
 
 interface CertificateSummaryProps {
   userCertificates: {

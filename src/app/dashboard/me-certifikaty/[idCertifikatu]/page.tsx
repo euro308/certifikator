@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/delete-dialog";
-import { ResendEmailDialog } from "@/components/resend-email-dialog";
+import { ResendEmailDialog } from "@/components/emails/resend-email-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";

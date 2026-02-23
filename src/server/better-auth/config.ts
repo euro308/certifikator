@@ -4,7 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/server/db";
 import { localization } from "better-auth-localization";
 import { Resend } from "resend";
-import { EmailTemplate } from "@/components/email-template";
+import { EmailTemplate } from "@/components/emails/email-template";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {

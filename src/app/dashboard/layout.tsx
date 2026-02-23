@@ -2,8 +2,8 @@
 import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { NavbarInside } from "@/components/navbar-inside";
-import { FooterInside } from "@/components/footer-inside";
+import { NavbarInside } from "@/components/navigation/navbar-inside";
+import { FooterInside } from "@/components/navigation/footer-inside";
 import React from "react";
 import { BreadcrumbsByPathname } from "@/components/breadcrumbs-by-pathname";
 

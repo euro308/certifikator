@@ -6,7 +6,7 @@ import { Loader2, Save, Lock, User, Upload, Trash2 } from "lucide-react";
 import { authClient } from "@/server/better-auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ImageCropperDialog } from "@/components/image-cropper-dialog";
+import { ImageCropperDialog } from "@/components/user/image-cropper-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserButton } from "@/components/user-button";
+import { UserButton } from "@/components/user/user-button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export function NavbarInside() {
       <div className="flex items-center justify-between px-6 py-2">
         {/* Logo */}
         <Link
-          href={"/"}
+          href={"/public"}
           className="bg-gradient-primary bg-clip-text text-2xl sm:text-2xl lg:text-3xl font-bold text-transparent whitespace-nowrap select-none"
         >
           Uživatelský panel

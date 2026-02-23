@@ -1,5 +1,5 @@
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
 import { Mail } from "lucide-react";
 
 export default function Kontakt() {

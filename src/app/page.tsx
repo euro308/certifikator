@@ -1,7 +1,7 @@
 import { HydrateClient } from "@/trpc/server";
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
-import { HeroCTA } from "@/components/hero-cta";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
+import { HeroCTA } from "@/components/navigation/hero-cta";
 
 export default async function Home() {
   return (

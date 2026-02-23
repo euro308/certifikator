@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Resend } from "resend";
-import { EmailTemplate } from "@/components/email-template";
+import { EmailTemplate } from "@/components/emails/email-template";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { auth } from "@/server/better-auth/config";
 
