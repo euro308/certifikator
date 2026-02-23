@@ -134,7 +134,7 @@ export function GalleryTemplateCard({ template }: { template: GalleryTemplate })
                 {/* Autor + statistiky na jednom řádku */}
                 <div className="mb-4 flex items-center gap-1.5">
                     <Avatar className="h-5 w-5 border">
-                        <AvatarImage src={template.authorImage || undefined} alt={template.authorName} className="object-cover" />
+                        <AvatarImage src={template.authorImage ?? undefined} alt={template.authorName} className="object-cover" />
                         <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                             {initials || <User className="size-3" />}
                         </AvatarFallback>

@@ -162,7 +162,7 @@ export default function GalleryTemplateDetail() {
                 ) : (
                   <span className="inline-flex items-center gap-2">
                     <Avatar className="h-6 w-6 border bg-white">
-                      <AvatarImage src={template.authorImage || undefined} alt={template.authorName} className="object-cover" />
+                      <AvatarImage src={template.authorImage ?? undefined} alt={template.authorName} className="object-cover" />
                       <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                         {template.authorName
                           ?.split(" ")

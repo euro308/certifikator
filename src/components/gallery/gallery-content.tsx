@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const ITEMS_PER_PAGE = 16;
 
@@ -27,12 +27,10 @@ const sortFields: { key: SortKey; label: string }[] = [
 
 export function GalleryContent() {
     const searchParams = useSearchParams();
-    const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
+    const [searchValue, setSearchValue] = useState(searchParams.get("search") ?? "");
     const [sortKey, setSortKey] = useState<SortKey>("downloads");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-
-    const params = useParams();
 
     const { data: allTemplates, isLoading } = api.templates.getPublicTemplates.useQuery();
 
