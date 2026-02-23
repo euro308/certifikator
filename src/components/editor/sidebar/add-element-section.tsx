@@ -13,6 +13,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import React, { useState, useRef } from "react";
+import { toast } from "sonner";
+import { downscaleImage } from "@/components/image-downscaler";
 
 /**
  * Sekce pro přidání nových prvků na plátno
@@ -44,7 +46,9 @@ export function AddElementSection() {
   /**
    * Zpracuje vybraný soubor a vytvoří ImageElement
    */
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -52,29 +56,25 @@ export function AddElementSection() {
 
     // Kontrola typu souboru
     if (!file.type.startsWith("image/")) {
-      alert("Vybraný soubor není obrázek.");
+      toast.error("Vybraný soubor není obrázek.");
       return;
     }
 
-    // Načíst obrázek jako Base64
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-
-      // Získat rozměry obrázku
-      const img = new window.Image();
-      img.onload = () => {
-        createImageElement(base64, img.width, img.height);
-      };
-      img.onerror = () => {
-        alert("Nepodařilo se načíst obrázek.");
-      };
-      img.src = base64;
-    };
-    reader.onerror = () => {
-      alert("Nepodařilo se přečíst soubor.");
-    };
-    reader.readAsDataURL(file);
+    // Zpracování obrázku s použitím downscaleru a toast promise
+    toast.promise(
+      downscaleImage(file, { maxSizeMB: 20, maxWidth: 3840, maxHeight: 3840 }),
+      {
+        loading: "Zpracovávám obrázek...",
+        success: (result) => {
+          createImageElement(result.base64, result.width, result.height);
+          return "Obrázek přidán!";
+        },
+        error: (err) =>
+          err instanceof Error
+            ? err.message
+            : "Nepodařilo se zpracovat obrázek.",
+      },
+    );
 
     // Reset inputu (aby šlo nahrát stejný soubor znovu)
     event.target.value = "";
@@ -119,7 +119,7 @@ export function AddElementSection() {
               onClick={handleAddImageClick}
             >
               {/* eslint-disable-next-line jsx-a11y/alt-text */}
-              <Image className="size-4"/>
+              <Image className="size-4" />
               Přidat obrázek
             </Button>
 
