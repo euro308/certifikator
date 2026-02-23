@@ -59,6 +59,7 @@
     "postgres": "^3.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-easy-crop": "^5.5.6",
     "react-konva": "^19.2.0",
     "react-konva-utils": "^2.0.0",
     "resend": "^6.9.2",
