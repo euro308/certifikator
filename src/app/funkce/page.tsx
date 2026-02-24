@@ -1,9 +1,10 @@
-import { NavbarOutside } from "@/components/navbar-outside";
-import { FooterOutside } from "@/components/footer-outside";
+import { NavbarOutside } from "@/components/navigation/navbar-outside";
+import { FooterOutside } from "@/components/navigation/footer-outside";
+import Image from "next/image";
 
 export default function Funkce() {
   return (
-    <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">
+    <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify">
       <NavbarOutside />
 
       <div className="flex-1 px-4 pt-28 pb-16">
@@ -15,15 +16,15 @@ export default function Funkce() {
           </h1>
 
           {/* Funkce 1 */}
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
-                Navrhni šablonu přesně podle sebe
+                Navrhni šablonu podle sebe
               </h2>
-              <span className="text-justify text-lg text-gray-700">
+              <span className="text-lg text-gray-700">
                 V intuitivním editoru si během pár minut navrhněte vlastní
                 šablonu certifikátu – texty, loga, barvy i grafické prvky přesně
-                podle vašich potřeb. Vše běží na canvasovém prostředí{" "}
+                podle Vašich potřeb. Vše běží na canvasovém prostředí{" "}
                 <a
                   href={"https://konvajs.org/"}
                   target="_blank"
@@ -36,13 +37,19 @@ export default function Funkce() {
                 přímo na plátně.
               </span>
             </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
-              Náhled
+            <div className="relative aspect-video w-full max-w-[28rem] shrink-0 overflow-hidden rounded-xl shadow-md">
+              <Image
+                src={"/funkce/funkce1.gif"}
+                alt="Náhled editoru šablon"
+                fill
+                className="object-cover object-center"
+                unoptimized
+              />
             </div>
           </div>
 
           {/* Funkce 2 */}
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row-reverse md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row-reverse md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Jeden Excel, stovky certifikátů
@@ -63,13 +70,19 @@ export default function Funkce() {
                 pár kliknutí.
               </span>
             </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
-              Náhled
+            <div className="relative aspect-video w-full max-w-[28rem] shrink-0 overflow-hidden rounded-xl shadow-md">
+              <Image
+                src={"/funkce/funkce2.gif"}
+                alt="Náhled tvorby certifikátu"
+                fill
+                className="object-cover object-center"
+                unoptimized
+              />
             </div>
           </div>
 
           {/* Funkce 3 */}
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Ruční zasílání? Nikdy více
@@ -89,31 +102,43 @@ export default function Funkce() {
                 se postará o doručení každému účastníku zvlášť.
               </span>
             </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
-              Náhled
+            <div className="relative aspect-video w-full max-w-[28rem] shrink-0 overflow-hidden rounded-xl shadow-md">
+              <Image
+                src={"/funkce/funkce3.gif"}
+                alt="Náhled rozeslání e-mailů"
+                fill
+                className="object-cover object-center"
+                unoptimized
+              />
             </div>
           </div>
 
           {/* Funkce 4 */}
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row-reverse md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row-reverse md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Platný, nebo fejk? Ověř to hned
               </h2>
               <span className="text-lg text-gray-700">
-                Každý certifikát má svůj unikátní identifikační klíč, díky kterému si
-                může jeho držitel ověřit, zda je dokument skutečný a nebyl
-                upraven. Stačí kód zadat do validačního formuláře na webu a
-                Certifikátor zobrazí informaci o platnosti certifikátu.
+                Každý certifikát má svůj unikátní identifikační klíč, díky
+                kterému si může jeho držitel ověřit, zda je dokument skutečný a
+                nebyl upraven. Stačí kód zadat do validačního formuláře na webu
+                a Certifikátor zobrazí informaci o platnosti certifikátu.
               </span>
             </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
-              Náhled
+            <div className="relative aspect-video w-full max-w-[28rem] shrink-0 overflow-hidden rounded-xl shadow-md">
+              <Image
+                src={"/funkce/funkce4.gif"}
+                alt="Náhled kontroly platnosti"
+                fill
+                className="object-cover object-center"
+                unoptimized
+              />
             </div>
           </div>
 
           {/* Funkce 5 */}
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Najdi šablonu, klikni a používej
@@ -127,13 +152,13 @@ export default function Funkce() {
                 uživatelům Certifikátoru.
               </span>
             </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex h-48 w-full max-w-sm items-center justify-center rounded-xl bg-gray-200 md:h-64">
               Náhled
             </div>
           </div>
 
           {/* Funkce 6
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 text-justify shadow-lg md:flex-row-reverse md:p-8">
+          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row-reverse md:p-8">
             <div className="flex-1">
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Certifikáty zpracuje API za tebe
