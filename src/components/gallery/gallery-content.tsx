@@ -54,7 +54,8 @@ export function GalleryContent() {
       return (
         t.name.toLowerCase().includes(q) ||
         (t.description?.toLowerCase() ?? "").includes(q) ||
-        t.authorName.toLowerCase().includes(q)
+        t.authorName.toLowerCase().includes(q) ||
+        t.userId.toLowerCase() === q // Vyhledávat podle ID jen pokud je ID celé
       );
     })
     .sort((a, b) => {

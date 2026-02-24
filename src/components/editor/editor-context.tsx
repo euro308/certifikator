@@ -282,7 +282,7 @@ export function EditorProvider({
 
   /** Generuje unikátní ID */
   const generateId = () =>
-    `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    `el_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
   /** Vytvoří textový prvek */
   const createTextElement = useCallback(() => {

@@ -1,11 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
-import { auth } from "@/server/better-auth/config";
-import { headers } from "next/headers";
 import { user, templates, certificates } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, ne } from "drizzle-orm";
+import { count, eq, ne } from "drizzle-orm";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/emails/email-template";
 
@@ -85,7 +83,7 @@ export const adminRouter = createTRPCRouter({
         .where(eq(templates.id, input.templateId));
 
       // 3. Pošleme notifikační e-mail autorovi (pokud existuje)
-      if (templateData.user && templateData.user.email) {
+      if (templateData.user?.email) {
         try {
           await resend.emails.send({
             from: "Certifikátor <info@certifikator.eu>",

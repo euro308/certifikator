@@ -318,7 +318,7 @@ export default function NovyCertifikat() {
       if (!bstr) return;
 
       try {
-        const wb = XLSX.read(bstr, { type: "binary" });
+        const wb = XLSX.read(bstr, { type: "array" });
         const wsname = wb.SheetNames[0];
         if (!wsname) {
           toast.error("Soubor neobsahuje žádné listy");
@@ -375,7 +375,7 @@ export default function NovyCertifikat() {
         );
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleSingleInputChange = (key: string, value: string) => {
@@ -699,13 +699,12 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${
-            displayedCertificates.length === 1
+          className={`grid gap-6 ${displayedCertificates.length === 1
               ? "mx-auto max-w-3xl grid-cols-1"
               : displayedCertificates.length === 2
                 ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
                 : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          }`}
+            }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -851,11 +850,10 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                        isSelected
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
                           ? "bg-primary/5 border-primary/20"
                           : "bg-white"
-                      } ${!hasEmail ? "opacity-50" : ""}`}
+                        } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}
