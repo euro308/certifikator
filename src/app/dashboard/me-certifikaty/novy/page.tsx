@@ -185,8 +185,7 @@ export default function NovyCertifikat() {
   );
 
   // Načtení uživatelových oblíbených šablon
-  const { data: favoriteTemplates, isLoading: favoritesLoading } =
-    api.templates.getUserFavorites.useQuery();
+  const { data: favoriteTemplates } = api.templates.getUserFavorites.useQuery();
 
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
@@ -421,7 +420,7 @@ export default function NovyCertifikat() {
 
     setIsGenerating(true);
 
-    let rawCanvasData: any;
+    let rawCanvasData: unknown;
 
     // Získání plných dat šablony, pokud je to potřeba
     if ("canvasData" in selectedTemplate && selectedTemplate.canvasData) {
@@ -429,13 +428,13 @@ export default function NovyCertifikat() {
     } else {
       try {
         const fullTemplate = await utils.templates.getTemplateById.fetch({ templateId: selectedTemplate.id });
-        if (!fullTemplate || !fullTemplate.canvasData) {
+        if (!fullTemplate?.canvasData) {
           toast.error("Nepodařilo se načíst plná data šablony.");
           setIsGenerating(false);
           return;
         }
         rawCanvasData = fullTemplate.canvasData;
-      } catch (err) {
+      } catch {
         toast.error("Chyba při stahování dat šablony ze serveru.");
         setIsGenerating(false);
         return;

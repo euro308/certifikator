@@ -36,8 +36,8 @@ interface CertificateSummaryProps {
     templateId: string;
     recipientName: string;
     recipientEmail: string;
-    recipientData: unknown;
     certificateUrl: string;
+    thumbnailImageUrl: string;
     validationToken: string;
     sentAt: Date | null;
   }[];
@@ -198,30 +198,27 @@ export function CertificateSummary({
               <div className="bg-background text-muted-foreground sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
                 <div /> {/* Místo pro náhled */}
                 <span
-                  className={`text-left ${
-                    selectedSort === "nameAToZ" || selectedSort === "nameZToA"
-                      ? "text-foreground font-bold"
-                      : ""
-                  }`}
+                  className={`text-left ${selectedSort === "nameAToZ" || selectedSort === "nameZToA"
+                    ? "text-foreground font-bold"
+                    : ""
+                    }`}
                 >
                   Jméno držitele
                 </span>
                 <span
-                  className={`text-left ${
-                    selectedSort === "emailAToZ" || selectedSort === "emailZToA"
-                      ? "text-foreground font-bold"
-                      : ""
-                  }`}
+                  className={`text-left ${selectedSort === "emailAToZ" || selectedSort === "emailZToA"
+                    ? "text-foreground font-bold"
+                    : ""
+                    }`}
                 >
                   E-mailová adresa držitele
                 </span>
                 <span
-                  className={`text-left ${
-                    selectedSort === "creationDateNewest" ||
+                  className={`text-left ${selectedSort === "creationDateNewest" ||
                     selectedSort === "creationDateOldest"
-                      ? "text-foreground font-bold"
-                      : ""
-                  }`}
+                    ? "text-foreground font-bold"
+                    : ""
+                    }`}
                 >
                   Vytvořeno
                 </span>
@@ -241,10 +238,10 @@ export function CertificateSummary({
                   >
                     {/* 1. Preview Image */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
-                      {certificate.certificateUrl ? (
+                      {certificate.thumbnailImageUrl ? (
                         <Image
                           alt={certificate.recipientName}
-                          src={certificate.certificateUrl}
+                          src={certificate.thumbnailImageUrl}
                           className="object-cover"
                           fill
                           sizes="70px"

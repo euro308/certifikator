@@ -40,7 +40,7 @@ export const certificatesRouter = createTRPCRouter({
     }),
 
   getUserCertificates: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.certificates.findMany({
+    const certs = await ctx.db.query.certificates.findMany({
       where: eq(certificates.userId, ctx.session.user.id),
       columns: {
         id: true,
@@ -56,6 +56,12 @@ export const certificatesRouter = createTRPCRouter({
       }, // Optimalizace - nenačítáme dlouhý recipientData a velký certificateUrl, který tu není potřeba
       orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
     });
+
+    return certs.map((c) => ({
+      ...c,
+      certificateUrl: c.certificateUrl ?? "",
+      thumbnailImageUrl: c.thumbnailImageUrl ?? "",
+    }));
   }),
 
   getById: protectedProcedure
@@ -234,6 +240,12 @@ export const certificatesRouter = createTRPCRouter({
         .values(valuesWithToken)
         .returning();
 
+      const mappedResult = result.map(c => ({
+        ...c,
+        certificateUrl: c.certificateUrl ?? "",
+        thumbnailImageUrl: c.thumbnailImageUrl ?? "",
+      }));
+
       // Increment downloads for each unique foreign template used
       const uniqueTemplateIds = [...new Set(input.map((c) => c.templateId))];
       for (const templateId of uniqueTemplateIds) {
@@ -249,7 +261,7 @@ export const certificatesRouter = createTRPCRouter({
           );
       }
 
-      return result;
+      return mappedResult;
     }),
 
   deleteCertificate: protectedProcedure
