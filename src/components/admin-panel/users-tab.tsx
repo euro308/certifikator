@@ -88,8 +88,8 @@ export function UsersTab() {
   const deleteUserMutation = api.admin.deleteUser.useMutation({
     onSuccess: () => {
       toast.success("Uživatel byl trvale smazán ze systému.");
-      utils.admin.getUsers.invalidate();
-      utils.admin.getOverviewStats.invalidate();
+      void utils.admin.getUsers.invalidate();
+      void utils.admin.getOverviewStats.invalidate();
       setUserToDelete(null);
     },
     onError: () => {

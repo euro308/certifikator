@@ -60,8 +60,8 @@ export function PublicTemplatesTab() {
       toast.success(
         "Šablona byla stažena z galerie a uživatel byl informován.",
       );
-      utils.templates.getPublicTemplates.invalidate();
-      utils.admin.getOverviewStats.invalidate();
+      void utils.templates.getPublicTemplates.invalidate();
+      void utils.admin.getOverviewStats.invalidate();
       setTemplateToTakeDown(null);
       setTakeDownReason("");
     },
