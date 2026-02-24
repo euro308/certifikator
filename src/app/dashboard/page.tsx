@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Award, Plus } from "lucide-react";
+import { FileText, Award, Plus, Shield } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
@@ -106,6 +106,8 @@ export default async function Dashboard() {
     isThisWeeksTemplateChangePositive = true;
   }
 
+  const isAdmin = session?.user?.id === process.env.OFFICIAL_USER_ID;
+
   return (
     <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
@@ -173,7 +175,8 @@ export default async function Dashboard() {
             Nejčastější úkony pro urychlení práce
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+        <CardContent className="flex flex-wrap justify-between">
+          <div className="flex gap-3">
           <Button asChild className="bg-gradient-primary hover:opacity-90">
             <Link href="/dashboard/me-sablony/nova">
               <Plus className="size-6" />
@@ -186,6 +189,15 @@ export default async function Dashboard() {
               <span className="text-base">Nový certifikát</span>
             </Link>
           </Button>
+          </div>
+          {isAdmin && (
+            <Button asChild variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+              <Link href="/dashboard/admin" className="text-3xl">
+                <Shield className="size-6" />
+                <span className="text-base">Administrace</span>
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
 
