@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OverviewTab } from "./overview-tab";
-import { UsersTab } from "./users-tab";
-import { PublicTemplatesTab } from "./public-templates-tab";
-import { AllTemplatesTab } from "./all-templates-tab";
-import { CertificatesTab } from "./certificates-tab";
+import { OverviewTab } from "../../../components/admin-panel/overview-tab";
+import { UsersTab } from "../../../components/admin-panel/users-tab";
+import { PublicTemplatesTab } from "../../../components/admin-panel/public-templates-tab";
+import { AllTemplatesTab } from "../../../components/admin-panel/all-templates-tab";
+import { CertificatesTab } from "../../../components/admin-panel/certificates-tab";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("overview");
