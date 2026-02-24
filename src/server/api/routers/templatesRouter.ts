@@ -43,6 +43,12 @@ export const templatesRouter = createTRPCRouter({
           inArray(templates.id, templateIds),
           isNull(templates.deletedAt),
         ),
+        columns: {
+          id: true,
+          name: true,
+          previewImageUrl: true,
+          updatedAt: true,
+        },
       });
 
       const templateMap = new Map(matchedTemplates.map((t) => [t.id, t]));
@@ -65,6 +71,14 @@ export const templatesRouter = createTRPCRouter({
         eq(templates.userId, ctx.session.user.id),
         isNull(templates.deletedAt),
       ),
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        previewImageUrl: true,
+        placeholders: true,
+        createdAt: true,
+      }, // Optimalizace - nenačítáme dlouhé canvasData ani velký previewImageUrl
       orderBy: (templates, { desc }) => [desc(templates.createdAt)],
     });
   }),
@@ -118,7 +132,7 @@ export const templatesRouter = createTRPCRouter({
         description: z.string().optional(),
         canvasData: z.any(),
         placeholders: z.array(z.string()), // Changed to string array as per editor
-        previewImageUrl: z.string().optional(),
+        previewImageUrl: z.string(),
         isPublic: z.boolean(),
       }),
     )
@@ -133,7 +147,6 @@ export const templatesRouter = createTRPCRouter({
           placeholders: input.placeholders,
           previewImageUrl: input.previewImageUrl,
           isPublic: input.isPublic,
-          isVerified: true,
         })
         .returning();
 
@@ -148,7 +161,7 @@ export const templatesRouter = createTRPCRouter({
         description: z.string().optional(),
         canvasData: z.any(),
         placeholders: z.array(z.string()),
-        previewImageUrl: z.string().optional(),
+        previewImageUrl: z.string(),
         isPublic: z.boolean(),
       }),
     )
@@ -279,7 +292,6 @@ export const templatesRouter = createTRPCRouter({
         description: templates.description,
         previewImageUrl: templates.previewImageUrl,
         downloads: templates.downloads,
-        isVerified: templates.isVerified,
         createdAt: templates.createdAt,
         userId: templates.userId,
         authorName: user.name,
@@ -342,7 +354,6 @@ export const templatesRouter = createTRPCRouter({
           placeholders: templates.placeholders,
           previewImageUrl: templates.previewImageUrl,
           isPublic: templates.isPublic,
-          isVerified: templates.isVerified,
           downloads: templates.downloads,
           userId: templates.userId,
           createdAt: templates.createdAt,
@@ -456,8 +467,8 @@ export const templatesRouter = createTRPCRouter({
         templateName: templates.name,
         templateDescription: templates.description,
         previewImageUrl: templates.previewImageUrl,
+        placeholders: templates.placeholders,
         downloads: templates.downloads,
-        isVerified: templates.isVerified,
         authorId: templates.userId,
         authorName: user.name,
         authorImage: user.image,

@@ -66,6 +66,10 @@ export const adminRouter = createTRPCRouter({
       // 1. Získáme info o šabloně a uživateli
       const templateData = await db.query.templates.findFirst({
         where: eq(templates.id, input.templateId),
+        columns: {
+          id: true,
+          name: true,
+        },
         with: { user: true },
       });
 
@@ -110,6 +114,17 @@ export const adminRouter = createTRPCRouter({
     requireAdmin(ctx.session.user.id);
 
     const allTemplates = await db.query.templates.findMany({
+      columns: {
+        id: true,
+        userId: true,
+        name: true,
+        description: true,
+        isPublic: true,
+        downloads: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
       with: { user: true },
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     });
@@ -155,11 +170,20 @@ export const adminRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       requireAdmin(ctx.session.user.id);
 
-    return db.query.certificates.findMany({
-      where: eq(certificates.userId, input.userId),
-      orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
-    });
-  }),
+      return db.query.certificates.findMany({
+        where: eq(certificates.userId, input.userId),
+        columns: {
+          id: true,
+          templateId: true,
+          userId: true,
+          recipientName: true,
+          recipientEmail: true,
+          sentAt: true,
+          createdAt: true,
+        },
+        orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
+      });
+    }),
 
   // -- VYZVEDNUTÍ DETAILU CERTIFIKÁTU (PRO ADMINA) --
   getCertificateById: protectedProcedure
@@ -204,7 +228,6 @@ export const adminRouter = createTRPCRouter({
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
         createdAt: user.createdAt,
       })
       .from(user)

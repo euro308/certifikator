@@ -42,6 +42,17 @@ export const certificatesRouter = createTRPCRouter({
   getUserCertificates: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.query.certificates.findMany({
       where: eq(certificates.userId, ctx.session.user.id),
+      columns: {
+        id: true,
+        templateId: true,
+        userId: true,
+        recipientName: true,
+        recipientEmail: true,
+        sentAt: true,
+        certificateUrl: true,
+        validationToken: true,
+        createdAt: true,
+      }, // Optimalizace - nenačítáme dlouhý recipientData a velký certificateUrl, který tu není potřeba
       orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
     });
   }),
