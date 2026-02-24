@@ -46,7 +46,7 @@ export const templatesRouter = createTRPCRouter({
         columns: {
           id: true,
           name: true,
-          previewImageUrl: true,
+          thumbnailImageUrl: true,
           updatedAt: true,
         },
       });
@@ -75,7 +75,7 @@ export const templatesRouter = createTRPCRouter({
         id: true,
         name: true,
         description: true,
-        previewImageUrl: true,
+        thumbnailImageUrl: true,
         placeholders: true,
         createdAt: true,
       }, // Optimalizace - nenačítáme dlouhé canvasData ani velký previewImageUrl
@@ -133,6 +133,7 @@ export const templatesRouter = createTRPCRouter({
         canvasData: z.any(),
         placeholders: z.array(z.string()), // Changed to string array as per editor
         previewImageUrl: z.string(),
+        thumbnailImageUrl: z.string(),
         isPublic: z.boolean(),
       }),
     )
@@ -146,6 +147,7 @@ export const templatesRouter = createTRPCRouter({
           canvasData: input.canvasData,
           placeholders: input.placeholders,
           previewImageUrl: input.previewImageUrl,
+          thumbnailImageUrl: input.thumbnailImageUrl,
           isPublic: input.isPublic,
         })
         .returning();
@@ -162,6 +164,7 @@ export const templatesRouter = createTRPCRouter({
         canvasData: z.any(),
         placeholders: z.array(z.string()),
         previewImageUrl: z.string(),
+        thumbnailImageUrl: z.string(),
         isPublic: z.boolean(),
       }),
     )
@@ -191,6 +194,7 @@ export const templatesRouter = createTRPCRouter({
           canvasData: input.canvasData,
           placeholders: input.placeholders,
           previewImageUrl: input.previewImageUrl,
+          thumbnailImageUrl: input.thumbnailImageUrl,
           isPublic: input.isPublic,
           updatedAt: new Date(),
         })
@@ -290,7 +294,7 @@ export const templatesRouter = createTRPCRouter({
         id: templates.id,
         name: templates.name,
         description: templates.description,
-        previewImageUrl: templates.previewImageUrl,
+        thumbnailImageUrl: templates.thumbnailImageUrl, // Stačí nám odlehčený a menší obrázek
         downloads: templates.downloads,
         createdAt: templates.createdAt,
         userId: templates.userId,
@@ -353,6 +357,7 @@ export const templatesRouter = createTRPCRouter({
           canvasData: templates.canvasData,
           placeholders: templates.placeholders,
           previewImageUrl: templates.previewImageUrl,
+          thumbnailImageUrl: templates.thumbnailImageUrl,
           isPublic: templates.isPublic,
           downloads: templates.downloads,
           userId: templates.userId,
@@ -466,7 +471,7 @@ export const templatesRouter = createTRPCRouter({
         templateId: templates.id,
         templateName: templates.name,
         templateDescription: templates.description,
-        previewImageUrl: templates.previewImageUrl,
+        thumbnailImageUrl: templates.thumbnailImageUrl, // Stačí nám odlehčený a menší obrázek
         placeholders: templates.placeholders,
         downloads: templates.downloads,
         authorId: templates.userId,

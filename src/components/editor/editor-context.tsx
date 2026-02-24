@@ -78,7 +78,7 @@ interface EditorContextType {
   saveTemplate: () => void;
   getExportData: () => TemplateExportData;
   getPlaceholders: () => string[];
-  setGetPreviewImageCallback: (callback: () => string) => void;
+  setGetPreviewImageCallback: (callback: () => { previewImageUrl: string, thumbnailImageUrl: string }) => void;
 
   // Undo/Redo
   undo: () => void;
@@ -120,7 +120,7 @@ export function EditorProvider({
   const [pan, setPan] = useState<PanState>({ x: 0, y: 0 });
 
   // Ref pro callback na získání obrázku
-  const getPreviewImageCallbackRef = useRef<(() => string) | null>(null);
+  const getPreviewImageCallbackRef = useRef<(() => { previewImageUrl: string, thumbnailImageUrl: string }) | null>(null);
 
   // Undo/Redo hook
   const {
@@ -538,11 +538,11 @@ export function EditorProvider({
       elements,
       placeholders: getPlaceholders(),
       previewImageUrl: "",
+      thumbnailImageUrl: "",
     };
   }, [elements, getPlaceholders]);
 
-  /** Callback setter pro získání obrázku */
-  const setGetPreviewImageCallback = useCallback((callback: () => string) => {
+  const setGetPreviewImageCallback = useCallback((callback: () => { previewImageUrl: string, thumbnailImageUrl: string }) => {
     getPreviewImageCallbackRef.current = callback;
   }, []);
 
@@ -553,7 +553,9 @@ export function EditorProvider({
     // Pokud máme zaregistrovaný callback pro obrázek, vygenerujeme ho
     if (getPreviewImageCallbackRef.current) {
       try {
-        data.previewImageUrl = getPreviewImageCallbackRef.current();
+        const images = getPreviewImageCallbackRef.current();
+        data.previewImageUrl = images.previewImageUrl;
+        data.thumbnailImageUrl = images.thumbnailImageUrl;
       } catch (e) {
         console.error("Chyba při generování náhledu:", e);
       }

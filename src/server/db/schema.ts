@@ -89,8 +89,8 @@ export const templates = createTable(
     canvasData: jsonb("canvas_data").notNull(),
     placeholders: jsonb("placeholders").notNull().default([]),
     previewImageUrl: text("preview_image_url"),
+    thumbnailImageUrl: text("thumbnail_image_url"),
     isPublic: boolean("is_public").notNull().default(false),
-    isVerified: boolean("is_verified").notNull().default(false),
     downloads: integer("downloads").notNull().default(0),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -104,11 +104,6 @@ export const templates = createTable(
   (table) => ({
     userDeletedIdx: index("templates_user_deleted_idx").on(
       table.userId,
-      table.deletedAt,
-    ),
-    verifiedIdx: index("templates_verified_idx").on(
-      table.isVerified,
-      table.isPublic,
       table.deletedAt,
     ),
   }),
@@ -130,6 +125,7 @@ export const certificates = createTable(
     recipientEmail: text("recipient_email").notNull(),
     recipientData: jsonb("recipient_data").notNull(),
     certificateUrl: text("certificate_url").notNull(),
+    thumbnailImageUrl: text("thumbnail_image_url"),
     validationToken: text("validation_token").notNull().unique(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })

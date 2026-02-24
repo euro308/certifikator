@@ -91,6 +91,7 @@ export default function NovaSablona() {
         description: templateDescription,
         canvasData: JSON.stringify(canvasData),
         previewImageUrl: canvasData.previewImageUrl ?? "",
+        thumbnailImageUrl: canvasData.thumbnailImageUrl ?? "",
       },
       {
         onSuccess: (_data) => {

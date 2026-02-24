@@ -13,7 +13,7 @@ import { ReadOnlyCanvasElement } from "./read-only-canvas-element";
 
 interface CertificateThumbnailGeneratorProps {
   elements: CanvasElement[];
-  onGenerate: (dataUrl: string) => void;
+  onGenerate: (data: { certificateUrl: string; thumbnailImageUrl: string }) => void;
 }
 
 export function CertificateThumbnailGenerator({
@@ -65,16 +65,19 @@ export function CertificateThumbnailGenerator({
       const timeout = setTimeout(() => {
         if (stageRef.current) {
           try {
-            const dataUrl = stageRef.current.toDataURL({
+            const certificateUrl = stageRef.current.toDataURL({
               pixelRatio: 1, // 1:1 export
               mimeType: "image/png",
             });
-            onGenerate(dataUrl);
+            const thumbnailImageUrl = stageRef.current.toDataURL({
+              pixelRatio: 0.3,
+              mimeType: "image/jpeg",
+              quality: 0.5,
+            });
+            onGenerate({ certificateUrl, thumbnailImageUrl });
           } catch (e) {
             console.error("Failed to generate thumbnail", e);
-            // Even if failed, call onGenerate to move to next (maybe with empty string or retry?)
-            // For now, let's assume success or just skip
-            onGenerate("");
+            onGenerate({ certificateUrl: "", thumbnailImageUrl: "" });
           }
         }
       }, 100); // 100ms delay should be enough after images are loaded

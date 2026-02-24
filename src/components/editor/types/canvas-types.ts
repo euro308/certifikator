@@ -306,4 +306,5 @@ export interface TemplateExportData {
   elements: CanvasElement[];
   placeholders: string[]; // Seznam klíčů placeholderů
   previewImageUrl: string;
+  thumbnailImageUrl: string;
 }

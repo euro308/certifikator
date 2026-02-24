@@ -21,9 +21,8 @@ interface GalleryTemplate {
   id: string;
   name: string;
   description: string | null;
-  previewImageUrl: string | null;
+  thumbnailImageUrl: string | null;
   downloads: number;
-  isVerified: boolean;
   createdAt: Date;
   userId: string;
   authorName: string;
@@ -87,9 +86,9 @@ export function GalleryTemplateCard({
         href={`/galerie/${template.id}`}
         className="relative block aspect-[1.414/1] w-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
       >
-        {template.previewImageUrl ? (
+        {template.thumbnailImageUrl ? (
           <Image
-            src={template.previewImageUrl}
+            src={template.thumbnailImageUrl}
             alt={template.name}
             fill
             className="object-cover transition-transform group-hover:scale-[1.02]"

@@ -95,13 +95,23 @@ export function EditorCanvasContent({
           const transformers = stageRef.current.find("Transformer");
           transformers.forEach((t) => t.hide());
 
-          const dataUrl = stageRef.current.toDataURL({
+          const previewImageUrl = stageRef.current.toDataURL({
             x: 0,
             y: 0,
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
             pixelRatio: 1,
             mimeType: "image/jpeg",
+          });
+
+          const thumbnailImageUrl = stageRef.current.toDataURL({
+            x: 0,
+            y: 0,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            pixelRatio: 0.3,
+            mimeType: "image/jpeg",
+            quality: 0.5,
           });
 
           // Obnovíme zobrazení transformačních prvků
@@ -111,9 +121,9 @@ export function EditorCanvasContent({
           stageRef.current.scale({ x: oldScaleX, y: oldScaleY });
           stageRef.current.position({ x: oldX, y: oldY });
 
-          return dataUrl;
+          return { previewImageUrl, thumbnailImageUrl };
         }
-        return "";
+        return { previewImageUrl: "", thumbnailImageUrl: "" };
       });
     }
   }, [setGetPreviewImageCallback]);
@@ -269,7 +279,7 @@ export function EditorCanvasContent({
         // Pokud byl výběr velmi malý (jen kliknutí), neřešíme ho zde (řeší handleStageClick)
         const dist = Math.sqrt(
           Math.pow(selectionRect.x2 - selectionRect.x1, 2) +
-            Math.pow(selectionRect.y2 - selectionRect.y1, 2),
+          Math.pow(selectionRect.y2 - selectionRect.y1, 2),
         );
 
         if (dist < 5) {
@@ -780,10 +790,10 @@ export function EditorCanvasContent({
             initialValue={
               elements.find((el) => el.id === editingId)?.type === "placeholder"
                 ? (
-                    elements.find(
-                      (el) => el.id === editingId,
-                    ) as PlaceholderElement
-                  ).placeholderKey
+                  elements.find(
+                    (el) => el.id === editingId,
+                  ) as PlaceholderElement
+                ).placeholderKey
                 : undefined
             }
           />

@@ -47,17 +47,10 @@ import {
 interface UserTemplate {
   id: string;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
   description: string | null;
-  canvasData: unknown;
+  thumbnailImageUrl: string | null;
   placeholders: unknown;
-  previewImageUrl: string | null;
-  isPublic: boolean;
-  isVerified: boolean;
-  downloads: number;
-  deletedAt: Date | null;
+  createdAt: Date;
 }
 
 interface FavoriteTemplate {
@@ -65,7 +58,7 @@ interface FavoriteTemplate {
   templateId: string;
   templateName: string;
   templateDescription: string | null;
-  previewImageUrl: string | null;
+  thumbnailImageUrl: string | null;
   authorName: string;
   downloads: number;
   isOfficial: boolean;
@@ -163,8 +156,8 @@ export function TemplateSummary({
     row.type === "own" ? row.data.description : `od ${row.data.authorName}`;
   const getRowId = (row: TemplateRow) =>
     row.type === "own" ? row.data.id : row.data.templateId;
-  const getRowPreview = (row: TemplateRow) =>
-    row.type === "own" ? row.data.previewImageUrl : row.data.previewImageUrl;
+  const getRowThumbnail = (row: TemplateRow) =>
+    row.type === "own" ? row.data.thumbnailImageUrl : row.data.thumbnailImageUrl;
   const getRowDate = (row: TemplateRow) =>
     row.type === "own" ? row.data.createdAt : row.data.favoritedAt;
 
@@ -267,32 +260,29 @@ export function TemplateSummary({
               <div className="bg-background text-muted-foreground sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
                 <div /> {/* Místo pro náhled */}
                 <span
-                  className={`text-left ${
-                    selectedSort === "nameAToZ" || selectedSort === "nameZToA"
+                  className={`text-left ${selectedSort === "nameAToZ" || selectedSort === "nameZToA"
                       ? "text-foreground font-bold"
                       : ""
-                  }`}
+                    }`}
                 >
                   Název
                 </span>
                 <span className="hidden text-left lg:block">Popis</span>
                 <span
-                  className={`text-left ${
-                    selectedSort === "creationDateNewest" ||
-                    selectedSort === "creationDateOldest"
+                  className={`text-left ${selectedSort === "creationDateNewest" ||
+                      selectedSort === "creationDateOldest"
                       ? "text-foreground font-bold"
                       : ""
-                  }`}
+                    }`}
                 >
                   Vytvořeno
                 </span>
                 <span
-                  className={`text-left ${
-                    selectedSort === "usedCountMost" ||
-                    selectedSort === "usedCountLeast"
+                  className={`text-left ${selectedSort === "usedCountMost" ||
+                      selectedSort === "usedCountLeast"
                       ? "text-foreground font-bold"
                       : ""
-                  }`}
+                    }`}
                 >
                   Využito
                 </span>
@@ -306,7 +296,7 @@ export function TemplateSummary({
                   const rowId = getRowId(row);
                   const rowName = getRowName(row);
                   const rowDesc = getRowDescription(row);
-                  const rowPreview = getRowPreview(row);
+                  const rowPreview = getRowThumbnail(row);
                   const rowDate = getRowDate(row);
                   const isGallery = row.type === "gallery";
 

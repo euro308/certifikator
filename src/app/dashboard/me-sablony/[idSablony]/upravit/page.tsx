@@ -130,6 +130,7 @@ export default function UpravitSablonu() {
         description: templateDescription,
         canvasData: canvasData, // JSON structure is handled by TRPC/SuperJSON usually
         previewImageUrl: canvasData.previewImageUrl ?? "",
+        thumbnailImageUrl: canvasData.thumbnailImageUrl ?? "",
       },
       {
         onSuccess: () => {

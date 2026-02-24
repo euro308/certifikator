@@ -75,6 +75,7 @@ interface GeneratedCertificate {
   canvasData: CanvasElement[];
   templateId: string;
   certificateUrl: string;
+  thumbnailImageUrl: string;
 }
 
 interface SavedCertificate {
@@ -83,6 +84,7 @@ interface SavedCertificate {
   recipientEmail: string;
   validationToken: string;
   certificateUrl: string;
+  thumbnailImageUrl: string;
 }
 
 const ITEMS_PER_PAGE = 6; // 3x2 pole
@@ -182,6 +184,10 @@ export default function NovyCertifikat() {
     { enabled: isGalleryId },
   );
 
+  // Načtení uživatelových oblíbených šablon
+  const { data: favoriteTemplates, isLoading: favoritesLoading } =
+    api.templates.getUserFavorites.useQuery();
+
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
     if (session?.user?.name && !hasInitializedSenderName.current) {
@@ -189,6 +195,7 @@ export default function NovyCertifikat() {
       hasInitializedSenderName.current = true;
     }
   }, [session?.user?.name]);
+
 
   // Auto-výběr šablony z URL parametru ?idSablony=xxx
   useEffect(() => {
@@ -291,11 +298,23 @@ export default function NovyCertifikat() {
     },
   });
 
-  // Najít vybranou šablonu (vlastní NEBO z galerie)
+  // Najít vybranou šablonu (vlastní NEBO z galerie NEBO z oblíbených)
+  // Toto je jen lightweight objekt pro zobrazení metadat šablony (jméno, description, placeholders). Neobsahuje full canvasData.
   const selectedTemplate =
     templates?.find((t) => t.id === selectedTemplateId) ??
+    (favoriteTemplates?.find((t) => t.templateId === selectedTemplateId)
+      ? {
+        ...favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!,
+        id: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateId,
+        name: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateName,
+        description: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateDescription,
+        placeholders: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.placeholders,
+        thumbnailImageUrl: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.thumbnailImageUrl,
+      }
+      : undefined) ??
     (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
-  // Placeholdery šablony
+
+  // Placeholdery šablony (tyto se používají v UI kroku 2)
   const placeholders = (selectedTemplate?.placeholders as string[]) || [];
 
   const handleTemplateSelect = (value: string) => {
@@ -393,12 +412,37 @@ export default function NovyCertifikat() {
     placeholders.every((p) => singleData[p] && singleData[p].trim() !== "") &&
     singleName.trim() !== "";
 
+  const utils = api.useUtils();
+  const [isGenerating, setIsGenerating] = useState(false);
+
   // Generování
-  const generateCertificates = () => {
+  const generateCertificates = async () => {
     if (!selectedTemplate) return;
 
+    setIsGenerating(true);
+
+    let rawCanvasData: any;
+
+    // Získání plných dat šablony, pokud je to potřeba
+    if ("canvasData" in selectedTemplate && selectedTemplate.canvasData) {
+      rawCanvasData = selectedTemplate.canvasData;
+    } else {
+      try {
+        const fullTemplate = await utils.templates.getTemplateById.fetch({ templateId: selectedTemplate.id });
+        if (!fullTemplate || !fullTemplate.canvasData) {
+          toast.error("Nepodařilo se načíst plná data šablony.");
+          setIsGenerating(false);
+          return;
+        }
+        rawCanvasData = fullTemplate.canvasData;
+      } catch (err) {
+        toast.error("Chyba při stahování dat šablony ze serveru.");
+        setIsGenerating(false);
+        return;
+      }
+    }
+
     // Získání elementů
-    const rawCanvasData = selectedTemplate.canvasData;
     let templateElements: CanvasElement[] = [];
 
     if (Array.isArray(rawCanvasData)) {
@@ -413,6 +457,7 @@ export default function NovyCertifikat() {
     } else {
       console.error("Neplatný formát dat šablony:", rawCanvasData);
       toast.error("Chyba dat šablony: Nepodařilo se načíst prvky.");
+      setIsGenerating(false);
       return;
     }
 
@@ -476,6 +521,7 @@ export default function NovyCertifikat() {
           canvasData: elementsCopy,
           templateId: selectedTemplate.id,
           certificateUrl: "pending",
+          thumbnailImageUrl: "pending",
         });
       });
     } else {
@@ -512,19 +558,22 @@ export default function NovyCertifikat() {
         canvasData: elementsCopy,
         templateId: selectedTemplate.id,
         certificateUrl: "pending",
+        thumbnailImageUrl: "pending",
       });
     }
 
     setGeneratedCertificates(newCertificates);
     setSelectedIndices(new Set(newCertificates.map((_, i) => i)));
     setStep(3);
+    setIsGenerating(false);
   };
 
-  const handleThumbnailGenerated = (dataUrl: string) => {
+  const handleThumbnailGenerated = (data: { certificateUrl: string; thumbnailImageUrl: string }) => {
     setGeneratedCertificates((prev) => {
       const newCerts = [...prev];
       if (newCerts[generationIndex]) {
-        newCerts[generationIndex].certificateUrl = dataUrl || "pending";
+        newCerts[generationIndex].certificateUrl = data.certificateUrl || "pending";
+        newCerts[generationIndex].thumbnailImageUrl = data.thumbnailImageUrl || "pending";
       }
       return newCerts;
     });
@@ -567,7 +616,7 @@ export default function NovyCertifikat() {
     }
 
     const pendingSelected = selectedCerts.filter(
-      (c) => c.certificateUrl === "pending",
+      (c) => c.certificateUrl === "pending" || c.thumbnailImageUrl === "pending",
     );
     if (pendingSelected.length > 0) {
       toast.warning(
@@ -584,6 +633,7 @@ export default function NovyCertifikat() {
         recipientEmail: cert.recipientEmail,
         recipientData: cert.recipientData,
         certificateUrl: cert.certificateUrl,
+        thumbnailImageUrl: cert.thumbnailImageUrl,
       })),
     );
   };
@@ -700,10 +750,10 @@ export default function NovyCertifikat() {
         {/* Grid certifikátů */}
         <div
           className={`grid gap-6 ${displayedCertificates.length === 1
-              ? "mx-auto max-w-3xl grid-cols-1"
-              : displayedCertificates.length === 2
-                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            ? "mx-auto max-w-3xl grid-cols-1"
+            : displayedCertificates.length === 2
+              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
             }`}
         >
           {displayedCertificates.map((cert, i) => {
@@ -851,8 +901,8 @@ export default function NovyCertifikat() {
                     <div
                       key={cert.id}
                       className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-white"
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-white"
                         } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
@@ -963,7 +1013,7 @@ export default function NovyCertifikat() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Načítám šablony...
                     </div>
-                  ) : templates?.length === 0 && !galleryTemplate ? (
+                  ) : templates?.length === 0 && favoriteTemplates?.length === 0 && !galleryTemplate ? (
                     <div className="text-muted-foreground p-2 text-center text-sm">
                       Nemáte žádné šablony.{" "}
                       <Link
@@ -975,20 +1025,48 @@ export default function NovyCertifikat() {
                     </div>
                   ) : (
                     <>
-                      {galleryTemplate && (
-                        <SelectItem
-                          key={galleryTemplate.id}
-                          value={galleryTemplate.id}
-                        >
-                          {galleryTemplate.name} (Z galerie –{" "}
-                          {galleryTemplate.authorName})
-                        </SelectItem>
+                      {/* Šablona z URL jestliže je nová */}
+                      {galleryTemplate &&
+                        !favoriteTemplates?.some(f => f.templateId === galleryTemplate.id) && (
+                          <>
+                            <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">Z galerie</div>
+                            <SelectItem
+                              key={galleryTemplate.id}
+                              value={galleryTemplate.id}
+                            >
+                              {galleryTemplate.name} (Z galerie –{" "}
+                              {galleryTemplate.authorName})
+                            </SelectItem>
+                          </>
+                        )}
+
+                      {/* Vlastní šablony */}
+                      {templates && templates.length > 0 && (
+                        <>
+                          <div className="mx-2 py-1.5 mt-2 text-sm font-semibold text-gray-500 border-b">Moje šablony</div>
+                          {templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </>
                       )}
-                      {templates?.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
+
+                      {/* Šablony z oblíbených */}
+                      {favoriteTemplates && favoriteTemplates.length > 0 && (
+                        <>
+                          <div className="mx-2 py-1.5 mt-2 text-sm font-semibold text-gray-500 border-b">Oblíbené šablony z galerie</div>
+                          {favoriteTemplates.map((template) => {
+                            // Zabraňme duplicitám
+                            if (galleryTemplate?.id === template.templateId) return null;
+                            return (
+                              <SelectItem key={template.templateId} value={template.templateId}>
+                                {template.templateName} ({template.authorName})
+                              </SelectItem>
+                            );
+                          })}
+                        </>
+                      )}
                     </>
                   )}
                 </SelectContent>
@@ -1007,10 +1085,10 @@ export default function NovyCertifikat() {
           {selectedTemplate && (
             <div className="bg-muted/50 mt-4 rounded-lg border p-4">
               <div className="flex gap-4">
-                {selectedTemplate.previewImageUrl ? (
+                {selectedTemplate.thumbnailImageUrl ? (
                   <div className="relative aspect-[1.414] w-32 shrink-0 overflow-hidden rounded-md border bg-white shadow-sm">
                     <Image
-                      src={selectedTemplate.previewImageUrl}
+                      src={selectedTemplate.thumbnailImageUrl}
                       alt={selectedTemplate.name}
                       className="h-full w-full object-cover"
                       fill
@@ -1246,14 +1324,15 @@ export default function NovyCertifikat() {
                 )}
 
                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
-                  <Button variant="outline" onClick={() => setStep(1)}>
+                  <Button variant="outline" onClick={() => setStep(1)} disabled={isGenerating}>
                     Zpět k výběru šablony
                   </Button>
                   <Button
-                    disabled={!isBulkReady}
+                    disabled={!isBulkReady || isGenerating}
                     size="lg"
                     onClick={generateCertificates}
                   >
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     Generovat {correctCertificatesText(excelData.length)}
                   </Button>
                 </div>
@@ -1309,14 +1388,15 @@ export default function NovyCertifikat() {
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
-                  <Button variant="outline" onClick={() => setStep(1)}>
+                  <Button variant="outline" onClick={() => setStep(1)} disabled={isGenerating}>
                     Zpět k výběru
                   </Button>
                   <Button
-                    disabled={!isSingleReady}
+                    disabled={!isSingleReady || isGenerating}
                     size="lg"
                     onClick={generateCertificates}
                   >
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     Generovat certifikát
                   </Button>
                 </div>

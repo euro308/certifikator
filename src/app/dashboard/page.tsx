@@ -251,9 +251,9 @@ export default async function Dashboard() {
                     href={`/dashboard/me-sablony/${template.id}`}
                     className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
                   >
-                    {template.previewImageUrl ? (
+                    {template.thumbnailImageUrl ? (
                       <Image
-                        src={template.previewImageUrl}
+                        src={template.thumbnailImageUrl}
                         alt={template.name}
                         className="rounded-xs object-cover"
                         width={48}

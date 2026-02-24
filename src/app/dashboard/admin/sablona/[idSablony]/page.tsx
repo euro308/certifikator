@@ -74,7 +74,7 @@ export default function AdminDetailSablony() {
     }
     const handleCreateCertificate = () => {
         router.push(`/dashboard/me-certifikaty/novy?idSablony=${template.id}`);
-    };// TODO: V budoucnu napojit na reálná data
+    };
 
     return (
         <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
@@ -196,7 +196,7 @@ export default function AdminDetailSablony() {
                                         <Globe className="mr-2 size-4" /> Oficiální
                                     </span>
                                     <span>
-                                        {template.isVerified ? "Ano" : "Ne"}
+                                        {(template.userId === process.env.OFFICIAL_USER_ID) ? "Ano" : "Ne"}
                                     </span>
                                 </div>
                             </div>
