@@ -26,7 +26,13 @@ const breadcrumbNameMap: Record<string, string> = {
   registrace: "Registrace",
   "zapomenute-heslo": "Zapomenuté heslo",
   account: "Účet",
+  admin: "Administrace",
+  sablona: "Šablona",
+  certifikat: "Certifikát",
 };
+
+// Paths that should just be text (no link) to avoid 404s
+const nonLinkableSegments = ["sablona", "certifikat"];
 
 export function BreadcrumbsByPathname() {
   const pathname = usePathname();
@@ -59,10 +65,15 @@ export function BreadcrumbsByPathname() {
     // So if we have an ID, this current segment is NOT the last visual crumb.
     const isVisuallyLast = isLast && !specificId;
 
+    // Check if this segment should be a link
+    // It's a link if it's NOT the last item AND it's NOT in the nonLinkableSegments list
+    const isLinkable = !isVisuallyLast && !nonLinkableSegments.includes(segment);
+
     return {
       href,
       name,
       isLast: isVisuallyLast,
+      isLinkable,
       key: href,
     };
   });
@@ -73,6 +84,7 @@ export function BreadcrumbsByPathname() {
       href: "#", // No specific link for the ID itself usually, or same page
       name: specificId,
       isLast: true,
+      isLinkable: false,
       key: "param-id",
     });
   }
@@ -95,10 +107,12 @@ export function BreadcrumbsByPathname() {
                 <BreadcrumbItem>
                   {crumb.isLast ? (
                     <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
-                  ) : (
+                  ) : crumb.isLinkable ? (
                     <BreadcrumbLink asChild>
                       <Link href={crumb.href}>{crumb.name}</Link>
                     </BreadcrumbLink>
+                  ) : (
+                    <span className="text-muted-foreground">{crumb.name}</span>
                   )}
                 </BreadcrumbItem>
                 {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}

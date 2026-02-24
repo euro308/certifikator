@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface DeleteTemplateDialogProps {
-  type: "certificate" | "template";
+  type: "certificate" | "template" | "user";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
@@ -65,6 +65,29 @@ export function DeleteDialog({
             <AlertDialogCancel onClick={onCancel}>Jít zpět</AlertDialogCancel>
             <Button onClick={onConfirm} disabled={isDeleting}>
               {isDeleting ? "Mažu..." : "Smazat šablonu"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+  if (type === "user") {
+    return (
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Opravdu chcete uživatele vymazat?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Vymazáním uživatele se také vymažou všechny jeho certifikáty a šablony.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onCancel}>Jít zpět</AlertDialogCancel>
+            <Button onClick={onConfirm} disabled={isDeleting}>
+              {isDeleting ? "Mažu..." : "Vymazat uživatele"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
