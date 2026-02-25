@@ -6,6 +6,8 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+import { ReportTemplateDialog } from "@/components/gallery/report-template-dialog";
 import {
   ArrowRight,
   BadgeCheck,
@@ -16,6 +18,7 @@ import {
   Heart,
   Loader2,
   User,
+  Flag,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -54,6 +57,8 @@ export default function GalleryTemplateDetail() {
     { enabled: !!idSablony },
   );
 
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
   const toggleFavorite = api.templates.toggleFavorite.useMutation({
     onSuccess: (data) => {
       toast.success(
@@ -69,6 +74,18 @@ export default function GalleryTemplateDetail() {
     },
   });
 
+  const reportTemplate = api.templates.reportTemplate.useMutation({
+    onSuccess: () => {
+      toast.success("Děkujeme za nahlášení. Administrátoři šablonu prověří.");
+      setReportDialogOpen(false);
+      void utils.templates.getTemplatePublic.invalidate();
+      void utils.templates.getPublicTemplates.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Nepodařilo se šablonu nahlásit.");
+    },
+  });
+
   const isOwn = !!session?.user && template?.userId === session.user.id;
   const isOfficial = template?.isOfficial ?? false;
 
@@ -79,6 +96,24 @@ export default function GalleryTemplateDetail() {
     }
     if (!idSablony) return;
     toggleFavorite.mutate({ templateId: idSablony });
+  };
+
+  const handleReportSubmit = (reason: string) => {
+    if (!session?.user) {
+      router.push("/prihlaseni");
+      return;
+    }
+    if (idSablony) {
+      reportTemplate.mutate({ templateId: idSablony, reason });
+    }
+  };
+
+  const handleReportClick = () => {
+    if (!session?.user) {
+      router.push("/prihlaseni");
+      return;
+    }
+    setReportDialogOpen(true);
   };
 
   const handleUseTemplate = () => {
@@ -178,6 +213,23 @@ export default function GalleryTemplateDetail() {
             </div>
 
             <div className="flex gap-2">
+              {!isOwn && (
+                <Button
+                  variant="outline"
+                  onClick={handleReportClick}
+                  disabled={template.isReportedByMe || reportTemplate.isPending}
+                  className={`gap-2 ${
+                    template.isReportedByMe
+                      ? "text-red-500"
+                      : "hover:text-red-500"
+                  }`}
+                >
+                  <Flag
+                    className={`size-4 ${template.isReportedByMe ? "fill-red-500" : ""}`}
+                  />
+                  {template.isReportedByMe ? "Nahlášeno" : "Nahlásit"}
+                </Button>
+              )}
               {!isOwn && (
                 <Button
                   variant="outline"
@@ -315,6 +367,16 @@ export default function GalleryTemplateDetail() {
           </div>
         </div>
       </div>
+
+      {reportDialogOpen && template && (
+        <ReportTemplateDialog
+          open={reportDialogOpen}
+          onOpenChange={setReportDialogOpen}
+          templateName={template.name}
+          isPending={reportTemplate.isPending}
+          onSubmit={handleReportSubmit}
+        />
+      )}
 
       <FooterOutside />
     </main>

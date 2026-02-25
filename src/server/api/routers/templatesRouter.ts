@@ -8,6 +8,7 @@ import {
   certificates,
   templates,
   templateFavorites,
+  templateReports,
   user,
 } from "@/server/db/schema";
 import { db } from "@/server/db";
@@ -285,6 +286,52 @@ export const templatesRouter = createTRPCRouter({
   // GALERIE – veřejné endpointy
   // =============================================
 
+  reportTemplate: protectedProcedure
+    .input(z.object({ templateId: z.string(), reason: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      // 1. Verify template exists and is public
+      const template = await db.query.templates.findFirst({
+        where: and(
+          eq(templates.id, input.templateId),
+          eq(templates.isPublic, true),
+          isNull(templates.deletedAt),
+        ),
+        columns: { id: true },
+      });
+
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Šablona nebyla nalezena.",
+        });
+      }
+
+      // 2. Check if already reported
+      const existingReport = await db.query.templateReports.findFirst({
+        where: and(
+          eq(templateReports.reporterId, ctx.session.user.id),
+          eq(templateReports.templateId, input.templateId),
+        ),
+        columns: { id: true },
+      });
+
+      if (existingReport) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Tuto šablonu jste již nahlásili.",
+        });
+      }
+
+      // 3. Create report
+      await db.insert(templateReports).values({
+        reporterId: ctx.session.user.id,
+        templateId: input.templateId,
+        reason: input.reason,
+      });
+
+      return { success: true };
+    }),
+
   getPublicTemplates: publicProcedure.query(async ({ ctx }) => {
     const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
 
@@ -338,10 +385,26 @@ export const templatesRouter = createTRPCRouter({
       userFavoritesSet = new Set(userFavs.map((f) => f.templateId));
     }
 
+    // Check which templates are reported by the current user
+    let userReportsSet = new Set<string>();
+    if (ctx.session?.user?.id && templateIds.length > 0) {
+      const userReports = await db
+        .select({ templateId: templateReports.templateId })
+        .from(templateReports)
+        .where(
+          and(
+            eq(templateReports.reporterId, ctx.session.user.id),
+            inArray(templateReports.templateId, templateIds),
+          ),
+        );
+      userReportsSet = new Set(userReports.map((r) => r.templateId));
+    }
+
     return results.map((r) => ({
       ...r,
       favoritesCount: favoritesMap.get(r.id) ?? 0,
       isFavorited: userFavoritesSet.has(r.id),
+      isReportedByMe: userReportsSet.has(r.id),
       isOfficial: officialUserId !== "" && r.userId === officialUserId,
     }));
   }),
@@ -393,20 +456,34 @@ export const templatesRouter = createTRPCRouter({
         .where(eq(templateFavorites.templateId, tmpl.id));
       const favoritesCount = favCountResult[0]?.count ?? 0;
 
-      // Is favorited by current user
+      // Is favorited and reported by current user
       let isFavorited = false;
+      let isReportedByMe = false;
       if (ctx.session?.user?.id) {
-        const userFav = await db
-          .select({ id: templateFavorites.id })
-          .from(templateFavorites)
-          .where(
-            and(
-              eq(templateFavorites.userId, ctx.session.user.id),
-              eq(templateFavorites.templateId, tmpl.id),
-            ),
-          )
-          .limit(1);
+        const [userFav, userReport] = await Promise.all([
+          db
+            .select({ id: templateFavorites.id })
+            .from(templateFavorites)
+            .where(
+              and(
+                eq(templateFavorites.userId, ctx.session.user.id),
+                eq(templateFavorites.templateId, tmpl.id),
+              ),
+            )
+            .limit(1),
+          db
+            .select({ id: templateReports.id })
+            .from(templateReports)
+            .where(
+              and(
+                eq(templateReports.reporterId, ctx.session.user.id),
+                eq(templateReports.templateId, tmpl.id),
+              ),
+            )
+            .limit(1),
+        ]);
         isFavorited = userFav.length > 0;
+        isReportedByMe = userReport.length > 0;
       }
 
       const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
@@ -415,6 +492,7 @@ export const templatesRouter = createTRPCRouter({
         ...tmpl,
         favoritesCount,
         isFavorited,
+        isReportedByMe,
         isOfficial: officialUserId !== "" && tmpl.userId === officialUserId,
       };
     }),

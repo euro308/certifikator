@@ -172,6 +172,29 @@ export const templateFavorites = createTable(
     templateIdx: index("template_favorites_template_idx").on(table.templateId),
   }),
 );
+export const templateReports = createTable(
+  "template_reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => templates.id, { onDelete: "cascade" }),
+    reporterId: text("reporter_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userTemplateIdx: uniqueIndex("template_reports_user_template_idx").on(
+      table.reporterId,
+      table.templateId,
+    ),
+    templateIdx: index("template_reports_template_idx").on(table.templateId),
+  }),
+);
 
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
@@ -179,6 +202,7 @@ export const userRelations = relations(user, ({ many }) => ({
   templates: many(templates),
   certificates: many(certificates),
   templateFavorites: many(templateFavorites),
+  templateReports: many(templateReports),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -193,6 +217,7 @@ export const templatesRelations = relations(templates, ({ one, many }) => ({
   user: one(user, { fields: [templates.userId], references: [user.id] }),
   certificates: many(certificates),
   favorites: many(templateFavorites),
+  reports: many(templateReports),
 }));
 
 export const certificatesRelations = relations(certificates, ({ one }) => ({
@@ -217,6 +242,20 @@ export const templateFavoritesRelations = relations(
   }),
 );
 
+export const templateReportsRelations = relations(
+  templateReports,
+  ({ one }) => ({
+    reporter: one(user, {
+      fields: [templateReports.reporterId],
+      references: [user.id],
+    }),
+    template: one(templates, {
+      fields: [templateReports.templateId],
+      references: [templates.id],
+    }),
+  }),
+);
+
 export const schema = {
   user,
   session,
@@ -225,4 +264,5 @@ export const schema = {
   templates,
   certificates,
   templateFavorites,
+  templateReports,
 };

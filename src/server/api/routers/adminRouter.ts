@@ -1,9 +1,14 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
-import { user, templates, certificates } from "@/server/db/schema";
+import {
+  user,
+  templates,
+  certificates,
+  templateReports,
+} from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { count, eq, ne } from "drizzle-orm";
+import { count, desc, eq, ne } from "drizzle-orm";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/emails/email-template";
 
@@ -86,7 +91,12 @@ export const adminRouter = createTRPCRouter({
         .set({ isPublic: false })
         .where(eq(templates.id, input.templateId));
 
-      // 3. Pošleme notifikační e-mail autorovi (pokud existuje)
+      // 3. Smažeme všechny reporty pro danou šablonu, protože už byla stažena
+      await db
+        .delete(templateReports)
+        .where(eq(templateReports.templateId, input.templateId));
+
+      // 4. Pošleme notifikační e-mail autorovi (pokud existuje)
       if (templateData.user?.email) {
         try {
           await resend.emails.send({
@@ -105,6 +115,116 @@ export const adminRouter = createTRPCRouter({
           // Necháme projít, šablona se stáhla, e-mail je bonusový side-effect
         }
       }
+
+      return { success: true };
+    }),
+
+  // -- NAHLÁŠENÍ (REPORTS) --
+  getReports: protectedProcedure.query(async ({ ctx }) => {
+    requireAdmin(ctx.session.user.id);
+
+    // Vytáhneme všechny reporty a agregujeme je podle šablon
+    const reports = await db.query.templateReports.findMany({
+      with: {
+        template: {
+          with: { user: true },
+        },
+      },
+      orderBy: [desc(templateReports.createdAt)],
+    });
+
+    type GroupedReport = {
+      templateId: string;
+      templateName: string;
+      templateDescription: string | null;
+      thumbnailImageUrl: string | null;
+      authorName: string;
+      reportCount: number;
+      latestReportAt: Date;
+    };
+
+    // Grouping by template ID
+    const grouped = new Map<string, GroupedReport>();
+
+    for (const report of reports) {
+      if (!report.template) continue; // Skip if templated was deleted outside cascade
+
+      const tid = report.template.id;
+      if (!grouped.has(tid)) {
+        grouped.set(tid, {
+          templateId: tid,
+          templateName: report.template.name,
+          templateDescription: report.template.description,
+          thumbnailImageUrl: report.template.thumbnailImageUrl,
+          authorName: report.template.user?.name || "Neznámý",
+          reportCount: 0,
+          latestReportAt: report.createdAt,
+        });
+      }
+
+      const entry = grouped.get(tid);
+      if (entry) {
+        entry.reportCount += 1;
+        // We rely on orderBy desc earlier to have the first one be the latest,
+        // but let's be safe:
+        if (new Date(report.createdAt) > new Date(entry.latestReportAt)) {
+          entry.latestReportAt = report.createdAt;
+        }
+      }
+    }
+
+    return Array.from(grouped.values()).sort(
+      (a, b) =>
+        new Date(b.latestReportAt).getTime() -
+        new Date(a.latestReportAt).getTime(),
+    );
+  }),
+
+  // -- DETAIL REPORTŮ PRO KONKRÉTNÍ ŠABLONU --
+  getTemplateReports: protectedProcedure
+    .input(z.object({ templateId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      requireAdmin(ctx.session.user.id);
+
+      const template = await db.query.templates.findFirst({
+        where: eq(templates.id, input.templateId),
+        with: { user: true },
+      });
+
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Šablona nebyla nalezena.",
+        });
+      }
+
+      const reports = await db.query.templateReports.findMany({
+        where: eq(templateReports.templateId, input.templateId),
+        with: { reporter: true },
+        orderBy: [desc(templateReports.createdAt)],
+      });
+
+      return {
+        template: {
+          ...template,
+          authorName: template.user?.name || "Neznámý autor",
+        },
+        reports: reports.map((r) => ({
+          ...r,
+          reporterName: r.reporter?.name || "Neznámý uživatel",
+          reporterEmail: r.reporter?.email || "",
+        })),
+      };
+    }),
+
+  deleteReport: protectedProcedure
+    .input(z.object({ reportId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      requireAdmin(ctx.session.user.id);
+
+      await db
+        .delete(templateReports)
+        .where(eq(templateReports.id, input.reportId));
 
       return { success: true };
     }),

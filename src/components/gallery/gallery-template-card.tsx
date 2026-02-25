@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Loader2,
   User,
+  Flag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +17,8 @@ import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/server/better-auth/client";
+import { ReportTemplateDialog } from "@/components/gallery/report-template-dialog";
+import { useState } from "react";
 
 interface GalleryTemplate {
   id: string;
@@ -28,6 +31,7 @@ interface GalleryTemplate {
   authorName: string;
   favoritesCount: number;
   isFavorited: boolean;
+  isReportedByMe?: boolean;
   isOfficial: boolean;
   authorImage?: string | null;
 }
@@ -41,6 +45,9 @@ export function GalleryTemplateCard({
   const { data: session } = authClient.useSession();
   const utils = api.useUtils();
   const isOwn = !!session?.user && session.user.id === template.userId;
+
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
   const toggleFavorite = api.templates.toggleFavorite.useMutation({
     onSuccess: (data) => {
       toast.success(
@@ -61,6 +68,35 @@ export function GalleryTemplateCard({
       return;
     }
     toggleFavorite.mutate({ templateId: template.id });
+  };
+
+  const reportTemplate = api.templates.reportTemplate.useMutation({
+    onSuccess: () => {
+      toast.success("Děkujeme za nahlášení. Administrátoři šablonu prověří.");
+      setReportDialogOpen(false);
+      void utils.templates.getPublicTemplates.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Nepodařilo se šablonu nahlásit.");
+    },
+  });
+
+  const handleReportSubmit = (reason: string) => {
+    if (!session?.user) {
+      router.push("/prihlaseni");
+      return;
+    }
+    reportTemplate.mutate({ templateId: template.id, reason });
+  };
+
+  const handleReportClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!session?.user) {
+      router.push("/prihlaseni");
+      return;
+    }
+    setReportDialogOpen(true);
   };
 
   const handleUseTemplate = () => {
@@ -138,14 +174,33 @@ export function GalleryTemplateCard({
       </Link>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col p-4">
-        <Link
-          href={`/galerie/${template.id}`}
-          className="mb-1 block truncate text-sm font-bold text-gray-900 transition-colors hover:text-[#E65758]"
-          title={template.name}
-        >
-          {template.name}
-        </Link>
+      <div className="relative flex flex-1 flex-col p-4">
+        <div className="mb-1 flex items-start justify-between gap-2">
+          <Link
+            href={`/galerie/${template.id}`}
+            className="block truncate text-sm font-bold text-gray-900 transition-colors hover:text-[#E65758]"
+            title={template.name}
+          >
+            {template.name}
+          </Link>
+
+          {!isOwn && (
+            <button
+              onClick={handleReportClick}
+              disabled={template.isReportedByMe}
+              title={
+                template.isReportedByMe
+                  ? "Již jste nahlásil(a)"
+                  : "Nahlásit nevhodnou šablonu"
+              }
+              className="mt-0.5 text-gray-300 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Flag
+                className={`size-3.5 ${template.isReportedByMe ? "fill-red-500 text-red-500" : ""}`}
+              />
+            </button>
+          )}
+        </div>
 
         {/* Popis – vždy zabere výšku 2 řádků */}
         <div className="mb-3 h-[2.5rem] overflow-hidden">
@@ -197,6 +252,16 @@ export function GalleryTemplateCard({
           <ArrowRight className="ml-1.5 size-3.5" />
         </Button>
       </div>
+
+      {reportDialogOpen && (
+        <ReportTemplateDialog
+          open={reportDialogOpen}
+          onOpenChange={setReportDialogOpen}
+          templateName={template.name}
+          isPending={reportTemplate.isPending}
+          onSubmit={handleReportSubmit}
+        />
+      )}
     </div>
   );
 }

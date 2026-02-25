@@ -249,12 +249,9 @@ export function PublicTemplatesTab() {
               Stáhnout šablonu z veřejné galerie?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Šablona se stane soukromou (
-              <code className="bg-muted rounded px-1 text-xs">
-                isPublic = false
-              </code>
-              ) a její autor obdrží informační email s důvodem stažení. Chtějte
-              uvést upřesňující důvod (bude součástí emailu):
+              Šablona se stane soukromou a její autor obdrží informační email s
+              důvodem stažení. Chtějte uvést upřesňující důvod (bude součástí
+              emailu):
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
@@ -271,7 +268,7 @@ export function PublicTemplatesTab() {
             <AlertDialogAction
               onClick={confirmTakeDown}
               disabled={takeDownMutation.isPending || !takeDownReason.trim()}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+              className="disabled:opacity-50"
             >
               {takeDownMutation.isPending ? (
                 <>

@@ -29,10 +29,11 @@ const breadcrumbNameMap: Record<string, string> = {
   admin: "Administrace",
   sablona: "Šablona",
   certifikat: "Certifikát",
+  nahlaseni: "Nahlášení",
 };
 
 // Paths that should just be text (no link) to avoid 404s
-const nonLinkableSegments = ["sablona", "certifikat"];
+const nonLinkableSegments = ["sablona", "certifikat", "nahlaseni"];
 
 export function BreadcrumbsByPathname() {
   const pathname = usePathname();
@@ -67,7 +68,8 @@ export function BreadcrumbsByPathname() {
 
     // Check if this segment should be a link
     // It's a link if it's NOT the last item AND it's NOT in the nonLinkableSegments list
-    const isLinkable = !isVisuallyLast && !nonLinkableSegments.includes(segment);
+    const isLinkable =
+      !isVisuallyLast && !nonLinkableSegments.includes(segment);
 
     return {
       href,
