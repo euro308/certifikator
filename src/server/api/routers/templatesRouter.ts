@@ -12,7 +12,20 @@ import {
   user,
 } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, count, desc, eq, gte, inArray, isNull, ne } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  ne,
+  ilike,
+  or,
+  asc,
+  sql,
+} from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const templatesRouter = createTRPCRouter({
@@ -332,82 +345,156 @@ export const templatesRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  getPublicTemplates: publicProcedure.query(async ({ ctx }) => {
-    const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
+  getPublicTemplates: publicProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          sortBy: z.enum(["date", "favorites", "downloads", "name"]).nullish(),
+          sortDir: z.enum(["asc", "desc"]).nullish(),
+          search: z.string().nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 16;
+      const offset = input?.cursor ?? 0;
+      const officialUserId = process.env.OFFICIAL_USER_ID ?? "";
 
-    // Fetch all public templates with author name
-    const results = await db
-      .select({
-        id: templates.id,
-        name: templates.name,
-        description: templates.description,
-        thumbnailImageUrl: templates.thumbnailImageUrl, // Stačí nám odlehčený a menší obrázek
-        downloads: templates.downloads,
-        createdAt: templates.createdAt,
-        userId: templates.userId,
-        authorName: user.name,
-        authorImage: user.image,
-      })
-      .from(templates)
-      .innerJoin(user, eq(templates.userId, user.id))
-      .where(and(eq(templates.isPublic, true), isNull(templates.deletedAt)))
-      .orderBy(desc(templates.createdAt));
+      const sortBy = input?.sortBy ?? "downloads";
+      const sortDir = input?.sortDir ?? "desc";
+      const search = input?.search;
 
-    // Fetch favorites count per template
-    const templateIds = results.map((r) => r.id);
-    let favoritesMap = new Map<string, number>();
-
-    if (templateIds.length > 0) {
-      const favCounts = await db
+      // SQL pro pocet oblibenych
+      const favCountSq = db
         .select({
           templateId: templateFavorites.templateId,
           count: count(templateFavorites.id).as("fav_count"),
         })
         .from(templateFavorites)
-        .where(inArray(templateFavorites.templateId, templateIds))
-        .groupBy(templateFavorites.templateId);
+        .groupBy(templateFavorites.templateId)
+        .as("fav_sq");
 
-      favoritesMap = new Map(favCounts.map((f) => [f.templateId, f.count]));
-    }
+      // Dynamické vyhledávání
+      const searchCondition = search
+        ? or(
+            ilike(templates.name, `%${search}%`),
+            ilike(templates.description, `%${search}%`),
+            ilike(user.name, `%${search}%`),
+            eq(templates.userId, search), // if searching by exact UID
+          )
+        : undefined;
 
-    // Check which templates are favorited by the current user
-    let userFavoritesSet = new Set<string>();
-    if (ctx.session?.user?.id && templateIds.length > 0) {
-      const userFavs = await db
-        .select({ templateId: templateFavorites.templateId })
-        .from(templateFavorites)
+      // Base query
+      const baseQuery = db
+        .select({
+          id: templates.id,
+          name: templates.name,
+          description: templates.description,
+          thumbnailImageUrl: templates.thumbnailImageUrl,
+          downloads: templates.downloads,
+          createdAt: templates.createdAt,
+          userId: templates.userId,
+          authorName: user.name,
+          authorImage: user.image,
+          favoritesCount: sql<number>`COALESCE(${favCountSq.count}, 0)`.mapWith(
+            Number,
+          ),
+        })
+        .from(templates)
+        .innerJoin(user, eq(templates.userId, user.id))
+        .leftJoin(favCountSq, eq(templates.id, favCountSq.templateId))
         .where(
           and(
-            eq(templateFavorites.userId, ctx.session.user.id),
-            inArray(templateFavorites.templateId, templateIds),
+            eq(templates.isPublic, true),
+            isNull(templates.deletedAt),
+            searchCondition,
           ),
         );
-      userFavoritesSet = new Set(userFavs.map((f) => f.templateId));
-    }
 
-    // Check which templates are reported by the current user
-    let userReportsSet = new Set<string>();
-    if (ctx.session?.user?.id && templateIds.length > 0) {
-      const userReports = await db
-        .select({ templateId: templateReports.templateId })
-        .from(templateReports)
-        .where(
-          and(
-            eq(templateReports.reporterId, ctx.session.user.id),
-            inArray(templateReports.templateId, templateIds),
-          ),
-        );
-      userReportsSet = new Set(userReports.map((r) => r.templateId));
-    }
+      const dirFn = sortDir === "asc" ? asc : desc;
 
-    return results.map((r) => ({
-      ...r,
-      favoritesCount: favoritesMap.get(r.id) ?? 0,
-      isFavorited: userFavoritesSet.has(r.id),
-      isReportedByMe: userReportsSet.has(r.id),
-      isOfficial: officialUserId !== "" && r.userId === officialUserId,
-    }));
-  }),
+      let orderedQuery;
+      switch (sortBy) {
+        case "downloads":
+          orderedQuery = baseQuery.orderBy(
+            dirFn(templates.downloads),
+            desc(templates.createdAt),
+          );
+          break;
+        case "favorites":
+          orderedQuery = baseQuery.orderBy(
+            dirFn(sql`COALESCE(${favCountSq.count}, 0)`),
+            desc(templates.createdAt),
+          );
+          break;
+        case "name":
+          orderedQuery = baseQuery.orderBy(
+            dirFn(templates.name),
+            desc(templates.createdAt),
+          );
+          break;
+        case "date":
+        default:
+          orderedQuery = baseQuery.orderBy(dirFn(templates.createdAt));
+          break;
+      }
+
+      // Fetch limit + 1 items to see if there is a next page
+      const results = await orderedQuery.limit(limit + 1).offset(offset);
+
+      let nextCursor: typeof offset | undefined = undefined;
+      if (results.length > limit) {
+        // Pop the extra item
+        results.pop();
+        nextCursor = offset + limit;
+      }
+
+      const templateIds = results.map((r) => r.id);
+
+      // Check which templates are favorited by the current user
+      let userFavoritesSet = new Set<string>();
+      if (ctx.session?.user?.id && templateIds.length > 0) {
+        const userFavs = await db
+          .select({ templateId: templateFavorites.templateId })
+          .from(templateFavorites)
+          .where(
+            and(
+              eq(templateFavorites.userId, ctx.session.user.id),
+              inArray(templateFavorites.templateId, templateIds),
+            ),
+          );
+        userFavoritesSet = new Set(userFavs.map((f) => f.templateId));
+      }
+
+      // Check which templates are reported by the current user
+      let userReportsSet = new Set<string>();
+      if (ctx.session?.user?.id && templateIds.length > 0) {
+        const userReports = await db
+          .select({ templateId: templateReports.templateId })
+          .from(templateReports)
+          .where(
+            and(
+              eq(templateReports.reporterId, ctx.session.user.id),
+              inArray(templateReports.templateId, templateIds),
+            ),
+          );
+        userReportsSet = new Set(userReports.map((r) => r.templateId));
+      }
+
+      const items = results.map((r) => ({
+        ...r,
+        isFavorited: userFavoritesSet.has(r.id),
+        isReportedByMe: userReportsSet.has(r.id),
+        isOfficial: officialUserId !== "" && r.userId === officialUserId,
+      }));
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 
   getTemplatePublic: publicProcedure
     .input(z.object({ templateId: z.string() }))

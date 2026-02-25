@@ -44,8 +44,9 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 export function PublicTemplatesTab() {
-  const { data: templates, isLoading } =
-    api.templates.getPublicTemplates.useQuery();
+  const { data: templatesData, isLoading } =
+    api.templates.getPublicTemplates.useQuery({ limit: 100 });
+  const templates = templatesData?.items;
   const utils = api.useUtils();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [templateToTakeDown, setTemplateToTakeDown] = React.useState<

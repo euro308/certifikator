@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Search, ArrowUp, ArrowDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Search, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { GalleryTemplateCard } from "@/components/gallery/gallery-template-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -30,12 +30,30 @@ export function GalleryContent() {
   const [searchValue, setSearchValue] = useState(
     searchParams.get("search") ?? "",
   );
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchValue);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchValue]);
+
   const [sortKey, setSortKey] = useState<SortKey>("downloads");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
-  const { data: allTemplates, isLoading } =
-    api.templates.getPublicTemplates.useQuery();
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    api.templates.getPublicTemplates.useInfiniteQuery(
+      {
+        limit: ITEMS_PER_PAGE,
+        search: debouncedSearch.trim() || undefined,
+        sortBy: sortKey,
+        sortDir: sortDir,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      },
+    );
 
   const handleSortClick = (key: SortKey) => {
     if (sortKey === key) {
@@ -46,84 +64,30 @@ export function GalleryContent() {
     }
   };
 
-  // Client-side filtering + sorting
-  const filtered = (allTemplates ?? [])
-    .filter((t) => {
-      if (!searchValue.trim()) return true;
-      const q = searchValue.toLowerCase();
-      return (
-        t.name.toLowerCase().includes(q) ||
-        (t.description?.toLowerCase() ?? "").includes(q) ||
-        t.authorName.toLowerCase().includes(q) ||
-        t.userId.toLowerCase() === q // Vyhledávat podle ID jen pokud je ID celé
-      );
-    })
-    .sort((a, b) => {
-      const dir = sortDir === "desc" ? -1 : 1;
-      switch (sortKey) {
-        case "date":
-          return (
-            dir *
-            (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-          );
-        case "favorites":
-          return dir * (a.favoritesCount - b.favoritesCount);
-        case "downloads":
-          return dir * (a.downloads - b.downloads);
-        case "name":
-          return dir * a.name.localeCompare(b.name, "cs");
-        default:
-          return 0;
-      }
-    });
+  // Flatten the pages into a single array
+  const visible = data?.pages.flatMap((page) => page.items) ?? [];
 
-  const visible = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
+  // Infinite Scroll Observer
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Loading stav – skeleton karty
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm"
-          >
-            <Skeleton className="aspect-[1.414/1] w-full" />
-            <div className="flex flex-1 flex-col gap-3 p-4">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-2/3" />
-              <div className="mt-1 flex items-center gap-2">
-                <Skeleton className="h-5 w-5 rounded-full" />
-                <Skeleton className="h-3 w-20" />
-                <div className="ml-auto flex gap-2">
-                  <Skeleton className="h-3 w-8" />
-                  <Skeleton className="h-3 w-8" />
-                </div>
-              </div>
-              <Skeleton className="mt-auto h-8 w-full rounded-xl" />
-            </div>
-          </div>
-        ))}
-      </div>
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "400px" }, // Load a bit earlier
     );
-  }
 
-  // Žádné veřejné šablony v DB
-  if (!allTemplates || allTemplates.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white/50 py-20 text-center">
-        <Search className="mb-4 size-10 text-gray-300" />
-        <h3 className="text-lg font-semibold text-gray-700">
-          Zatím zde nejsou žádné šablony
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Buďte první, kdo sdílí svou šablonu s komunitou!
-        </p>
-      </div>
-    );
-  }
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Žádné veřejné šablony v DB (a zrovna se nenačítá)
+  const isEmpty = visible.length === 0 && !debouncedSearch && !isLoading;
 
   return (
     <div className="space-y-6">
@@ -134,10 +98,7 @@ export function GalleryContent() {
             type="text"
             value={searchValue}
             placeholder="Hledat podle názvu, popisu nebo autora..."
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-              setVisibleCount(ITEMS_PER_PAGE);
-            }}
+            onChange={(e) => setSearchValue(e.target.value)}
           />
           <InputGroupAddon>
             <Search className="size-4" />
@@ -172,13 +133,61 @@ export function GalleryContent() {
         })}
       </div>
 
-      {/* Grid šablon */}
-      {visible.length > 0 ? (
+      {/* Hlavní obsah (Skeletons / Grid / Empty state) */}
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white/50 py-20 text-center">
+          <Search className="mb-4 size-10 text-gray-300" />
+          <h3 className="text-lg font-semibold text-gray-700">
+            Zatím zde nejsou žádné šablony
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Buďte první, kdo sdílí svou šablonu s komunitou!
+          </p>
+        </div>
+      ) : isLoading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {visible.map((template) => (
-            <GalleryTemplateCard key={template.id} template={template} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm"
+            >
+              <Skeleton className="aspect-[1.414/1] w-full" />
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+                <div className="mt-1 flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-3 w-20" />
+                  <div className="ml-auto flex gap-2">
+                    <Skeleton className="h-3 w-8" />
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                </div>
+                <Skeleton className="mt-auto h-8 w-full rounded-xl" />
+              </div>
+            </div>
           ))}
         </div>
+      ) : visible.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {visible.map((template) => (
+              <GalleryTemplateCard key={template.id} template={template} />
+            ))}
+          </div>
+
+          {/* Sentry pro načítání dalších */}
+          {(hasNextPage || isFetchingNextPage) && (
+            <div
+              ref={loadMoreRef}
+              className="flex w-full items-center justify-center py-8 text-gray-500"
+            >
+              <Loader2 className="mr-2 size-6 animate-spin" />
+              <span>Načítám další šablony...</span>
+            </div>
+          )}
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white/50 py-20 text-center">
           <Search className="mb-4 size-10 text-gray-300" />
@@ -186,22 +195,8 @@ export function GalleryContent() {
             Žádné šablony nenalezeny
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Zkuste upravit vyhledávání.
+            Zkuste upravit vyhledávání a filtry.
           </p>
-        </div>
-      )}
-
-      {/* Načíst další */}
-      {hasMore && (
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            size="lg"
-            className="rounded-xl px-8"
-            onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_PAGE)}
-          >
-            Načíst další šablony
-          </Button>
         </div>
       )}
     </div>
