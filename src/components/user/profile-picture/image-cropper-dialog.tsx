@@ -158,7 +158,7 @@ export function ImageCropperDialog({
         </div>
 
         <div className="mt-4 flex items-center gap-4 px-2">
-          <ZoomOut className="text-muted-foreground h-4 w-4" />
+          <ZoomOut className="text-muted-foreground size-4" />
           <Slider
             value={[zoom]}
             min={1}
@@ -168,7 +168,7 @@ export function ImageCropperDialog({
             disabled={!imageSrc || isProcessing}
             className="flex-1"
           />
-          <ZoomIn className="text-muted-foreground h-4 w-4" />
+          <ZoomIn className="text-muted-foreground size-4" />
         </div>
 
         <DialogFooter className="mt-6 flex gap-2 sm:justify-end">
@@ -181,7 +181,7 @@ export function ImageCropperDialog({
             Zrušit
           </Button>
           <Button type="button" onClick={handleConfirm} disabled={isProcessing}>
-            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isProcessing && <Loader2 className="mr-2 size-4 animate-spin" />}
             Použít výřez
           </Button>
         </DialogFooter>

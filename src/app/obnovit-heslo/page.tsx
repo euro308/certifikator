@@ -139,9 +139,9 @@ export default function ResetHesla() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="size-5 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="size-5 text-gray-400" />
                     )}
                   </Button>
                 </div>

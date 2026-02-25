@@ -57,20 +57,20 @@ export default function AdminDetailSablony() {
     }
 
     if (isError || !template) {
-        return (
-            <div className="container mx-auto max-w-7xl flex flex-col items-center justify-center min-h-[50vh] space-y-4 px-4">
-                <FileText className="h-16 w-16 text-muted-foreground opacity-50" />
-                <h2 className="text-2xl font-semibold text-foreground">
-                    Šablona nenalezena
-                </h2>
-                <p className="text-muted-foreground text-center max-w-md">
-                    Omlouváme se, ale tato šablona nebyla nalezena.
-                </p>
-                <Button variant="outline" asChild className="mt-4">
-                    <Link href="/dashboard/admin">Zpět do Administrace</Link>
-                </Button>
-            </div>
-        );
+      return (
+        <div className="container mx-auto flex min-h-[50vh] max-w-7xl flex-col items-center justify-center space-y-4 px-4">
+          <FileText className="text-muted-foreground size-16 opacity-50" />
+          <h2 className="text-foreground text-2xl font-semibold">
+            Šablona nenalezena
+          </h2>
+          <p className="text-muted-foreground max-w-md text-center">
+            Omlouváme se, ale tato šablona nebyla nalezena.
+          </p>
+          <Button variant="outline" asChild className="mt-4">
+            <Link href="/dashboard/admin">Zpět do Administrace</Link>
+          </Button>
+        </div>
+      );
     }
     const handleCreateCertificate = () => {
         router.push(`/dashboard/me-certifikaty/novy?idSablony=${template.id}`);

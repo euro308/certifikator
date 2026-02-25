@@ -20,7 +20,7 @@ export default function NapovedaEditor() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600">
-              <Zap className="h-6 w-6" />
+              <Zap className="size-6" />
             </div>
             <h1 className="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -37,7 +37,7 @@ export default function NapovedaEditor() {
             {/* Klávesové zkratky */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <Keyboard className="h-8 w-8 text-neutral-800" />
+                <Keyboard className="size-8 text-neutral-800" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Klávesové zkratky
                 </h2>
@@ -82,7 +82,7 @@ export default function NapovedaEditor() {
             {/* Proměnné v textu */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <Type className="h-8 w-8 text-blue-600" />
+                <Type className="size-8 text-blue-600" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Inteligentní textové hodnoty
                 </h2>
@@ -125,7 +125,7 @@ export default function NapovedaEditor() {
             {/* Rychlé akce a kontextové menu */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <MousePointerClick className="h-8 w-8 text-amber-500" />
+                <MousePointerClick className="size-8 text-amber-500" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Kontextové menu
                 </h2>
@@ -169,7 +169,7 @@ export default function NapovedaEditor() {
             {/* Vodítka a vrstvy */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <Layers className="h-8 w-8 text-emerald-600" />
+                <Layers className="size-8 text-emerald-600" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Pokročilý layout
                 </h2>

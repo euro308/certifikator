@@ -100,9 +100,9 @@ export function ResendEmailDialog({
           </Button>
           <Button onClick={handleSend} disabled={isSending}>
             {isSending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="mr-2 size-4" />
             )}
             {sendEmailMutation.isPending ? "Odesílám..." : "Odeslat e-mail"}
           </Button>

@@ -195,7 +195,6 @@ export default function NovyCertifikat() {
     }
   }, [session?.user?.name]);
 
-
   // Auto-výběr šablony z URL parametru ?idSablony=xxx
   useEffect(() => {
     if (hasAutoSelected.current || templatesLoading || !templates) return;
@@ -303,13 +302,25 @@ export default function NovyCertifikat() {
     templates?.find((t) => t.id === selectedTemplateId) ??
     (favoriteTemplates?.find((t) => t.templateId === selectedTemplateId)
       ? {
-        ...favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!,
-        id: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateId,
-        name: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateName,
-        description: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.templateDescription,
-        placeholders: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.placeholders,
-        thumbnailImageUrl: favoriteTemplates.find((t) => t.templateId === selectedTemplateId)!.thumbnailImageUrl,
-      }
+          ...favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!,
+          id: favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!.templateId,
+          name: favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!.templateName,
+          description: favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!.templateDescription,
+          placeholders: favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!.placeholders,
+          thumbnailImageUrl: favoriteTemplates.find(
+            (t) => t.templateId === selectedTemplateId,
+          )!.thumbnailImageUrl,
+        }
       : undefined) ??
     (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
 
@@ -427,7 +438,9 @@ export default function NovyCertifikat() {
       rawCanvasData = selectedTemplate.canvasData;
     } else {
       try {
-        const fullTemplate = await utils.templates.getTemplateById.fetch({ templateId: selectedTemplate.id });
+        const fullTemplate = await utils.templates.getTemplateById.fetch({
+          templateId: selectedTemplate.id,
+        });
         if (!fullTemplate?.canvasData) {
           toast.error("Nepodařilo se načíst plná data šablony.");
           setIsGenerating(false);
@@ -567,12 +580,17 @@ export default function NovyCertifikat() {
     setIsGenerating(false);
   };
 
-  const handleThumbnailGenerated = (data: { certificateUrl: string; thumbnailImageUrl: string }) => {
+  const handleThumbnailGenerated = (data: {
+    certificateUrl: string;
+    thumbnailImageUrl: string;
+  }) => {
     setGeneratedCertificates((prev) => {
       const newCerts = [...prev];
       if (newCerts[generationIndex]) {
-        newCerts[generationIndex].certificateUrl = data.certificateUrl || "pending";
-        newCerts[generationIndex].thumbnailImageUrl = data.thumbnailImageUrl || "pending";
+        newCerts[generationIndex].certificateUrl =
+          data.certificateUrl || "pending";
+        newCerts[generationIndex].thumbnailImageUrl =
+          data.thumbnailImageUrl || "pending";
       }
       return newCerts;
     });
@@ -615,7 +633,8 @@ export default function NovyCertifikat() {
     }
 
     const pendingSelected = selectedCerts.filter(
-      (c) => c.certificateUrl === "pending" || c.thumbnailImageUrl === "pending",
+      (c) =>
+        c.certificateUrl === "pending" || c.thumbnailImageUrl === "pending",
     );
     if (pendingSelected.length > 0) {
       toast.warning(
@@ -736,9 +755,9 @@ export default function NovyCertifikat() {
                 className="min-w-[160px]"
               >
                 {isSaving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                 ) : (
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 size-4" />
                 )}
                 Uložit vybrané ({selectedIndices.size})
               </Button>
@@ -748,12 +767,13 @@ export default function NovyCertifikat() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${displayedCertificates.length === 1
-            ? "mx-auto max-w-3xl grid-cols-1"
-            : displayedCertificates.length === 2
-              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            }`}
+          className={`grid gap-6 ${
+            displayedCertificates.length === 1
+              ? "mx-auto max-w-3xl grid-cols-1"
+              : displayedCertificates.length === 2
+                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -806,7 +826,7 @@ export default function NovyCertifikat() {
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Button>
             <span className="text-sm font-medium">
               Strana {currentPage} z {totalPages}
@@ -817,7 +837,7 @@ export default function NovyCertifikat() {
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Button>
           </div>
         )}
@@ -852,9 +872,9 @@ export default function NovyCertifikat() {
               className="min-w-[160px]"
             >
               {isSendingEmails ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
-                <Users className="mr-2 h-4 w-4" />
+                <Users className="mr-2 size-4" />
               )}
               Odeslat {emailRecipients.size} e-mailů
             </Button>
@@ -899,10 +919,11 @@ export default function NovyCertifikat() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
-                        ? "bg-primary/5 border-primary/20"
-                        : "bg-white"
-                        } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-white"
+                      } ${!hasEmail ? "opacity-50" : ""}`}
                     >
                       <Checkbox
                         id={`email-recipient-${cert.id}`}
@@ -1009,10 +1030,12 @@ export default function NovyCertifikat() {
                 <SelectContent>
                   {templatesLoading ? (
                     <div className="text-muted-foreground flex items-center justify-center p-4">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       Načítám šablony...
                     </div>
-                  ) : templates?.length === 0 && favoriteTemplates?.length === 0 && !galleryTemplate ? (
+                  ) : templates?.length === 0 &&
+                    favoriteTemplates?.length === 0 &&
+                    !galleryTemplate ? (
                     <div className="text-muted-foreground p-2 text-center text-sm">
                       Nemáte žádné šablony.{" "}
                       <Link
@@ -1026,9 +1049,13 @@ export default function NovyCertifikat() {
                     <>
                       {/* Šablona z URL jestliže je nová */}
                       {galleryTemplate &&
-                        !favoriteTemplates?.some(f => f.templateId === galleryTemplate.id) && (
+                        !favoriteTemplates?.some(
+                          (f) => f.templateId === galleryTemplate.id,
+                        ) && (
                           <>
-                            <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">Z galerie</div>
+                            <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">
+                              Z galerie
+                            </div>
                             <SelectItem
                               key={galleryTemplate.id}
                               value={galleryTemplate.id}
@@ -1042,7 +1069,9 @@ export default function NovyCertifikat() {
                       {/* Vlastní šablony */}
                       {templates && templates.length > 0 && (
                         <>
-                          <div className="mx-2 py-1.5 mt-2 text-sm font-semibold text-gray-500 border-b">Moje šablony</div>
+                          <div className="mx-2 mt-2 border-b py-1.5 text-sm font-semibold text-gray-500">
+                            Moje šablony
+                          </div>
                           {templates.map((template) => (
                             <SelectItem key={template.id} value={template.id}>
                               {template.name}
@@ -1054,12 +1083,18 @@ export default function NovyCertifikat() {
                       {/* Šablony z oblíbených */}
                       {favoriteTemplates && favoriteTemplates.length > 0 && (
                         <>
-                          <div className="mx-2 py-1.5 mt-2 text-sm font-semibold text-gray-500 border-b">Oblíbené šablony z galerie</div>
+                          <div className="mx-2 mt-2 border-b py-1.5 text-sm font-semibold text-gray-500">
+                            Oblíbené šablony z galerie
+                          </div>
                           {favoriteTemplates.map((template) => {
                             // Zabraňme duplicitám
-                            if (galleryTemplate?.id === template.templateId) return null;
+                            if (galleryTemplate?.id === template.templateId)
+                              return null;
                             return (
-                              <SelectItem key={template.templateId} value={template.templateId}>
+                              <SelectItem
+                                key={template.templateId}
+                                value={template.templateId}
+                              >
                                 {template.templateName} ({template.authorName})
                               </SelectItem>
                             );
@@ -1077,7 +1112,7 @@ export default function NovyCertifikat() {
               onClick={() => setStep(2)}
               className="w-full sm:w-auto"
             >
-              Pokračovat <ArrowRight className="ml-2 h-4 w-4" />
+              Pokračovat <ArrowRight className="ml-2 size-4" />
             </Button>
           </div>
 
@@ -1126,11 +1161,11 @@ export default function NovyCertifikat() {
         >
           <TabsList className="mb-4 grid w-full grid-cols-2">
             <TabsTrigger value="bulk" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
+              <Users className="size-4" />
               Hromadné generování (Excel)
             </TabsTrigger>
             <TabsTrigger value="single" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+              <FileText className="size-4" />
               Jeden certifikát
             </TabsTrigger>
           </TabsList>
@@ -1186,7 +1221,7 @@ export default function NovyCertifikat() {
                   {excelFile ? (
                     <div className="flex flex-col items-center gap-2">
                       <div className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 font-medium text-green-600">
-                        <CheckCircle2 className="h-5 w-5" />
+                        <CheckCircle2 className="size-5" />
                         {excelFile.name}
                       </div>
                       <p className="text-muted-foreground mt-1 text-sm">
@@ -1212,7 +1247,7 @@ export default function NovyCertifikat() {
                   ) : (
                     <>
                       <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-                        <Upload className="text-primary h-6 w-6" />
+                        <Upload className="text-primary size-6" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
                         Klikněte pro nahrání souboru
@@ -1323,7 +1358,11 @@ export default function NovyCertifikat() {
                 )}
 
                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
-                  <Button variant="outline" onClick={() => setStep(1)} disabled={isGenerating}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                    disabled={isGenerating}
+                  >
                     Zpět k výběru šablony
                   </Button>
                   <Button
@@ -1331,7 +1370,9 @@ export default function NovyCertifikat() {
                     size="lg"
                     onClick={generateCertificates}
                   >
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isGenerating ? (
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                    ) : null}
                     Generovat {correctCertificatesText(excelData.length)}
                   </Button>
                 </div>
@@ -1387,7 +1428,11 @@ export default function NovyCertifikat() {
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
-                  <Button variant="outline" onClick={() => setStep(1)} disabled={isGenerating}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                    disabled={isGenerating}
+                  >
                     Zpět k výběru
                   </Button>
                   <Button
@@ -1395,7 +1440,9 @@ export default function NovyCertifikat() {
                     size="lg"
                     onClick={generateCertificates}
                   >
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isGenerating ? (
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                    ) : null}
                     Generovat certifikát
                   </Button>
                 </div>

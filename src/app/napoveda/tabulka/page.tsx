@@ -26,7 +26,7 @@ export default function NapovedaTabulka() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-              <Table className="h-6 w-6" />
+              <Table className="size-6" />
             </div>
             <h1 className="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl">
               <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -43,7 +43,7 @@ export default function NapovedaTabulka() {
             {/* Podporované formáty */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <FileSpreadsheet className="h-8 w-8 text-neutral-800" />
+                <FileSpreadsheet className="size-8 text-neutral-800" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Podporované formáty souborů
                 </h2>
@@ -58,13 +58,13 @@ export default function NapovedaTabulka() {
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2 font-medium text-green-700">
-                    <CheckCircle2 className="h-5 w-5" /> .xlsx
+                    <CheckCircle2 className="size-5" /> .xlsx
                   </div>
                   <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2 font-medium text-green-700">
-                    <CheckCircle2 className="h-5 w-5" /> .xls
+                    <CheckCircle2 className="size-5" /> .xls
                   </div>
                   <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 font-medium text-blue-700">
-                    <CheckCircle2 className="h-5 w-5" /> .csv
+                    <CheckCircle2 className="size-5" /> .csv
                   </div>
                 </div>
               </div>
@@ -73,7 +73,7 @@ export default function NapovedaTabulka() {
             {/* Pravidla struktury */}
             <section>
               <div className="mb-6 flex items-center gap-3">
-                <Columns className="h-8 w-8 text-blue-600" />
+                <Columns className="size-8 text-blue-600" />
                 <h2 className="text-2xl font-bold tracking-tight">
                   Správná struktura tabulky
                 </h2>
@@ -218,7 +218,7 @@ export default function NapovedaTabulka() {
                     adresa bydliště, apod.).
                   </p>
                   <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200/50 bg-white/50 p-4">
-                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                    <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" />
                     <p className="text-sm font-medium">
                       Před nahráním tabulky do naší platformy je{" "}
                       <strong>ideální z ní rovnou smazat sloupce</strong> s

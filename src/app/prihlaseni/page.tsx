@@ -168,9 +168,9 @@ function PrihlaseniContent() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-500 lg:h-6 lg:w-6" />
+                      <EyeOff className="size-5 text-gray-500 lg:size-6" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-500 lg:h-6 lg:w-6" />
+                      <Eye className="size-4 text-gray-500 lg:size-6" />
                     )}
                   </Button>
                 </div>

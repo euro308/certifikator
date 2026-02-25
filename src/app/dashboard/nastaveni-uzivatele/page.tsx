@@ -172,7 +172,7 @@ export default function NastaveniUzivatele() {
   if (isPending) {
     return (
       <div className="flex h-[50vh] w-full items-center justify-center">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+        <Loader2 className="text-muted-foreground size-8 animate-spin" />
       </div>
     );
   }

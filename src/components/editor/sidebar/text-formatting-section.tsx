@@ -448,7 +448,7 @@ export function TextFormattingSection() {
               htmlFor="text-color"
               className="flex items-center gap-1 text-xs"
             >
-              <Palette className="h-3 w-3" />
+              <Palette className="size-3" />
               Barva textu
             </Label>
             <div className="flex items-center gap-2">
