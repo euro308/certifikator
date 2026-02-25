@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { DeleteDialog } from "@/components/delete-dialog";
+import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 import { ResendEmailDialog } from "@/components/emails/resend-email-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -208,10 +208,10 @@ export default function CertificateDetailPage() {
                   ))}
                   {Object.keys(certificate.recipientData as object).length ===
                     0 && (
-                    <p className="text-muted-foreground py-2 text-center text-sm italic">
-                      Žádná doplňující data.
-                    </p>
-                  )}
+                      <p className="text-muted-foreground py-2 text-center text-sm italic">
+                        Žádná doplňující data.
+                      </p>
+                    )}
                 </div>
               </CardContent>
             </Card>

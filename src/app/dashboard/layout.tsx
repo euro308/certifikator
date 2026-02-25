@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { NavbarInside } from "@/components/navigation/navbar-inside";
 import { FooterInside } from "@/components/navigation/footer-inside";
 import React from "react";
-import { BreadcrumbsByPathname } from "@/components/breadcrumbs-by-pathname";
+import { BreadcrumbsByPathname } from "@/components/navigation/breadcrumbs-by-pathname";
 
 export default async function DashboardLayout({
   children,

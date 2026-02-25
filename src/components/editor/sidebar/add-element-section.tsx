@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/collapsible";
 import React, { useState, useRef } from "react";
 import { toast } from "sonner";
-import { downscaleImage } from "@/components/image-downscaler";
+import { downscaleImage } from "@/lib/image-downscaler";
 
 /**
  * Sekce pro přidání nových prvků na plátno

@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { DeleteDialog } from "@/components/delete-dialog";
+import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -261,8 +261,8 @@ export function TemplateSummary({
                 <div /> {/* Místo pro náhled */}
                 <span
                   className={`text-left ${selectedSort === "nameAToZ" || selectedSort === "nameZToA"
-                      ? "text-foreground font-bold"
-                      : ""
+                    ? "text-foreground font-bold"
+                    : ""
                     }`}
                 >
                   Název
@@ -270,18 +270,18 @@ export function TemplateSummary({
                 <span className="hidden text-left lg:block">Popis</span>
                 <span
                   className={`text-left ${selectedSort === "creationDateNewest" ||
-                      selectedSort === "creationDateOldest"
-                      ? "text-foreground font-bold"
-                      : ""
+                    selectedSort === "creationDateOldest"
+                    ? "text-foreground font-bold"
+                    : ""
                     }`}
                 >
                   Vytvořeno
                 </span>
                 <span
                   className={`text-left ${selectedSort === "usedCountMost" ||
-                      selectedSort === "usedCountLeast"
-                      ? "text-foreground font-bold"
-                      : ""
+                    selectedSort === "usedCountLeast"
+                    ? "text-foreground font-bold"
+                    : ""
                     }`}
                 >
                   Využito

@@ -23,7 +23,7 @@ export function NavbarInside() {
       <div className="flex items-center justify-between px-6 py-2">
         {/* Logo */}
         <Link
-          href={"/public"}
+          href={"/"}
           className="bg-gradient-primary bg-clip-text text-2xl font-bold whitespace-nowrap text-transparent select-none sm:text-2xl lg:text-3xl"
         >
           Uživatelský panel

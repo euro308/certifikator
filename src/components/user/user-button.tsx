@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoaderOverlay } from "@/components/loader-overlay";
+import { LoaderOverlay } from "@/components/shared/loader-overlay";
 import { authClient } from "@/server/better-auth/client";
 import { useRouter } from "next/navigation";
 import { Settings, LogOut } from "lucide-react";

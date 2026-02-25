@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
-import { DeleteDialog } from "@/components/delete-dialog";
+import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,

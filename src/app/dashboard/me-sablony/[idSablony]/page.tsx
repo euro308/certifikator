@@ -30,7 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DeleteDialog } from "@/components/delete-dialog";
+import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
@@ -235,8 +235,8 @@ export default function DetailSablony() {
                     <span>
                       {template.updatedAt
                         ? new Date(template.updatedAt).toLocaleDateString(
-                            "cs-CZ",
-                          )
+                          "cs-CZ",
+                        )
                         : "-"}
                     </span>
                   </div>

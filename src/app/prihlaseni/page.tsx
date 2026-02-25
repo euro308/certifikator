@@ -14,7 +14,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/server/better-auth/client";
-import { LoaderOverlay } from "@/components/loader-overlay";
+import { LoaderOverlay } from "@/components/shared/loader-overlay";
 
 function PrihlaseniContent() {
   const [showPassword, setShowPassword] = useState(false);

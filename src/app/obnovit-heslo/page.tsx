@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
-import { LoaderOverlay } from "@/components/loader-overlay";
+import { LoaderOverlay } from "@/components/shared/loader-overlay";
 import { Eye, EyeOff } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -59,7 +59,7 @@ export default function ResetHesla() {
             setLoading(false);
             setError(
               ctx.error.message ||
-                "Nepodařilo se obnovit heslo. Token může být neplatný.",
+              "Nepodařilo se obnovit heslo. Token může být neplatný.",
             );
           },
         },

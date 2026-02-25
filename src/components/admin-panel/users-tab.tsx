@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { DeleteDialog } from "@/components/delete-dialog";
+import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 
 export function UsersTab() {
   const { data: users, isLoading } = api.admin.getUsers.useQuery();

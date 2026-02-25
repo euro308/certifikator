@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import React, { useState } from "react";
-import { LoaderOverlay } from "@/components/loader-overlay";
+import { LoaderOverlay } from "@/components/shared/loader-overlay";
 
 export default function ZapomenuteHeslo() {
   const [inputValue, setInputValue] = useState<string>("");
