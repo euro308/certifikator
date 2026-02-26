@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Suspense } from "react";
 import { api } from "@/trpc/react";
 import * as XLSX from "xlsx";
 import {
@@ -41,6 +41,7 @@ import { authClient } from "@/server/better-auth/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { EmailSettingsForm } from "@/components/emails/email-settings-form";
+import { LoaderOverlay } from "@/components/shared/loader-overlay";
 
 // Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
@@ -58,9 +59,9 @@ const CertificatePreviewStage = dynamic(
 
 const CertificateThumbnailGenerator = dynamic(
   () =>
-    import(
-      "@/components/certificate-preview/certificate-thumbnail-generator"
-    ).then((mod) => mod.CertificateThumbnailGenerator),
+    import("@/components/certificate-preview/certificate-thumbnail-generator").then(
+      (mod) => mod.CertificateThumbnailGenerator,
+    ),
   {
     ssr: false,
   },
@@ -119,7 +120,7 @@ const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
   );
 };
 
-export default function NovyCertifikat() {
+function NovyCertifikatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
@@ -1452,5 +1453,13 @@ export default function NovyCertifikat() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+export default function NovyCertifikat() {
+  return (
+    <Suspense fallback={<LoaderOverlay />}>
+      <NovyCertifikatContent />
+    </Suspense>
   );
 }

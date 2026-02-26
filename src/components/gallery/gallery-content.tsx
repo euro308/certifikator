@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { Search, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { GalleryTemplateCard } from "@/components/gallery/gallery-template-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,7 +25,7 @@ const sortFields: { key: SortKey; label: string }[] = [
   { key: "date", label: "Datum" },
 ];
 
-export function GalleryContent() {
+function GalleryContentInner() {
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(
     searchParams.get("search") ?? "",
@@ -200,5 +200,20 @@ export function GalleryContent() {
         </div>
       )}
     </div>
+  );
+}
+
+export function GalleryContent() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-8 text-gray-400">
+          <Loader2 className="mr-2 size-6 animate-spin" />
+          <span>Načítám galerii...</span>
+        </div>
+      }
+    >
+      <GalleryContentInner />
+    </Suspense>
   );
 }

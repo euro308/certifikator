@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +15,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
-export default function UpravitSablonu() {
+function UpravitSablonuContent() {
   const router = useRouter();
   const utils = api.useUtils();
   const params = useParams();
@@ -313,5 +313,20 @@ export default function UpravitSablonu() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function UpravitSablonu() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[80vh] w-full items-center justify-center">
+          <Spinner className="text-primary size-10" />
+          <span className="ml-3 text-lg text-gray-600">Načítám šablonu...</span>
+        </div>
+      }
+    >
+      <UpravitSablonuContent />
+    </Suspense>
   );
 }

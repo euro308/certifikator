@@ -10,14 +10,14 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { LoaderOverlay } from "@/components/shared/loader-overlay";
 import { Eye, EyeOff } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authClient } from "@/server/better-auth/client";
 
-export default function ResetHesla() {
+function ResetHeslaContent() {
   const [firstPassword, setFirstPassword] = useState<string>("");
   const [secondPassword, setSecondPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
@@ -59,7 +59,7 @@ export default function ResetHesla() {
             setLoading(false);
             setError(
               ctx.error.message ||
-              "Nepodařilo se obnovit heslo. Token může být neplatný.",
+                "Nepodařilo se obnovit heslo. Token může být neplatný.",
             );
           },
         },
@@ -192,5 +192,13 @@ export default function ResetHesla() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function ResetHesla() {
+  return (
+    <Suspense fallback={<LoaderOverlay />}>
+      <ResetHeslaContent />
+    </Suspense>
   );
 }

@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
 const breadcrumbNameMap: Record<string, string> = {
   dashboard: "Uživatelský panel",
@@ -35,7 +35,7 @@ const breadcrumbNameMap: Record<string, string> = {
 // Paths that should just be text (no link) to avoid 404s
 const nonLinkableSegments = ["sablona", "certifikat", "nahlaseni"];
 
-export function BreadcrumbsByPathname() {
+function BreadcrumbsByPathnameContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -124,5 +124,13 @@ export function BreadcrumbsByPathname() {
         </BreadcrumbList>
       </Breadcrumb>
     </div>
+  );
+}
+
+export function BreadcrumbsByPathname() {
+  return (
+    <Suspense fallback={null}>
+      <BreadcrumbsByPathnameContent />
+    </Suspense>
   );
 }
