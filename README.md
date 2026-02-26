@@ -1,29 +1,37 @@
-# Create T3 App
+# Certifikátor
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Certifikátor je webová aplikace vytvořená pro snadnější tvorbu, hromadné generování a rozesílání certifikátů. Výsledné
+dokumenty se pak dají jednoduše a veřejně ověřit.
 
-## What's next? How do I make an app with this?
+Projekt byl navržen tak, aby pokryl vše od počátečního designu šablony, přes propojení s daty (například jmény
+účastníků), až po samotné odeslání do e-mailových schránek a garanci toho, že certifikát nelze padělat.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Funkce aplikace
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+### 1. Editor šablon
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Certifikátor disponuje vizuálním editorem šablon, který umožňuje vkládat texty, tvary nebo obrázky. Prvkům lze měnit
+barvy, písmo a pozice. Hlavní funkcí editoru je, že si do šablony uživatel vloží proměnné, díky kterým se následně
+vygeneruje certifikát.
 
-## Learn More
+### 2. Hromadné generování z dat
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Po tvorbě šablony přichází na řadu generování certifikátů. Stačí nahrát soubor v jednom z podporovaných formátů (.xlsx,
+.xls, .csv) a systém sám spáruje sloupečky v tabulce s proměnnými v šabloně, čímž vygeneruje hotové certifikáty.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### 3. Automatické rozesílání e-mailů
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+Vygenerované certifikáty umí systém rozeslat lidem na jejich e-mailové adresy. Díky propojením se službou Resend je tato
+akce rychlá a spolehlivá. V případě nutnosti lze však také nově vygenerované certifikáty uložit do počítače a uživatel
+je držitelům může odeslat manuálně.
 
-## How do I deploy this?
+### 4. Ověřování pravosti
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+Každý vygenerovaný certifikát má svůj unikátní kód, podle kterého lze ověřit jeho originalitu. Na validační stránce si
+držitel certifikátu může kdykoliv ověřit, zda byl jeho certifikát opravdu vydán Certifikátorem.
+
+### 5. Galerie a oblíbené
+
+Hotové šablony se uživateli ukládají do jeho osobní galerie. Zároveň však projekt disponuje i veřejnou galerií, kam
+mohou uživatelé publikovat své šablony pro využití ostatními. Ty nejlepší si lze snadno přidat do oblíbených, aby je
+uživatel měl vždycky po ruce.
