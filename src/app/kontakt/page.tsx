@@ -1,6 +1,12 @@
 import { NavbarOutside } from "@/components/navigation/navbar-outside";
 import { FooterOutside } from "@/components/navigation/footer-outside";
 import { Mail } from "lucide-react";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Kontakt",
+};
+
 
 export default function Kontakt() {
   return (

@@ -14,6 +14,12 @@ import { api } from "@/trpc/server";
 import type { ActivityItem } from "@/server/api/routers/activityRouter";
 import Image from "next/image";
 
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Uživatelský panel",
+};
+
 function formatRelativeTime(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();

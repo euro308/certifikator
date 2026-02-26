@@ -3,6 +3,11 @@ import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
 import React from "react";
 import NotFound from "@/app/not-found";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Administrace",
+};
 
 export default async function AdminLayout({
   children,

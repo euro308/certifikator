@@ -12,9 +12,7 @@ import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Jak připravit tabulku pro Certifikátor | Certifikátor",
-  description:
-    "Návod, jak správně naformátovat data v Excelu nebo CSV pro bezproblémové hromadné generování certifikátů.",
+  title: "Nápověda",
 };
 
 export default function NapovedaTabulka() {

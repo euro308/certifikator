@@ -6,9 +6,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tipy a triky k editoru | Certifikátor",
-  description:
-    "Objevte spoustu užitečných funkcí a klávesových zkratek, které Vám zrychlí práci s naším editorem certifikátů.",
+  title: "Nápověda",
 };
 
 export default function NapovedaEditor() {

@@ -2,6 +2,11 @@ import { Suspense } from "react";
 import { NavbarOutside } from "@/components/navigation/navbar-outside";
 import { FooterOutside } from "@/components/navigation/footer-outside";
 import { GalleryContent } from "@/components/gallery/gallery-content";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Galerie šablon",
+};
 
 export default function Galerie() {
   return (

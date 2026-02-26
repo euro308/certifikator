@@ -2,6 +2,11 @@ import { HydrateClient } from "@/trpc/server";
 import { NavbarOutside } from "@/components/navigation/navbar-outside";
 import { FooterOutside } from "@/components/navigation/footer-outside";
 import { HeroCTA } from "@/components/navigation/hero-cta";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Hlavní stránka | Certifikátor",
+};
 
 export default async function Home() {
   return (

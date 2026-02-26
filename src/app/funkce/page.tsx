@@ -1,6 +1,12 @@
 import { NavbarOutside } from "@/components/navigation/navbar-outside";
 import { FooterOutside } from "@/components/navigation/footer-outside";
 import Image from "next/image";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Funkce",
+};
+
 
 export default function Funkce() {
   return (

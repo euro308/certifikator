@@ -2,6 +2,12 @@ import { NavbarOutside } from "@/components/navigation/navbar-outside";
 import { FooterOutside } from "@/components/navigation/footer-outside";
 import Link from "next/link";
 
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "O projektu",
+};
+
 export default function InfoOProjektu() {
   return (
     <main className="flex min-h-screen w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify">
