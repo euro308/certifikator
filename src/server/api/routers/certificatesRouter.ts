@@ -92,6 +92,34 @@ export const certificatesRouter = createTRPCRouter({
       return certificate;
     }),
 
+  getCertificateUrl: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const certificate = await ctx.db.query.certificates.findFirst({
+        where: and(
+          eq(certificates.id, input.id),
+          eq(certificates.userId, ctx.session.user.id),
+        ),
+        columns: {
+          certificateUrl: true,
+        },
+      });
+
+      if (!certificate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Certifikát nebyl nalezen, nebo nemáte oprávnění k jeho zobrazení.",
+        });
+      }
+
+      return { certificateUrl: certificate.certificateUrl ?? "" };
+    }),
+
   getCertificateCountByTemplate: protectedProcedure
     .input(
       z.object({

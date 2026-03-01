@@ -20,15 +20,17 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Loader2, Copy, ExternalLink, FileText } from "lucide-react";
+import { Search, Loader2, Copy, ExternalLink, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
+import { downloadFile } from "@/lib/download-helper";
 
 export function CertificatesTab() {
   const [userIdInput, setUserIdInput] = React.useState("");
   const [activeUserId, setActiveUserId] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const utils = api.useUtils();
 
   const {
     data: certificates,
@@ -209,27 +211,61 @@ export function CertificatesTab() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              asChild
-                            >
-                              <Link
-                                href={`/dashboard/admin/certifikat/${cert.id}`}
+                      <div className="flex justify-end gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={async () => {
+                                  try {
+                                    toast.loading("Připravuji stahování...", { id: `admin-download-${cert.id}` });
+                                    const data = await utils.admin.getCertificateUrl.fetch({ id: cert.id });
+                                    if (data.certificateUrl) {
+                                      const safeName = cert.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
+                                      downloadFile(data.certificateUrl, `certifikat_${safeName}.png`);
+                                      toast.success("Stahování úspěšně zahájeno", { id: `admin-download-${cert.id}` });
+                                    } else {
+                                      toast.error("Tento certifikát nemá uložený obrázek.", { id: `admin-download-${cert.id}` });
+                                    }
+                                  } catch {
+                                    toast.error("Chyba při stahování.", { id: `admin-download-${cert.id}` });
+                                  }
+                                }}
                               >
-                                <ExternalLink className="text-muted-foreground size-4" />
-                              </Link>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Detail certifikátu</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                                <Download className="text-muted-foreground size-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Stáhnout certifikát</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                asChild
+                              >
+                                <Link
+                                  href={`/dashboard/admin/certifikat/${cert.id}`}
+                                >
+                                  <ExternalLink className="text-muted-foreground size-4" />
+                                </Link>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Detail certifikátu</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

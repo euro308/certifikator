@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Mail, MoreHorizontal, Plus, Search, Trash } from "lucide-react";
+import { Copy, Mail, MoreHorizontal, Plus, Search, Trash, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { downloadFile } from "@/lib/download-helper";
 import {
   InputGroup,
   InputGroupAddon,
@@ -354,6 +355,27 @@ export function CertificateSummary({
                           >
                             <Mail className="size-4" />
                             <span>Odeslat e-mail</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer gap-2 focus:bg-gray-100"
+                            onClick={async () => {
+                              try {
+                                toast.loading("Připravuji stahování...", { id: `download-${certificate.id}` });
+                                const data = await utils.certificates.getCertificateUrl.fetch({ id: certificate.id });
+                                if (data.certificateUrl) {
+                                  const safeName = certificate.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
+                                  downloadFile(data.certificateUrl, `certifikat_${safeName}.png`);
+                                  toast.success("Stahování úspěšně zahájeno", { id: `download-${certificate.id}` });
+                                } else {
+                                  toast.error("Certifikát nemá platný obrázek", { id: `download-${certificate.id}` });
+                                }
+                              } catch {
+                                toast.error("Chyba při stahování", { id: `download-${certificate.id}` });
+                              }
+                            }}
+                          >
+                            <Download className="size-4" />
+                            <span>Stáhnout certifikát</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex cursor-pointer gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"

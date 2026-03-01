@@ -18,9 +18,11 @@ import {
   Trash2,
   User,
   FileText,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { downloadFile } from "@/lib/download-helper";
 import { DeleteDialog } from "@/components/dialogs/delete-dialog";
 import { ResendEmailDialog } from "@/components/emails/resend-email-dialog";
 import { Separator } from "@/components/ui/separator";
@@ -89,6 +91,16 @@ export default function CertificateDetailPage() {
             <Button onClick={() => setIsEmailDialogOpen(true)}>
               <Mail className="mr-2 size-4" />
               Odeslat e-mail
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const safeName = certificate.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
+                downloadFile(certificate.certificateUrl, `certifikat_${safeName}.png`);
+              }}
+            >
+              <Download className="mr-2 size-4" />
+              Stáhnout
             </Button>
             <Button
               variant="outline"

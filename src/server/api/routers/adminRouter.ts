@@ -338,6 +338,34 @@ export const adminRouter = createTRPCRouter({
       };
     }),
 
+  // -- VYZVEDNUTÍ URL CERTIFIKÁTU (PRO ADMINA) --
+  getCertificateUrl: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      requireAdmin(ctx.session.user.id);
+
+      const certificate = await ctx.db.query.certificates.findFirst({
+        where: eq(certificates.id, input.id),
+        columns: {
+          certificateUrl: true,
+        },
+      });
+
+      if (!certificate) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Certifikát nebyl nalezen.",
+        });
+      }
+
+      return { certificateUrl: certificate.certificateUrl ?? "" };
+    }),
+
   // -- VYZVEDNUTÍ VŠECH UŽIVATELŮ + JEJICH STATISTIK --
   getUsers: protectedProcedure.query(async ({ ctx }) => {
     requireAdmin(ctx.session.user.id);

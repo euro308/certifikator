@@ -33,6 +33,7 @@ import {
   Save,
   Upload,
   Users,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { EmailSettingsForm } from "@/components/emails/email-settings-form";
 import { LoaderOverlay } from "@/components/shared/loader-overlay";
+import { downloadCertificatesAsZip } from "@/lib/download-helper";
 
 // Dynamický import s SSR: false - klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
@@ -161,7 +163,7 @@ function NovyCertifikatContent() {
   const [savedCertificates, setSavedCertificates] = useState<
     SavedCertificate[]
   >([]);
-  const [emailRecipients, setEmailRecipients] = useState<Set<string>>(
+  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(
     new Set(),
   );
   const [senderName, setSenderName] = useState("");
@@ -282,11 +284,9 @@ function NovyCertifikatContent() {
       toast.success(`Úspěšně ${correctSuccessToastText(certificates.length)}`);
 
       setSavedCertificates(certificates);
-      // Předvybrat všechny pro odeslání emailu, pokud mají email
       const validEmails = certificates
-        .filter((c) => c.recipientEmail?.includes("@"))
         .map((c) => c.id);
-      setEmailRecipients(new Set(validEmails));
+      setSelectedRecipients(new Set(validEmails));
 
       setStep(4);
       setIsSaving(false);
@@ -303,25 +303,25 @@ function NovyCertifikatContent() {
     templates?.find((t) => t.id === selectedTemplateId) ??
     (favoriteTemplates?.find((t) => t.templateId === selectedTemplateId)
       ? {
-          ...favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!,
-          id: favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!.templateId,
-          name: favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!.templateName,
-          description: favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!.templateDescription,
-          placeholders: favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!.placeholders,
-          thumbnailImageUrl: favoriteTemplates.find(
-            (t) => t.templateId === selectedTemplateId,
-          )!.thumbnailImageUrl,
-        }
+        ...favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!,
+        id: favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!.templateId,
+        name: favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!.templateName,
+        description: favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!.templateDescription,
+        placeholders: favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!.placeholders,
+        thumbnailImageUrl: favoriteTemplates.find(
+          (t) => t.templateId === selectedTemplateId,
+        )!.thumbnailImageUrl,
+      }
       : undefined) ??
     (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
 
@@ -659,11 +659,11 @@ function NovyCertifikatContent() {
 
   const handleSendEmails = () => {
     const recipientsToSend = savedCertificates.filter((c) =>
-      emailRecipients.has(c.id),
+      selectedRecipients.has(c.id) && !!c.recipientEmail,
     );
 
     if (recipientsToSend.length === 0) {
-      toast.error("Vyberte alespoň jednoho příjemce.");
+      toast.error("Vyberte alespoň jednoho příjemce se zadaným e-mailem.");
       return;
     }
 
@@ -684,8 +684,8 @@ function NovyCertifikatContent() {
     });
   };
 
-  const toggleEmailRecipient = (id: string, checked: boolean) => {
-    setEmailRecipients((prev) => {
+  const toggleRecipient = (id: string, checked: boolean) => {
+    setSelectedRecipients((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
       else next.delete(id);
@@ -693,14 +693,13 @@ function NovyCertifikatContent() {
     });
   };
 
-  const toggleAllEmailRecipients = (checked: boolean) => {
+  const toggleAllRecipients = (checked: boolean) => {
     if (checked) {
       const allIds = savedCertificates
-        .filter((c) => c.recipientEmail)
         .map((c) => c.id);
-      setEmailRecipients(new Set(allIds));
+      setSelectedRecipients(new Set(allIds));
     } else {
-      setEmailRecipients(new Set());
+      setSelectedRecipients(new Set());
     }
   };
 
@@ -768,13 +767,12 @@ function NovyCertifikatContent() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${
-            displayedCertificates.length === 1
-              ? "mx-auto max-w-3xl grid-cols-1"
-              : displayedCertificates.length === 2
-                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          }`}
+          className={`grid gap-6 ${displayedCertificates.length === 1
+            ? "mx-auto max-w-3xl grid-cols-1"
+            : displayedCertificates.length === 2
+              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -868,8 +866,29 @@ function NovyCertifikatContent() {
               Přeskočit a přejít do přehledu
             </Button>
             <Button
+              onClick={async () => {
+                const recipientsToDownload = savedCertificates.filter((c) => selectedRecipients.has(c.id));
+                if (recipientsToDownload.length === 0) {
+                  toast.error("Vyberte alespoň jednoho příjemce pro stažení.");
+                  return;
+                }
+                try {
+                  toast.loading("Připravuji ZIP archiv ke stažení...", { id: "zip-download" });
+                  await downloadCertificatesAsZip(recipientsToDownload, "certifikaty.zip");
+                  toast.success("Stažení úspěšně zahájeno", { id: "zip-download" });
+                } catch {
+                  toast.error("Nastala chyba při vytváření ZIP archivu", { id: "zip-download" });
+                }
+              }}
+              className="bg-[#E65758] hover:bg-[#d44647] text-white"
+              disabled={selectedRecipients.size === 0}
+            >
+              <Download className="mr-2 size-4" />
+              Stáhnout {selectedRecipients.size} jako ZIP
+            </Button>
+            <Button
               onClick={handleSendEmails}
-              disabled={isSendingEmails || emailRecipients.size === 0}
+              disabled={isSendingEmails || selectedRecipients.size === 0}
               className="min-w-[160px]"
             >
               {isSendingEmails ? (
@@ -877,7 +896,7 @@ function NovyCertifikatContent() {
               ) : (
                 <Users className="mr-2 size-4" />
               )}
-              Odeslat {emailRecipients.size} e-mailů
+              Odeslat e-mailem
             </Button>
           </div>
         </div>
@@ -892,10 +911,10 @@ function NovyCertifikatContent() {
                   <Checkbox
                     id="select-all-emails"
                     checked={
-                      emailRecipients.size === savedCertificates.length &&
+                      selectedRecipients.size === savedCertificates.length &&
                       savedCertificates.length > 0
                     }
-                    onCheckedChange={(v) => toggleAllEmailRecipients(!!v)}
+                    onCheckedChange={(v) => toggleAllRecipients(!!v)}
                   />
                   <Label
                     htmlFor="select-all-emails"
@@ -906,8 +925,7 @@ function NovyCertifikatContent() {
                 </div>
               </CardTitle>
               <CardDescription>
-                Vyberte, komu chcete e-mail odeslat. Zobrazeni jsou pouze ti s
-                vyplněným e-mailem.
+                Vyberte příjemce k další akci (odeslání e-mailu nebo stažení PDF/ZIP).
               </CardDescription>
             </CardHeader>
             {/* Tady je kouzlo flex-1 a min-h-0, které vyplní zbylý prostor a dovolí scroll */}
@@ -915,23 +933,21 @@ function NovyCertifikatContent() {
               <div className="flex flex-col gap-2">
                 {savedCertificates.map((cert) => {
                   const hasEmail = !!cert.recipientEmail;
-                  const isSelected = emailRecipients.has(cert.id);
+                  const isSelected = selectedRecipients.has(cert.id);
 
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                        isSelected
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-white"
-                      } ${!hasEmail ? "opacity-50" : ""}`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-white"
+                        }`}
                     >
                       <Checkbox
-                        id={`email-recipient-${cert.id}`}
+                        id={`action-recipient-${cert.id}`}
                         checked={isSelected}
-                        disabled={!hasEmail}
                         onCheckedChange={(v) =>
-                          toggleEmailRecipient(cert.id, !!v)
+                          toggleRecipient(cert.id, !!v)
                         }
                       />
                       <div className="min-w-0 flex-1">
@@ -939,14 +955,12 @@ function NovyCertifikatContent() {
                           {cert.recipientName}
                         </div>
                         <div className="text-muted-foreground truncate text-sm">
-                          {hasEmail ? cert.recipientEmail : "E-mail nevyplněn"}
+                          {hasEmail ? cert.recipientEmail : "E-mail nevyplněn (nelze odeslat mailem)"}
                         </div>
                       </div>
-                      {hasEmail && (
-                        <div className="text-muted-foreground shrink-0 truncate font-mono text-xs">
-                          {cert.id}
-                        </div>
-                      )}
+                      <div className="text-muted-foreground shrink-0 truncate font-mono text-xs">
+                        {cert.id}
+                      </div>
                     </div>
                   );
                 })}
