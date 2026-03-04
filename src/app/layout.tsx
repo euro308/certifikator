@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
+import React from "react";
 
 export const metadata: Metadata = {
   title: {
@@ -11,7 +12,6 @@ export const metadata: Metadata = {
     default: "Certifikátor",
   },
   description: "Jednotné prostředí pro tvorbu, správu, rozeslání a validaci certifikátů",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 
