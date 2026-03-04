@@ -352,6 +352,7 @@ export const adminRouter = createTRPCRouter({
         where: eq(certificates.id, input.id),
         columns: {
           certificateUrl: true,
+          validationToken: true,
         },
       });
 
@@ -363,7 +364,10 @@ export const adminRouter = createTRPCRouter({
         });
       }
 
-      return { certificateUrl: certificate.certificateUrl ?? "" };
+      return {
+        certificateUrl: certificate.certificateUrl ?? "",
+        validationToken: certificate.validationToken
+      };
     }),
 
   // -- VYZVEDNUTÍ VŠECH UŽIVATELŮ + JEJICH STATISTIK --

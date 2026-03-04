@@ -18,13 +18,10 @@ export function downloadFile(url: string, filename: string) {
  * @param zipFilename Název výsledného ZIP souboru (např. "certifikaty.zip")
  */
 export async function downloadCertificatesAsZip(
-    certificates: { recipientName: string; certificateUrl: string }[],
+    certificates: { recipientName: string; certificateUrl: string; validationToken: string }[],
     zipFilename = "certifikaty.zip"
 ) {
     const zip = new JSZip();
-
-    // Vytvoříme bezpečnější názvy souborů k zamezení kolizím
-    const nameCounts: Record<string, number> = {};
 
     for (const cert of certificates) {
         if (!cert.certificateUrl || cert.certificateUrl === "pending") continue;
@@ -33,20 +30,7 @@ export async function downloadCertificatesAsZip(
         const base64Data = cert.certificateUrl.split(",")[1];
         if (!base64Data) continue;
 
-        const safeName = cert.recipientName
-            .trim()
-            .replace(/[^a-zA-Z0-9ěščřžýáíéůúťďňĚŠČŘŽÝÁÍÉŮÚŤĎŇ]+/g, "_")
-            .toLowerCase() || "certifikat";
-
-        // Ošetření duplicit
-        let filename = `${safeName}.png`;
-        if (nameCounts[safeName] !== undefined) {
-            nameCounts[safeName]++;
-            filename = `${safeName}_${nameCounts[safeName]}.png`;
-        } else {
-            nameCounts[safeName] = 1;
-        }
-
+        const filename = `${cert.validationToken}.png`;
         zip.file(filename, base64Data, { base64: true });
     }
 

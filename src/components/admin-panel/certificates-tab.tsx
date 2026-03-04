@@ -224,8 +224,7 @@ export function CertificatesTab() {
                                     toast.loading("Připravuji stahování...", { id: `admin-download-${cert.id}` });
                                     const data = await utils.admin.getCertificateUrl.fetch({ id: cert.id });
                                     if (data.certificateUrl) {
-                                      const safeName = cert.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
-                                      downloadFile(data.certificateUrl, `certifikat_${safeName}.png`);
+                                      downloadFile(data.certificateUrl, `${data.validationToken}.png`);
                                       toast.success("Stahování úspěšně zahájeno", { id: `admin-download-${cert.id}` });
                                     } else {
                                       toast.error("Tento certifikát nemá uložený obrázek.", { id: `admin-download-${cert.id}` });

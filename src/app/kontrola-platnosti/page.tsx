@@ -16,7 +16,9 @@ import {
   Mail,
   Calendar,
   Hash,
+  Download,
 } from "lucide-react";
+import { downloadFile } from "@/lib/download-helper";
 
 export default function KontrolaPlatnosti() {
   const [searchValue, setSearchValue] = useState("");
@@ -210,6 +212,19 @@ export default function KontrolaPlatnosti() {
                 {certificate.certificateUrl && (
                   <>
                     <div className="my-2 border-t" />
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold text-gray-900">Náhled certifikátu</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          downloadFile(certificate.certificateUrl, `${certificate.validationToken}.png`);
+                        }}
+                      >
+                        <Download className="mr-2 size-4" />
+                        Stáhnout certifikát
+                      </Button>
+                    </div>
                     <div className="relative aspect-[1.414/1] w-full overflow-hidden rounded-lg border bg-gray-50">
                       <Image
                         src={certificate.certificateUrl}

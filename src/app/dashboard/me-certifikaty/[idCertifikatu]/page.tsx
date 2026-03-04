@@ -95,8 +95,7 @@ export default function CertificateDetailPage() {
             <Button
               variant="outline"
               onClick={() => {
-                const safeName = certificate.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
-                downloadFile(certificate.certificateUrl, `certifikat_${safeName}.png`);
+                downloadFile(certificate.certificateUrl, `${certificate.validationToken}.png`);
               }}
             >
               <Download className="mr-2 size-4" />

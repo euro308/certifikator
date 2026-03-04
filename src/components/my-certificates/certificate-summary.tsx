@@ -363,8 +363,7 @@ export function CertificateSummary({
                                 toast.loading("Připravuji stahování...", { id: `download-${certificate.id}` });
                                 const data = await utils.certificates.getCertificateUrl.fetch({ id: certificate.id });
                                 if (data.certificateUrl) {
-                                  const safeName = certificate.recipientName.replace(/[^a-zA-Z0-9]/g, '_');
-                                  downloadFile(data.certificateUrl, `certifikat_${safeName}.png`);
+                                  downloadFile(data.certificateUrl, `${certificate.validationToken}.png`);
                                   toast.success("Stahování úspěšně zahájeno", { id: `download-${certificate.id}` });
                                 } else {
                                   toast.error("Certifikát nemá platný obrázek", { id: `download-${certificate.id}` });

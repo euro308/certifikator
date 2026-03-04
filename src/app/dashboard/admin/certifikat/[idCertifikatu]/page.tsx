@@ -22,6 +22,8 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import { downloadFile } from "@/lib/download-helper";
+import { Download } from "lucide-react";
 
 export default function AdminCertificateDetailPage() {
     const params = useParams();
@@ -64,6 +66,17 @@ export default function AdminCertificateDetailPage() {
                         <p className="text-muted-foreground mt-2 text-lg">
                             Administrátorský náhled detailu o vystaveném certifikátu.
                         </p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                downloadFile(certificate.certificateUrl, `${certificate.validationToken}.png`);
+                            }}
+                        >
+                            <Download className="mr-2 size-4" />
+                            Stáhnout
+                        </Button>
                     </div>
                 </div>
 
