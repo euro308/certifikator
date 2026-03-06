@@ -17,7 +17,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -38,16 +37,53 @@ import {
   Copy,
   MoreHorizontal,
   Trash,
-
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { DeleteDialog } from "@/components/dialogs/delete-dialog";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export function UsersTab() {
-  const { data: users, isLoading } = api.admin.getUsers.useQuery();
-  const utils = api.useUtils();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isFetching,
+  } = api.admin.getUsers.useInfiniteQuery(
+    {
+      limit: 20,
+      search: debouncedSearchQuery || undefined,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
+
+  const users = data?.pages.flatMap((page) => page.items) ?? [];
+  const loadMoreRef = React.useRef<HTMLTableRowElement>(null);
+
+  React.useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "400px" },
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const utils = api.useUtils();
   const [resettingUserId, setResettingUserId] = React.useState<string | null>(
     null,
   );
@@ -124,27 +160,13 @@ export function UsersTab() {
         <div className="flex items-center justify-between">
           <Skeleton className="h-10 w-[300px]" />
         </div>
-        <div className="rounded-md border p-6 flex flex-col items-center justify-center space-y-4 min-h-[400px]">
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 rounded-md border p-6">
+          <Loader2 className="text-muted-foreground size-8 animate-spin" />
           <p className="text-muted-foreground">Načítám uživatele systému...</p>
         </div>
       </div>
     );
   }
-
-  if (!users) {
-    return <div>Data se nepodařilo načíst.</div>;
-  }
-
-  const filteredUsers = users.filter((user) => {
-    if (!searchQuery) return true;
-    const lowerQuery = searchQuery.toLowerCase();
-    return (
-      user.name.toLowerCase().includes(lowerQuery) ||
-      user.email.toLowerCase().includes(lowerQuery) ||
-      user.id.toLowerCase().includes(lowerQuery)
-    );
-  });
 
   return (
     <div className="space-y-4">
@@ -155,10 +177,11 @@ export function UsersTab() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
+          disabled={isFetching}
         />
       </div>
 
-      <div className="bg-card relative max-h-[600px] overflow-y-auto rounded-md border">
+      <div className="bg-card relative rounded-md border [&>div]:max-h-[600px] [&>div]:overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -186,7 +209,7 @@ export function UsersTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user) => (
+            {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>
                   <div className="group flex items-center gap-2">
@@ -260,10 +283,20 @@ export function UsersTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredUsers.length === 0 && (
+            {users.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
                   Žádní uživatelé nenalezeni.
+                </TableCell>
+              </TableRow>
+            )}
+            {(hasNextPage || isFetchingNextPage) && (
+              <TableRow ref={loadMoreRef}>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="text-muted-foreground mx-auto flex w-fit items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Načítám další uživatele...
+                  </div>
                 </TableCell>
               </TableRow>
             )}

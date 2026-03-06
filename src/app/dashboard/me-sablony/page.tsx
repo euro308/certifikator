@@ -1,16 +1,11 @@
 "use client";
 
-import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { TemplateSummary } from "@/components/my-templates/template-summary";
 
 export default function MeSablony() {
-  const { data: userTemplates, isLoading } =
-    api.templates.getUserTemplates.useQuery();
-  const { data: favorites } = api.templates.getUserFavorites.useQuery();
-
   return (
     <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -30,16 +25,7 @@ export default function MeSablony() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <span className="text-muted-foreground">Načítám šablony...</span>
-        </div>
-      ) : (
-        <TemplateSummary
-          userTemplates={userTemplates ?? []}
-          favorites={favorites ?? []}
-        />
-      )}
+      <TemplateSummary />
     </div>
   );
 }

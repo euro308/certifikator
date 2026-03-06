@@ -8,7 +8,7 @@ import {
   templateReports,
 } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { count, desc, eq, ne } from "drizzle-orm";
+import { count, desc, eq, ne, ilike, or, sql, and } from "drizzle-orm";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/emails/email-template";
 
@@ -230,30 +230,75 @@ export const adminRouter = createTRPCRouter({
     }),
 
   // -- VYZVEDNUTÍ VŠECH ŠABLON V SYSTÉMU --
-  getAllTemplates: protectedProcedure.query(async ({ ctx }) => {
-    requireAdmin(ctx.session.user.id);
+  getAllTemplates: protectedProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          search: z.string().nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      requireAdmin(ctx.session.user.id);
 
-    const allTemplates = await db.query.templates.findMany({
-      columns: {
-        id: true,
-        userId: true,
-        name: true,
-        description: true,
-        isPublic: true,
-        downloads: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-      },
-      with: { user: true },
-      orderBy: (t, { desc }) => [desc(t.createdAt)],
-    });
+      const limit = input?.limit ?? 20;
+      const offset = input?.cursor ?? 0;
+      const search = input?.search?.trim();
 
-    return allTemplates.map((t) => ({
-      ...t,
-      authorName: t.user?.name || "Neznámý autor",
-    }));
-  }),
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
+
+      const searchCondition = search
+        ? or(
+            ilike(templates.name, `%${search}%`),
+            ilike(templates.description, `%${search}%`),
+            ilike(user.name, `%${search}%`),
+            isValidUuid ? eq(templates.userId, search) : undefined,
+            isValidUuid ? eq(templates.id, search) : undefined,
+          )
+        : undefined;
+
+      const baseQuery = db
+        .select({
+          id: templates.id,
+          userId: templates.userId,
+          name: templates.name,
+          description: templates.description,
+          isPublic: templates.isPublic,
+          downloads: templates.downloads,
+          createdAt: templates.createdAt,
+          updatedAt: templates.updatedAt,
+          deletedAt: templates.deletedAt,
+          authorName: user.name,
+        })
+        .from(templates)
+        .leftJoin(user, eq(templates.userId, user.id))
+        .where(searchCondition)
+        .orderBy(desc(templates.createdAt))
+        .limit(limit + 1)
+        .offset(offset);
+
+      const results = await baseQuery;
+
+      let nextCursor: typeof offset | undefined = undefined;
+      if (results.length > limit) {
+        results.pop(); // remove last item
+        nextCursor = offset + limit;
+      }
+
+      return {
+        items: results.map((t) => ({
+          ...t,
+          authorName: t.authorName ?? "Neznámý autor",
+        })),
+        nextCursor,
+      };
+    }),
 
   // -- VYZVEDNUTÍ DETAILU ŠABLONY (PRO ADMINA) --
   getTemplateById: protectedProcedure
@@ -280,29 +325,72 @@ export const adminRouter = createTRPCRouter({
       };
     }),
 
-  // -- VYZVEDNUTÍ CERTIFIKÁTŮ UŽIVATELE (PRO ADMINA) --
-  getUserCertificates: protectedProcedure
+  // -- VYZVEDNUTÍ VŠECH CERTIFIKÁTŮ S PAGINACÍ --
+  getAllCertificates: protectedProcedure
     .input(
-      z.object({
-        userId: z.string(),
-      }),
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          search: z.string().nullish(),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       requireAdmin(ctx.session.user.id);
 
-      return db.query.certificates.findMany({
-        where: eq(certificates.userId, input.userId),
-        columns: {
-          id: true,
-          templateId: true,
-          userId: true,
-          recipientName: true,
-          recipientEmail: true,
-          sentAt: true,
-          createdAt: true,
-        },
-        orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
-      });
+      const limit = input?.limit ?? 20;
+      const offset = input?.cursor ?? 0;
+      const search = input?.search?.trim();
+
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
+
+      const searchCondition = search
+        ? or(
+            ilike(certificates.recipientName, `%${search}%`),
+            ilike(certificates.recipientEmail, `%${search}%`),
+            ilike(user.name, `%${search}%`),
+            isValidUuid ? eq(certificates.id, search) : undefined,
+            isValidUuid ? eq(certificates.userId, search) : undefined,
+            isValidUuid ? eq(certificates.templateId, search) : undefined,
+          )
+        : undefined;
+
+      const results = await db
+        .select({
+          id: certificates.id,
+          templateId: certificates.templateId,
+          userId: certificates.userId,
+          recipientName: certificates.recipientName,
+          recipientEmail: certificates.recipientEmail,
+          sentAt: certificates.sentAt,
+          createdAt: certificates.createdAt,
+          authorName: user.name,
+        })
+        .from(certificates)
+        .leftJoin(user, eq(certificates.userId, user.id))
+        .where(searchCondition)
+        .orderBy(desc(certificates.createdAt))
+        .limit(limit + 1)
+        .offset(offset);
+
+      let nextCursor: typeof offset | undefined = undefined;
+      if (results.length > limit) {
+        results.pop();
+        nextCursor = offset + limit;
+      }
+
+      return {
+        items: results.map((c) => ({
+          ...c,
+          authorName: c.authorName ?? "Neznámý uživatel",
+        })),
+        nextCursor,
+      };
     }),
 
   // -- VYZVEDNUTÍ DETAILU CERTIFIKÁTU (PRO ADMINA) --
@@ -359,56 +447,98 @@ export const adminRouter = createTRPCRouter({
       if (!certificate) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message:
-            "Certifikát nebyl nalezen.",
+          message: "Certifikát nebyl nalezen.",
         });
       }
 
       return {
         certificateUrl: certificate.certificateUrl ?? "",
-        validationToken: certificate.validationToken
+        validationToken: certificate.validationToken,
       };
     }),
 
   // -- VYZVEDNUTÍ VŠECH UŽIVATELŮ + JEJICH STATISTIK --
-  getUsers: protectedProcedure.query(async ({ ctx }) => {
-    requireAdmin(ctx.session.user.id);
+  getUsers: protectedProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          search: z.string().nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      requireAdmin(ctx.session.user.id);
 
-    // Vytáhneme všechny uživatele
-    const allUsers = await db
-      .select({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-      })
-      .from(user)
-      .where(ne(user.id, process.env.OFFICIAL_USER_ID!));
+      const limit = input?.limit ?? 20;
+      const offset = input?.cursor ?? 0;
+      const search = input?.search?.trim();
 
-    // Získáme agregované počty šablon pro každého uživatele
-    const templatesGrouped = await db
-      .select({ userId: templates.userId, count: count() })
-      .from(templates)
-      .groupBy(templates.userId);
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
 
-    // Získáme agregované počty certifikátů pro každého uživatele
-    const certsGrouped = await db
-      .select({ userId: certificates.userId, count: count() })
-      .from(certificates)
-      .groupBy(certificates.userId);
+      const searchCondition = search
+        ? or(
+            ilike(user.name, `%${search}%`),
+            ilike(user.email, `%${search}%`),
+            isValidUuid ? eq(user.id, search) : undefined,
+          )
+        : undefined;
 
-    // Namapujeme data do finálního pole
-    return allUsers.map((u) => {
-      const tCount =
-        templatesGrouped.find((t) => t.userId === u.id)?.count ?? 0;
-      const cCount = certsGrouped.find((c) => c.userId === u.id)?.count ?? 0;
+      // Subquery pro počty šablon
+      const templateCountSq = db
+        .select({
+          userId: templates.userId,
+          count: count().as("tpl_count"),
+        })
+        .from(templates)
+        .groupBy(templates.userId)
+        .as("tpl_sq");
+
+      // Subquery pro počty certifikátů
+      const certCountSq = db
+        .select({
+          userId: certificates.userId,
+          count: count().as("cert_count"),
+        })
+        .from(certificates)
+        .groupBy(certificates.userId)
+        .as("cert_sq");
+
+      const results = await db
+        .select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          createdAt: user.createdAt,
+          templatesCount:
+            sql<number>`COALESCE(${templateCountSq.count}, 0)`.mapWith(Number),
+          certificatesCount:
+            sql<number>`COALESCE(${certCountSq.count}, 0)`.mapWith(Number),
+        })
+        .from(user)
+        .leftJoin(templateCountSq, eq(user.id, templateCountSq.userId))
+        .leftJoin(certCountSq, eq(user.id, certCountSq.userId))
+        .where(and(ne(user.id, process.env.OFFICIAL_USER_ID!), searchCondition))
+        .orderBy(desc(user.createdAt))
+        .limit(limit + 1)
+        .offset(offset);
+
+      let nextCursor: typeof offset | undefined = undefined;
+      if (results.length > limit) {
+        results.pop();
+        nextCursor = offset + limit;
+      }
+
       return {
-        ...u,
-        templatesCount: tCount,
-        certificatesCount: cCount,
+        items: results,
+        nextCursor,
       };
-    });
-  }),
+    }),
 
   deleteUser: protectedProcedure
     .input(z.object({ userId: z.string() }))

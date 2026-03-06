@@ -1,15 +1,11 @@
 "use client";
 
-import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { CertificateSummary } from "@/components/my-certificates/certificate-summary";
 
 export default function MeCertifikaty() {
-  const { data: userCertificates, isLoading } =
-    api.certificates.getUserCertificates.useQuery();
-
   return (
     <div className="container mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
@@ -29,13 +25,7 @@ export default function MeCertifikaty() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <span className="text-muted-foreground">Načítám certifikáty...</span>
-        </div>
-      ) : (
-        <CertificateSummary userCertificates={userCertificates ?? []} />
-      )}
+      <CertificateSummary />
     </div>
   );
 }

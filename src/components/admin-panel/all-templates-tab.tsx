@@ -25,10 +25,47 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export function AllTemplatesTab() {
-  const { data: templates, isLoading } = api.admin.getAllTemplates.useQuery();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isFetching,
+  } = api.admin.getAllTemplates.useInfiniteQuery(
+    {
+      limit: 20,
+      search: debouncedSearchQuery || undefined,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
+
+  const templates = data?.pages.flatMap((page) => page.items) ?? [];
+  const loadMoreRef = React.useRef<HTMLTableRowElement>(null);
+
+  React.useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "400px" },
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleCopyId = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -61,17 +98,6 @@ export function AllTemplatesTab() {
     return <div className="p-4 text-red-500">Chyba při načítání šablon.</div>;
   }
 
-  const filteredTemplates = templates.filter((t) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      t.name.toLowerCase().includes(q) ||
-      t.authorName.toLowerCase().includes(q) ||
-      t.id.toLowerCase().includes(q) ||
-      t.userId.toLowerCase().includes(q)
-    );
-  });
-
   return (
     <div className="space-y-4">
       <div className="relative flex max-w-sm items-center gap-2">
@@ -81,10 +107,11 @@ export function AllTemplatesTab() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
+          disabled={isFetching}
         />
       </div>
 
-      <div className="bg-card relative max-h-[600px] overflow-y-auto rounded-md border">
+      <div className="bg-card relative rounded-md border [&>div]:max-h-[600px] [&>div]:overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -112,7 +139,7 @@ export function AllTemplatesTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTemplates.map((template) => (
+            {templates.map((template) => (
               <TableRow key={template.id}>
                 <TableCell>
                   <div className="group flex items-center gap-2">
@@ -185,10 +212,20 @@ export function AllTemplatesTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredTemplates.length === 0 && (
+            {templates.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
                   Žádné šablony nenalezeny.
+                </TableCell>
+              </TableRow>
+            )}
+            {(hasNextPage || isFetchingNextPage) && (
+              <TableRow ref={loadMoreRef}>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="text-muted-foreground mx-auto flex w-fit items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Načítám další šablony...
+                  </div>
                 </TableCell>
               </TableRow>
             )}

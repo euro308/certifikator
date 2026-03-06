@@ -6,7 +6,7 @@ import {
 } from "@/server/api/trpc";
 import { certificates, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
-import { and, eq, gte, ne, sql } from "drizzle-orm";
+import { and, eq, gte, ne, sql, or, ilike } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const certificatesRouter = createTRPCRouter({
@@ -39,30 +39,89 @@ export const certificatesRouter = createTRPCRouter({
       );
     }),
 
-  getUserCertificates: protectedProcedure.query(async ({ ctx }) => {
-    const certs = await ctx.db.query.certificates.findMany({
-      where: eq(certificates.userId, ctx.session.user.id),
-      columns: {
-        id: true,
-        templateId: true,
-        userId: true,
-        recipientName: true,
-        recipientEmail: true,
-        sentAt: true,
-        thumbnailImageUrl: true,
-        certificateUrl: true,
-        validationToken: true,
-        createdAt: true,
-      }, // Optimalizace - nenačítáme dlouhý recipientData a velký certificateUrl, který tu není potřeba
-      orderBy: (certificates, { desc }) => [desc(certificates.createdAt)],
-    });
+  getUserCertificates: protectedProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          search: z.string().optional(),
+          sortBy: z.enum(["name", "email", "date"]).nullish(),
+          sortDir: z.enum(["asc", "desc"]).nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const search = input?.search?.trim();
+      const limit = input?.limit ?? 50;
+      const offset = input?.cursor ?? 0;
+      const sortBy = input?.sortBy ?? "date";
+      const sortDir = input?.sortDir ?? "desc";
 
-    return certs.map((c) => ({
-      ...c,
-      certificateUrl: c.certificateUrl ?? "",
-      thumbnailImageUrl: c.thumbnailImageUrl ?? "",
-    }));
-  }),
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
+
+      const searchCondition = search
+        ? or(
+            ilike(certificates.recipientName, `%${search}%`),
+            ilike(certificates.recipientEmail, `%${search}%`),
+            isValidUuid ? eq(certificates.id, search) : undefined,
+            isValidUuid ? eq(certificates.templateId, search) : undefined,
+          )
+        : undefined;
+
+      const certs = await ctx.db.query.certificates.findMany({
+        where: and(
+          eq(certificates.userId, ctx.session.user.id),
+          searchCondition,
+        ),
+        columns: {
+          id: true,
+          templateId: true,
+          userId: true,
+          recipientName: true,
+          recipientEmail: true,
+          sentAt: true,
+          thumbnailImageUrl: true,
+          certificateUrl: true,
+          validationToken: true,
+          createdAt: true,
+        }, // Optimalizace - nenačítáme dlouhý recipientData a velký certificateUrl, který tu není potřeba
+        orderBy: (certificates, { asc, desc }) => {
+          if (sortBy === "name")
+            return sortDir === "asc"
+              ? [asc(certificates.recipientName)]
+              : [desc(certificates.recipientName)];
+          if (sortBy === "email")
+            return sortDir === "asc"
+              ? [asc(certificates.recipientEmail)]
+              : [desc(certificates.recipientEmail)];
+          return sortDir === "asc"
+            ? [asc(certificates.createdAt)]
+            : [desc(certificates.createdAt)];
+        },
+        limit: limit + 1,
+        offset: offset,
+      });
+
+      let nextCursor: typeof offset | undefined = undefined;
+      if (certs.length > limit) {
+        certs.pop();
+        nextCursor = offset + limit;
+      }
+
+      return {
+        items: certs.map((c) => ({
+          ...c,
+          certificateUrl: c.certificateUrl ?? "",
+          thumbnailImageUrl: c.thumbnailImageUrl ?? "",
+        })),
+        nextCursor,
+      };
+    }),
 
   getById: protectedProcedure
     .input(
@@ -268,7 +327,7 @@ export const certificatesRouter = createTRPCRouter({
         .values(valuesWithToken)
         .returning();
 
-      const mappedResult = result.map(c => ({
+      const mappedResult = result.map((c) => ({
         ...c,
         certificateUrl: c.certificateUrl ?? "",
         thumbnailImageUrl: c.thumbnailImageUrl ?? "",

@@ -79,23 +79,133 @@ export const templatesRouter = createTRPCRouter({
         .filter((item): item is NonNullable<typeof item> => item !== null);
     }),
 
-  getUserTemplates: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.templates.findMany({
-      where: and(
-        eq(templates.userId, ctx.session.user.id),
-        isNull(templates.deletedAt),
-      ),
-      columns: {
-        id: true,
-        name: true,
-        description: true,
-        thumbnailImageUrl: true,
-        placeholders: true,
-        createdAt: true,
-      }, // Optimalizace - nenačítáme dlouhé canvasData ani velký previewImageUrl
-      orderBy: (templates, { desc }) => [desc(templates.createdAt)],
-    });
-  }),
+  getUserTemplates: protectedProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).nullish(),
+          cursor: z.number().nullish(),
+          search: z.string().optional(),
+          sortBy: z.enum(["name", "date"]).nullish(),
+          sortDir: z.enum(["asc", "desc"]).nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const search = input?.search?.trim();
+      const limit = input?.limit ?? 50;
+      const offset = input?.cursor ?? 0;
+      const sortBy = input?.sortBy ?? "date";
+      const sortDir = input?.sortDir ?? "desc";
+
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
+
+      const searchCondition = search
+        ? or(
+            ilike(templates.name, `%${search}%`),
+            ilike(templates.description, `%${search}%`),
+            isValidUuid ? eq(templates.id, search) : undefined,
+          )
+        : undefined;
+
+      // 1. Fetch user's own templates
+      const ownTemplates = await ctx.db.query.templates.findMany({
+        where: and(
+          eq(templates.userId, ctx.session.user.id),
+          isNull(templates.deletedAt),
+          searchCondition,
+        ),
+        columns: {
+          id: true,
+          name: true,
+          description: true,
+          thumbnailImageUrl: true,
+          placeholders: true,
+          createdAt: true,
+        },
+        orderBy: (templates, { asc, desc }) => {
+          if (sortBy === "name")
+            return sortDir === "asc"
+              ? [asc(templates.name), desc(templates.createdAt)]
+              : [desc(templates.name), desc(templates.createdAt)];
+          return sortDir === "asc"
+            ? [asc(templates.createdAt)]
+            : [desc(templates.createdAt)];
+        },
+        limit: limit + 1,
+        offset: offset,
+      });
+
+      // 2. Fetch user's favorite public templates
+      const favBaseQuery = ctx.db
+        .select({
+          favoriteId: templateFavorites.id,
+          favoritedAt: templateFavorites.createdAt,
+          id: templates.id,
+          name: templates.name,
+          description: templates.description,
+          thumbnailImageUrl: templates.thumbnailImageUrl,
+          placeholders: templates.placeholders,
+          createdAt: templates.createdAt,
+          downloads: templates.downloads,
+          authorId: templates.userId,
+          authorName: user.name,
+          authorImage: user.image,
+        })
+        .from(templateFavorites)
+        .innerJoin(templates, eq(templateFavorites.templateId, templates.id))
+        .innerJoin(user, eq(templates.userId, user.id))
+        .where(
+          and(
+            eq(templateFavorites.userId, ctx.session.user.id),
+            eq(templates.isPublic, true),
+            isNull(templates.deletedAt),
+            searchCondition,
+          ),
+        );
+
+      const dirFn = sortDir === "asc" ? asc : desc;
+      const favTemplatesRawQuery =
+        sortBy === "name"
+          ? favBaseQuery.orderBy(
+              dirFn(templates.name),
+              desc(templateFavorites.createdAt),
+            )
+          : favBaseQuery.orderBy(dirFn(templateFavorites.createdAt));
+
+      const favTemplatesRaw = await favTemplatesRawQuery
+        .limit(limit + 1)
+        .offset(offset);
+
+      // Map favTemplates to the same structure (with a gallery flag/type) if needed by the client,
+      // but to keep it simple and backwards compatible, we can just return them under distinct keys,
+      // or map them to a unified structure. The client expects them separately right now in the page.
+      // Easiest is to return both arrays from this single procedure.
+
+      const favTemplates = favTemplatesRaw.map((r) => ({
+        ...r,
+        isOfficial:
+          (process.env.OFFICIAL_USER_ID ?? "") !== "" &&
+          r.authorId === process.env.OFFICIAL_USER_ID,
+      }));
+
+      let nextCursor: typeof offset | undefined = undefined;
+      const hasMoreOwn = ownTemplates.length > limit;
+      const hasMoreFav = favTemplates.length > limit;
+
+      if (hasMoreOwn) ownTemplates.pop();
+      if (hasMoreFav) favTemplates.pop();
+
+      if (hasMoreOwn || hasMoreFav) {
+        nextCursor = offset + limit;
+      }
+
+      return { ownTemplates, favTemplates, nextCursor };
+    }),
 
   getTemplateById: protectedProcedure
     .input(z.object({ templateId: z.string() }))
@@ -364,9 +474,15 @@ export const templatesRouter = createTRPCRouter({
 
       const sortBy = input?.sortBy ?? "downloads";
       const sortDir = input?.sortDir ?? "desc";
-      const search = input?.search;
+      const search = input?.search?.trim();
 
-      // SQL pro pocet oblibenych
+      const isValidUuid = search
+        ? /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+            search,
+          )
+        : false;
+
+      // SQL pro počet oblíbených
       const favCountSq = db
         .select({
           templateId: templateFavorites.templateId,
@@ -382,11 +498,12 @@ export const templatesRouter = createTRPCRouter({
             ilike(templates.name, `%${search}%`),
             ilike(templates.description, `%${search}%`),
             ilike(user.name, `%${search}%`),
-            eq(templates.userId, search), // if searching by exact UID
+            isValidUuid ? eq(templates.userId, search) : undefined,
+            isValidUuid ? eq(templates.id, search) : undefined,
           )
         : undefined;
 
-      // Base query
+      // Základní query
       const baseQuery = db
         .select({
           id: templates.id,
@@ -627,39 +744,4 @@ export const templatesRouter = createTRPCRouter({
         return { isFavorited: true };
       }
     }),
-
-  getUserFavorites: protectedProcedure.query(async ({ ctx }) => {
-    const results = await db
-      .select({
-        favoriteId: templateFavorites.id,
-        favoritedAt: templateFavorites.createdAt,
-        templateId: templates.id,
-        templateName: templates.name,
-        templateDescription: templates.description,
-        thumbnailImageUrl: templates.thumbnailImageUrl, // Stačí nám odlehčený a menší obrázek
-        placeholders: templates.placeholders,
-        downloads: templates.downloads,
-        authorId: templates.userId,
-        authorName: user.name,
-        authorImage: user.image,
-      })
-      .from(templateFavorites)
-      .innerJoin(templates, eq(templateFavorites.templateId, templates.id))
-      .innerJoin(user, eq(templates.userId, user.id))
-      .where(
-        and(
-          eq(templateFavorites.userId, ctx.session.user.id),
-          eq(templates.isPublic, true),
-          isNull(templates.deletedAt),
-        ),
-      )
-      .orderBy(desc(templateFavorites.createdAt));
-
-    return results.map((r) => ({
-      ...r,
-      isOfficial:
-        (process.env.OFFICIAL_USER_ID ?? "") !== "" &&
-        r.authorId === process.env.OFFICIAL_USER_ID,
-    }));
-  }),
 });

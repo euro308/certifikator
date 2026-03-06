@@ -42,13 +42,47 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export function PublicTemplatesTab() {
-  const { data: templatesData, isLoading } =
-    api.templates.getPublicTemplates.useQuery({ limit: 100 });
-  const templates = templatesData?.items;
-  const utils = api.useUtils();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isFetching,
+  } = api.templates.getPublicTemplates.useInfiniteQuery(
+    {
+      limit: 20,
+      search: debouncedSearchQuery || undefined,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
+  const templates = data?.pages.flatMap((page) => page.items) ?? [];
+  const loadMoreRef = React.useRef<HTMLTableRowElement>(null);
+
+  React.useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "400px" },
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const utils = api.useUtils();
   const [templateToTakeDown, setTemplateToTakeDown] = React.useState<
     string | null
   >(null);
@@ -108,16 +142,7 @@ export function PublicTemplatesTab() {
     return <div className="p-4 text-red-500">Chyba při načítání šablon.</div>;
   }
 
-  const filteredTemplates = templates.filter((t) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      t.name.toLowerCase().includes(q) ||
-      t.authorName.toLowerCase().includes(q) ||
-      t.id.toLowerCase().includes(q) ||
-      t.userId.toLowerCase().includes(q)
-    );
-  });
+  // Vyhledávání se nyní řeší na serveru prostřednictvím debouncedSearchQuery
 
   return (
     <div className="space-y-4">
@@ -128,10 +153,11 @@ export function PublicTemplatesTab() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
+          disabled={isFetching}
         />
       </div>
 
-      <div className="bg-card relative max-h-[600px] overflow-y-auto rounded-md border">
+      <div className="bg-card relative rounded-md border [&>div]:max-h-[600px] [&>div]:overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -156,7 +182,7 @@ export function PublicTemplatesTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTemplates.map((template) => (
+            {templates.map((template) => (
               <TableRow key={template.id}>
                 <TableCell>
                   <div className="group flex items-center gap-2">
@@ -229,10 +255,21 @@ export function PublicTemplatesTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredTemplates.length === 0 && (
+            {templates.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Žádné veřejné šablony nenalezeny.
+                </TableCell>
+              </TableRow>
+            )}
+            {/* Observer pro načítání dalších */}
+            {(hasNextPage || isFetchingNextPage) && (
+              <TableRow ref={loadMoreRef}>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  <div className="flex w-full items-center justify-center text-gray-500">
+                    <Loader2 className="mr-2 size-6 animate-spin" />
+                    <span>Načítám další šablony...</span>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

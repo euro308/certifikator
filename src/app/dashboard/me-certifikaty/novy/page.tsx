@@ -171,8 +171,23 @@ function NovyCertifikatContent() {
   const hasInitializedSenderName = useRef(false);
 
   // Načtení uživatelových šablon
-  const { data: templates, isLoading: templatesLoading } =
+  const { data: templatesData, isLoading: templatesLoading } =
     api.templates.getUserTemplates.useQuery();
+
+  // Unified list pro dropdown výběr šablony
+  const templates = React.useMemo(() => {
+    if (!templatesData) return undefined;
+    const own = templatesData.ownTemplates ?? [];
+    const favs = (templatesData.favTemplates ?? []).map((f) => ({
+      id: f.id,
+      name: f.name,
+      description: f.description,
+      thumbnailImageUrl: f.thumbnailImageUrl,
+      placeholders: f.placeholders,
+      createdAt: f.favoritedAt,
+    }));
+    return [...own, ...favs] as typeof own;
+  }, [templatesData]);
 
   // Podpora cizí šablony z galerie (z URL parametru)
   const galleryTemplateId = searchParams.get("idSablony") ?? undefined;
@@ -187,8 +202,7 @@ function NovyCertifikatContent() {
     { enabled: isGalleryId },
   );
 
-  // Načtení uživatelových oblíbených šablon
-  const { data: favoriteTemplates } = api.templates.getUserFavorites.useQuery();
+  // getUserFavorites bylo odstraněno z backendu. Data už máme z getUserTemplates.
 
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
@@ -284,8 +298,7 @@ function NovyCertifikatContent() {
       toast.success(`Úspěšně ${correctSuccessToastText(certificates.length)}`);
 
       setSavedCertificates(certificates);
-      const validEmails = certificates
-        .map((c) => c.id);
+      const validEmails = certificates.map((c) => c.id);
       setSelectedRecipients(new Set(validEmails));
 
       setStep(4);
@@ -297,36 +310,21 @@ function NovyCertifikatContent() {
     },
   });
 
-  // Najít vybranou šablonu (vlastní NEBO z galerie NEBO z oblíbených)
-  // Toto je jen lightweight objekt pro zobrazení metadat šablony (jméno, description, placeholders). Neobsahuje full canvasData.
-  const selectedTemplate =
+  // Najít vybranou šablonu
+  const selectedTemplateRaw =
     templates?.find((t) => t.id === selectedTemplateId) ??
-    (favoriteTemplates?.find((t) => t.templateId === selectedTemplateId)
-      ? {
-        ...favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!,
-        id: favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!.templateId,
-        name: favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!.templateName,
-        description: favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!.templateDescription,
-        placeholders: favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!.placeholders,
-        thumbnailImageUrl: favoriteTemplates.find(
-          (t) => t.templateId === selectedTemplateId,
-        )!.thumbnailImageUrl,
-      }
-      : undefined) ??
     (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
 
+  // Zkopírujeme strukturu, abysme dodrželi TS u placesholders (které jsou unknown z DB, přecastujeme)
+  const selectedTemplate = selectedTemplateRaw
+    ? {
+        ...selectedTemplateRaw,
+        placeholders: selectedTemplateRaw.placeholders as string[] | null,
+      }
+    : undefined;
+
   // Placeholdery šablony (tyto se používají v UI kroku 2)
-  const placeholders = (selectedTemplate?.placeholders as string[]) || [];
+  const placeholders = selectedTemplate?.placeholders ?? [];
 
   const handleTemplateSelect = (value: string) => {
     setSelectedTemplateId(value);
@@ -658,8 +656,8 @@ function NovyCertifikatContent() {
   };
 
   const handleSendEmails = () => {
-    const recipientsToSend = savedCertificates.filter((c) =>
-      selectedRecipients.has(c.id) && !!c.recipientEmail,
+    const recipientsToSend = savedCertificates.filter(
+      (c) => selectedRecipients.has(c.id) && !!c.recipientEmail,
     );
 
     if (recipientsToSend.length === 0) {
@@ -695,8 +693,7 @@ function NovyCertifikatContent() {
 
   const toggleAllRecipients = (checked: boolean) => {
     if (checked) {
-      const allIds = savedCertificates
-        .map((c) => c.id);
+      const allIds = savedCertificates.map((c) => c.id);
       setSelectedRecipients(new Set(allIds));
     } else {
       setSelectedRecipients(new Set());
@@ -767,12 +764,13 @@ function NovyCertifikatContent() {
 
         {/* Grid certifikátů */}
         <div
-          className={`grid gap-6 ${displayedCertificates.length === 1
-            ? "mx-auto max-w-3xl grid-cols-1"
-            : displayedCertificates.length === 2
-              ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            }`}
+          className={`grid gap-6 ${
+            displayedCertificates.length === 1
+              ? "mx-auto max-w-3xl grid-cols-1"
+              : displayedCertificates.length === 2
+                ? "mx-auto max-w-6xl grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {displayedCertificates.map((cert, i) => {
             const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i;
@@ -867,20 +865,31 @@ function NovyCertifikatContent() {
             </Button>
             <Button
               onClick={async () => {
-                const recipientsToDownload = savedCertificates.filter((c) => selectedRecipients.has(c.id));
+                const recipientsToDownload = savedCertificates.filter((c) =>
+                  selectedRecipients.has(c.id),
+                );
                 if (recipientsToDownload.length === 0) {
                   toast.error("Vyberte alespoň jednoho příjemce pro stažení.");
                   return;
                 }
                 try {
-                  toast.loading("Připravuji ZIP archiv ke stažení...", { id: "zip-download" });
-                  await downloadCertificatesAsZip(recipientsToDownload, "certifikaty.zip");
-                  toast.success("Stažení úspěšně zahájeno", { id: "zip-download" });
+                  toast.loading("Připravuji ZIP archiv ke stažení...", {
+                    id: "zip-download",
+                  });
+                  await downloadCertificatesAsZip(
+                    recipientsToDownload,
+                    "certifikaty.zip",
+                  );
+                  toast.success("Stažení úspěšně zahájeno", {
+                    id: "zip-download",
+                  });
                 } catch {
-                  toast.error("Nastala chyba při vytváření ZIP archivu", { id: "zip-download" });
+                  toast.error("Nastala chyba při vytváření ZIP archivu", {
+                    id: "zip-download",
+                  });
                 }
               }}
-              className="bg-[#E65758] hover:bg-[#d44647] text-white"
+              className="bg-[#E65758] text-white hover:bg-[#d44647]"
               disabled={selectedRecipients.size === 0}
             >
               <Download className="mr-2 size-4" />
@@ -902,7 +911,7 @@ function NovyCertifikatContent() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Levý sloupec: Seznam příjemců */}
+          {/* Levný sloupec: Seznam příjemců */}
           <Card className="flex h-[95vh] flex-col">
             <CardHeader className="shrink-0">
               <CardTitle className="flex items-center justify-between">
@@ -925,7 +934,8 @@ function NovyCertifikatContent() {
                 </div>
               </CardTitle>
               <CardDescription>
-                Vyberte příjemce k další akci (odeslání e-mailu nebo stažení PDF/ZIP).
+                Vyberte příjemce k další akci (odeslání e-mailu nebo stažení
+                PDF/ZIP).
               </CardDescription>
             </CardHeader>
             {/* Tady je kouzlo flex-1 a min-h-0, které vyplní zbylý prostor a dovolí scroll */}
@@ -938,24 +948,25 @@ function NovyCertifikatContent() {
                   return (
                     <div
                       key={cert.id}
-                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${isSelected
-                        ? "bg-primary/5 border-primary/20"
-                        : "bg-white"
-                        }`}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-white"
+                      }`}
                     >
                       <Checkbox
                         id={`action-recipient-${cert.id}`}
                         checked={isSelected}
-                        onCheckedChange={(v) =>
-                          toggleRecipient(cert.id, !!v)
-                        }
+                        onCheckedChange={(v) => toggleRecipient(cert.id, !!v)}
                       />
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-medium">
                           {cert.recipientName}
                         </div>
                         <div className="text-muted-foreground truncate text-sm">
-                          {hasEmail ? cert.recipientEmail : "E-mail nevyplněn (nelze odeslat mailem)"}
+                          {hasEmail
+                            ? cert.recipientEmail
+                            : "E-mail nevyplněn (nelze odeslat mailem)"}
                         </div>
                       </div>
                       <div className="text-muted-foreground shrink-0 truncate font-mono text-xs">
@@ -1042,14 +1053,14 @@ function NovyCertifikatContent() {
                     }
                   />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60">
                   {templatesLoading ? (
                     <div className="text-muted-foreground flex items-center justify-center p-4">
                       <Loader2 className="mr-2 size-4 animate-spin" />
                       Načítám šablony...
                     </div>
                   ) : templates?.length === 0 &&
-                    favoriteTemplates?.length === 0 &&
+                    (templatesData?.favTemplates?.length ?? 0) === 0 &&
                     !galleryTemplate ? (
                     <div className="text-muted-foreground p-2 text-center text-sm">
                       Nemáte žádné šablony.{" "}
@@ -1064,8 +1075,9 @@ function NovyCertifikatContent() {
                     <>
                       {/* Šablona z URL jestliže je nová */}
                       {galleryTemplate &&
-                        !favoriteTemplates?.some(
-                          (f) => f.templateId === galleryTemplate.id,
+                        (templatesData?.favTemplates?.length ?? 0) > 0 &&
+                        !templatesData?.favTemplates?.some(
+                          (f) => f.id === galleryTemplateId,
                         ) && (
                           <>
                             <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">
@@ -1096,24 +1108,28 @@ function NovyCertifikatContent() {
                       )}
 
                       {/* Šablony z oblíbených */}
-                      {favoriteTemplates && favoriteTemplates.length > 0 && (
+                      {(templatesData?.favTemplates?.length ?? 0) > 0 && (
                         <>
                           <div className="mx-2 mt-2 border-b py-1.5 text-sm font-semibold text-gray-500">
-                            Oblíbené šablony z galerie
+                            Oblíbené šablony z galerie (
+                            {templatesData?.favTemplates?.length ?? 0})
                           </div>
-                          {favoriteTemplates.map((template) => {
-                            // Zabraňme duplicitám
-                            if (galleryTemplate?.id === template.templateId)
-                              return null;
-                            return (
-                              <SelectItem
-                                key={template.templateId}
-                                value={template.templateId}
-                              >
-                                {template.templateName} ({template.authorName})
-                              </SelectItem>
-                            );
-                          })}
+                          {templatesData?.favTemplates?.map((template) => (
+                            <SelectItem
+                              key={template.id}
+                              value={template.id}
+                              className="py-3"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <span className="leading-none font-medium">
+                                  {template.name}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  Od: {template.authorName}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </>
                       )}
                     </>

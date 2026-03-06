@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { useSearchParams } from "next/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const ITEMS_PER_PAGE = 16;
 
@@ -30,14 +31,8 @@ function GalleryContentInner() {
   const [searchValue, setSearchValue] = useState(
     searchParams.get("search") ?? "",
   );
-  const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchValue);
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchValue]);
+  const debouncedSearchQuery = useDebounce(searchValue, 300);
 
   const [sortKey, setSortKey] = useState<SortKey>("downloads");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -46,7 +41,7 @@ function GalleryContentInner() {
     api.templates.getPublicTemplates.useInfiniteQuery(
       {
         limit: ITEMS_PER_PAGE,
-        search: debouncedSearch.trim() || undefined,
+        search: debouncedSearchQuery.trim() || undefined,
         sortBy: sortKey,
         sortDir: sortDir,
       },
@@ -87,7 +82,7 @@ function GalleryContentInner() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Žádné veřejné šablony v DB (a zrovna se nenačítá)
-  const isEmpty = visible.length === 0 && !debouncedSearch && !isLoading;
+  const isEmpty = visible.length === 0 && !debouncedSearchQuery && !isLoading;
 
   return (
     <div className="space-y-6">
