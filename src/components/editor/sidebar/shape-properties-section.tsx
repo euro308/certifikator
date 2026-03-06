@@ -27,13 +27,13 @@ export function ShapePropertiesSection() {
   const { selectedElement, updateElement } = useEditorContext();
   const [isOpen, setIsOpen] = React.useState(true);
 
-  // ===== LOKÁLNÍ STATE =====
+  // Lokální state
   const [shapeWidth, setShapeWidth] = useState<string>("");
   const [shapeHeight, setShapeHeight] = useState<string>("");
   const [arrowPointerLength, setArrowPointerLength] = useState<string>("");
   const [arrowPointerWidth, setArrowPointerWidth] = useState<string>("");
 
-  // ===== SYNCHRONIZUJ STATE =====
+  // Synchronizace state
   useEffect(() => {
     if (selectedElement?.type === "shape") {
       setShapeWidth(Math.round(selectedElement.width).toString());
@@ -55,10 +55,7 @@ export function ShapePropertiesSection() {
   const isRegular = REGULAR_SHAPES.includes(shape.shapeType);
   const isArrow = shape.shapeType === "arrow";
 
-  // ===== HANDLERY =====
-
-  // ===== HANDLERY =====
-
+  // Handlery
   const handleFillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateElement(shape.id, { fill: e.target.value });
   };
@@ -149,8 +146,7 @@ export function ShapePropertiesSection() {
     }
   };
 
-  // ===== ARROW POINTER HANDLERY =====
-
+  // Arrow pointer handlery
   const handlePointerLengthChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -191,7 +187,7 @@ export function ShapePropertiesSection() {
     }
   };
 
-  // ===== INNER RADIUS HANDLER =====
+  // Inner radius handler
   const handleInnerRadiusChange = (value: number[]) => {
     updateElement(shape.id, { innerRadius: value[0] });
   };

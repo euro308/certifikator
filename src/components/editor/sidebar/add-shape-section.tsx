@@ -1,7 +1,3 @@
-// =============================================================================
-// ADD SHAPE SECTION - Sekce pro přidávání tvarů
-// =============================================================================
-
 "use client";
 
 import { Square, ChevronRight, ChevronDown } from "lucide-react";
@@ -23,9 +19,7 @@ import {
 } from "@/components/ui/collapsible";
 import React from "react";
 
-/**
- * Sekce pro přidání tvaru na plátno
- */
+// Sekce pro přidání tvaru na plátno
 export function AddShapeSection() {
   const { createShapeElement } = useEditorContext();
   const [isOpen, setIsOpen] = React.useState(true);

@@ -5,7 +5,7 @@ export function FooterOutside() {
     <footer className="mt-auto border-t bg-white/50 backdrop-blur-sm">
       <div className="container mx-auto px-6 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-around gap-6 md:flex-row">
-          {/* Left side - Branding */}
+          {/* Left side branding */}
           <Link
             className="bg-gradient-primary bg-clip-text text-lg font-bold text-transparent"
             href={"/"}
@@ -13,7 +13,7 @@ export function FooterOutside() {
             Certifikátor
           </Link>
 
-          {/* Center - Links */}
+          {/* Center links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
             <Link
               href="/galerie"
@@ -47,7 +47,7 @@ export function FooterOutside() {
             </Link>
           </div>
 
-          {/* Right side - Copyright */}
+          {/* Right side copyright */}
           <div className="text-sm text-gray-500">© 2025 Certifikátor.</div>
         </div>
       </div>

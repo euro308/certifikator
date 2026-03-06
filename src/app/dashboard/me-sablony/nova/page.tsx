@@ -24,7 +24,7 @@ export default function NovaSablona() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const mutation = api.templates.createTemplate.useMutation();
 
-  // ===== NAČTENÍ DRAFTU =====
+  // Načtení draftu
   useEffect(() => {
     if (hasDraft()) {
       setCanvasData(loadDraft());
@@ -32,7 +32,7 @@ export default function NovaSablona() {
     }
   }, [loadDraft, hasDraft]);
 
-  // ===== BEFOREUNLOAD - Ochrana před odchodem =====
+  // Beforeunload - ochrana před odchodem
   useEffect(() => {
     if (!hasUnsavedChanges) return; // Nic neukládej, pokud nejsou změny
 
@@ -40,7 +40,7 @@ export default function NovaSablona() {
       // Moderní prohlížeče ignorují vlastní text
       e.preventDefault();
       // Chrome vyžaduje returnValue
-      e.returnValue = ""; // ← MUSÍ být nastaveno!
+      e.returnValue = "";
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -50,7 +50,7 @@ export default function NovaSablona() {
     };
   }, [hasUnsavedChanges]);
 
-  // ===== ULOŽENÍ CANVAS DRAFTU =====
+  // Uložení canvas draftu
   const saveMockCanvas = (data: TemplateExportData) => {
     if (data.elements.length >= 1) {
       // Pouze v případě, že na plátně něco je. Pokud na plátně nic není, není třeba ukládat
@@ -64,7 +64,7 @@ export default function NovaSablona() {
     }
   };
 
-  // ===== SUBMIT FORMULÁŘE =====
+  // Submit formuláře
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -188,7 +188,7 @@ export default function NovaSablona() {
             variant="outline"
             className="w-28 cursor-pointer"
             onClick={(e) => {
-              // Custom confirm pro Next.js Link
+              // Potvrzení pro Next.js Link
               if (hasUnsavedChanges) {
                 const confirm = window.confirm(
                   "Máte neuložené změny. Opravdu chcete odejít?",

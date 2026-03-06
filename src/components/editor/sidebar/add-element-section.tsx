@@ -1,7 +1,3 @@
-// =============================================================================
-// ADD ELEMENT SECTION - Sekce pro přidávání nových prvků
-// =============================================================================
-
 "use client";
 
 import { Type, Braces, ChevronDown, ChevronRight, Image } from "lucide-react";
@@ -16,14 +12,8 @@ import React, { useState, useRef } from "react";
 import { toast } from "sonner";
 import { downscaleImage } from "@/lib/image-downscaler";
 
-/**
- * Sekce pro přidání nových prvků na plátno
- *
- * Obsahuje tlačítka pro:
- * - Přidat text
- * - Přidat placeholder
- * - Přidat obrázek
- */
+// Sekce pro přidání nových prvků na plátno
+// Obsahuje tlačítka pro přidání textu, placeholderu a obrázku
 export function AddElementSection() {
   const { createTextElement, createPlaceholderElement, createImageElement } =
     useEditorContext();
@@ -36,16 +26,12 @@ export function AddElementSection() {
     createPlaceholderElement("Proměnná");
   };
 
-  /**
-   * Otevře dialog pro výběr souboru
-   */
+  // Otevře dialog pro výběr souboru
   const handleAddImageClick = () => {
     fileInputRef.current?.click();
   };
 
-  /**
-   * Zpracuje vybraný soubor a vytvoří ImageElement
-   */
+  // Zpracuje vybraný soubor a vytvoří ImageElement
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {

@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   title: "Kontakt",
 };
 
-
 export default function Kontakt() {
   return (
     <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50">

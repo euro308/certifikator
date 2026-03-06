@@ -13,14 +13,13 @@ export async function downscaleImage(
   file: File,
   options: DownscaleOptions = {},
 ): Promise<{ base64: string; width: number; height: number }> {
-  const maxSizeMB = options.maxSizeMB ?? 2; // Default 2MB limit after compression
-  const maxWidth = options.maxWidth ?? 3840; // Default 4K max width
-  const maxHeight = options.maxHeight ?? 3840; // Default 4K max height
+  const maxSizeMB = options.maxSizeMB ?? 2; // Defaultní limit 2 MB po kompresi
+  const maxWidth = options.maxWidth ?? 3840; // Default maximální šířka 4K
+  const maxHeight = options.maxHeight ?? 3840; // Default maximální výška 4K
 
   const maxBytes = maxSizeMB * 1024 * 1024;
 
-  // 1. Check initial upload size (just as a quick sanity check before processing)
-  // The user wants a 20MB limit for the uploaded photo
+  // 1. Kontrola počáteční velikosti nahrávané fotografie
   if (file.size > 20 * 1024 * 1024) {
     throw new Error(
       "Nahraný soubor přesahuje maximální povolenou velikost 20 MB.",

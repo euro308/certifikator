@@ -45,7 +45,7 @@ import { EmailSettingsForm } from "@/components/emails/email-settings-form";
 import { LoaderOverlay } from "@/components/shared/loader-overlay";
 import { downloadCertificatesAsZip } from "@/lib/download-helper";
 
-// Dynamický import s SSR: false - klíčové pro Konvu
+// Dynamický import s SSR: false — klíčové pro Konvu
 const CertificatePreviewStage = dynamic(
   () =>
     import("@/components/certificate-preview/certificate-preview-stage").then(
@@ -90,7 +90,7 @@ interface SavedCertificate {
   thumbnailImageUrl: string;
 }
 
-const ITEMS_PER_PAGE = 6; // 3x2 pole
+const ITEMS_PER_PAGE = 6; // Mřížka 3×2
 
 const AutoSizedPreview = ({ elements }: { elements: CanvasElement[] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -144,7 +144,7 @@ function NovyCertifikatContent() {
   const [singleName, setSingleName] = useState<string>("");
   const [singleEmail, setSingleEmail] = useState<string>("");
 
-  // generované data & stránkování
+  // Generovaná data a stránkování
   const [generatedCertificates, setGeneratedCertificates] = useState<
     GeneratedCertificate[]
   >([]);
@@ -154,11 +154,11 @@ function NovyCertifikatContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
-  // State pro generování obrázku
+  // Stav generování obrázků
   const [generationIndex, setGenerationIndex] = useState(0);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
 
-  // State pro Step 4 (Odesílání emailů)
+  // Stav pro krok 4 (odesílání e-mailů)
   const { data: session } = authClient.useSession();
   const [savedCertificates, setSavedCertificates] = useState<
     SavedCertificate[]
@@ -174,7 +174,7 @@ function NovyCertifikatContent() {
   const { data: templatesData, isLoading: templatesLoading } =
     api.templates.getUserTemplates.useQuery();
 
-  // Unified list pro dropdown výběr šablony
+  // Spojený seznam pro dropdown výběr šablony
   const templates = React.useMemo(() => {
     if (!templatesData) return undefined;
     const own = templatesData.ownTemplates ?? [];
@@ -201,8 +201,6 @@ function NovyCertifikatContent() {
     { templateId: galleryTemplateId! },
     { enabled: isGalleryId },
   );
-
-  // getUserFavorites bylo odstraněno z backendu. Data už máme z getUserTemplates.
 
   // Nastavení výchozího jména odesílatele (pouze jednou)
   useEffect(() => {
@@ -238,7 +236,7 @@ function NovyCertifikatContent() {
     }
   }, [searchParams, templates, templatesLoading, galleryTemplate]);
 
-  // logika stránkování
+  // Logika stránkování
   const totalPages = Math.ceil(generatedCertificates.length / ITEMS_PER_PAGE);
   const displayedCertificates = generatedCertificates.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -263,12 +261,12 @@ function NovyCertifikatContent() {
     return `vytvořeno ${number} certifikátů`;
   };
 
-  // Reset stránka na nové generaci
+  // Reset stránky při nové generaci
   useEffect(() => {
     setCurrentPage(1);
   }, [generatedCertificates]);
 
-  // Reset generace na novém kroku
+  // Reset generace při novém kroku
   useEffect(() => {
     if (step === 3 && generatedCertificates.length > 0) {
       setGenerationIndex(0);
@@ -278,7 +276,7 @@ function NovyCertifikatContent() {
     }
   }, [step, generatedCertificates.length]);
 
-  // TRPC mutace
+  // tRPC mutace pro odesílání e-mailů
   const sendEmailsMutation = api.emails.sendCertificatesBatch.useMutation({
     onSuccess: (data) => {
       toast.success(
@@ -310,12 +308,12 @@ function NovyCertifikatContent() {
     },
   });
 
-  // Najít vybranou šablonu
+  // Nalezení vybrané šablony
   const selectedTemplateRaw =
     templates?.find((t) => t.id === selectedTemplateId) ??
     (galleryTemplate?.id === selectedTemplateId ? galleryTemplate : undefined);
 
-  // Zkopírujeme strukturu, abysme dodrželi TS u placesholders (které jsou unknown z DB, přecastujeme)
+  // Zkopírujeme strukturu, aby se dodržel TS u placeholders (které jsou unknown z DB — přecastujeme)
   const selectedTemplate = selectedTemplateRaw
     ? {
         ...selectedTemplateRaw,
@@ -323,7 +321,7 @@ function NovyCertifikatContent() {
       }
     : undefined;
 
-  // Placeholdery šablony (tyto se používají v UI kroku 2)
+  // Placeholdery šablony (používají se v UI kroku 2)
   const placeholders = selectedTemplate?.placeholders ?? [];
 
   const handleTemplateSelect = (value: string) => {
@@ -414,7 +412,7 @@ function NovyCertifikatContent() {
     setMapping((prev) => ({ ...prev, [placeholder]: column }));
   };
 
-  // Validace
+  // Validace připravenosti
   const isBulkReady =
     excelData.length > 0 && placeholders.every((p) => mapping[p]);
   const isSingleReady =
@@ -424,7 +422,7 @@ function NovyCertifikatContent() {
   const utils = api.useUtils();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Generování
+  // Generování certifikátů
   const generateCertificates = async () => {
     if (!selectedTemplate) return;
 
@@ -700,7 +698,7 @@ function NovyCertifikatContent() {
     }
   };
 
-  // ===== RENDER =====
+  // Render
 
   // Layout pro krok 3 (kontrola certifikátů)
   if (step === 3) {

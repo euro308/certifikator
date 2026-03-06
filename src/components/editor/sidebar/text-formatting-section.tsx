@@ -1,7 +1,3 @@
-// =============================================================================
-// TEXT FORMATTING SECTION - Formátování vybraného textu
-// =============================================================================
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -55,7 +51,7 @@ export function TextFormattingSection() {
   const { selectedElement, updateElement } = useEditorContext();
   const [isOpen, setIsOpen] = useState(true);
 
-  // ===== LOKÁLNÍ STATE PRO FONT SIZE INPUT =====
+  // Lokální state pro font size input
   const [fontSizeInput, setFontSizeInput] = useState<string>("");
 
   // Synchronizuj input s vybraným prvkem
@@ -68,7 +64,7 @@ export function TextFormattingSection() {
     }
   }, [selectedElement]);
 
-  // ========== KLÁVESOVÉ ZKRATKY ==========
+  // Klávesové zkratky
   useEffect(() => {
     // Zobrazit pouze pro textové prvky
     if (
@@ -80,7 +76,7 @@ export function TextFormattingSection() {
 
     const textElement = selectedElement;
 
-    // ===== TOGGLE FUNKCE UVNITŘ useEffect =====
+    // Toggle funkce uvnitř useEffect
     const toggleBold = () => {
       const currentStyle = textElement.fontStyle;
       const currentIsBold = currentStyle.includes("bold");
@@ -115,7 +111,7 @@ export function TextFormattingSection() {
       updateElement(textElement.id, { textDecoration: newDecoration }, true);
     };
 
-    // ===== KEYBOARD HANDLER =====
+    // Keyboard handler
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
         switch (e.key.toLowerCase()) {
@@ -137,7 +133,7 @@ export function TextFormattingSection() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedElement, updateElement]); // ← DŮLEŽITÉ: dependency array!
+  }, [selectedElement, updateElement]);
 
   // Zobrazit pouze pro textové prvky
   if (
@@ -147,7 +143,7 @@ export function TextFormattingSection() {
     return null;
   }
 
-  const textElement = selectedElement as TextElement; // Cast is safe for shared formatting props
+  const textElement = selectedElement as TextElement;
 
   // Pomocné funkce pro style parsing
   const isBold = textElement.fontStyle.includes("bold");
@@ -159,7 +155,6 @@ export function TextFormattingSection() {
    * Konva používá 'italic bold' (italic první)
    */
   const toggleBold = () => {
-    // ... logic
     const currentStyle = textElement.fontStyle;
     const currentIsBold = currentStyle.includes("bold");
     const currentIsItalic = currentStyle.includes("italic");
@@ -178,7 +173,6 @@ export function TextFormattingSection() {
    * Konva používá 'italic bold' (italic první)
    */
   const toggleItalic = () => {
-    // ... logic
     const currentStyle = textElement.fontStyle;
     const currentIsBold = currentStyle.includes("bold");
     const currentIsItalic = currentStyle.includes("italic");
@@ -192,9 +186,7 @@ export function TextFormattingSection() {
     updateElement(textElement.id, { fontStyle: newStyle }, true);
   };
 
-  /**
-   * Toggle Underline
-   */
+  // Toggle Underline
   const toggleUnderline = () => {
     const newDecoration =
       textElement.textDecoration === "underline" ? "" : "underline";
@@ -206,7 +198,6 @@ export function TextFormattingSection() {
   };
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ... logic (updates element without history for smooth typing/sliding)
     const value = e.target.value;
     setFontSizeInput(value);
     const size = parseInt(value, 10);
@@ -223,22 +214,18 @@ export function TextFormattingSection() {
         fontSize: size,
         height: newHeight,
         width: newWidth,
-      }); // Implicit false for history
+      });
     }
   };
 
-  // ===== BLUR HANDLER - fallback na validní hodnotu a COMMIT historie =====
+  // Blur handler - fallback na validní hodnotu a uložení historie
   const handleFontSizeBlur = () => {
     const size = parseInt(fontSizeInput, 10);
 
     if (isNaN(size) || size < 8 || size > 200) {
       setFontSizeInput(textElement.fontSize.toString());
     } else {
-      // Valid value - commit to history
-      // We re-update with the same value just to trigger history save
-      // But we need to calculate other props too if we want to be consistent, but updateElement merges.
-      // Actually for history we need full state.
-      // Calling updateElement(..., true) does exactly that: new state -> addToHistory.
+      // Uložíme do historie
       updateElement(textElement.id, { fontSize: size }, true);
     }
   };

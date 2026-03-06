@@ -71,7 +71,7 @@ type TemplateRow =
   | { type: "gallery"; data: FavoriteTemplate };
 
 const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
-  // Použijeme tRPC hook pro načtení dat
+  // tRPC hook pro načtení dat
   const { data: count, isLoading } =
     api.certificates.getCertificateCountByTemplate.useQuery({
       templateId,
@@ -189,7 +189,7 @@ export function TemplateSummary() {
     toast.success("ID šablony zkopírováno");
   };
 
-  // Build unified row list
+  // Unifikovaný seznam řádků
   const ownRows: TemplateRow[] = (
     data?.pages.flatMap((p) => p.ownTemplates) ?? []
   ).map((t) => ({
@@ -227,15 +227,12 @@ export function TemplateSummary() {
     row.type === "own" ? row.data.createdAt : row.data.favoritedAt;
 
   const filteredTemplates = [...ownRows, ...favRows]
-    // Filter was moved mostly to server, but we keep the date filter here if user searches by date format
     .filter((row) => {
-      // If we typed something that looks like date, we filter locally fallback just in case
-      // Server already filters name, descripton, ID.
       const date = new Date(getRowDate(row)).toLocaleDateString("cs-CZ");
       if (searchValue.length > 0 && date.includes(searchValue)) {
         return true;
       }
-      return true; // The rest is handled by server-side search logic.
+      return true; // Zbytek na serveru
     })
     .sort((a, b) => {
       const nameA = getRowName(a);
@@ -265,7 +262,7 @@ export function TemplateSummary() {
 
   return (
     <div className="flex h-[75vh] min-h-full flex-col items-center rounded-lg border border-dashed pt-5 text-center">
-      {/* NAVIGACE - SEARCH A SEŘAZENÍ */}
+      {/* Navigace - search a seřazení */}
       <div className="mb-6 flex w-full flex-col gap-4 px-5 md:flex-row md:items-center md:justify-between">
         <InputGroup className="h-12 w-full md:w-[400px] lg:w-[40vw]">
           <InputGroupInput
@@ -321,8 +318,8 @@ export function TemplateSummary() {
       ) : (
         <div className="flex w-full flex-1 flex-col overflow-hidden px-5 pb-5">
           <div className="flex-1 overflow-y-auto rounded-md border">
-            {/* Header - Hidden on Mobile */}
-            {/* Desktop grid layout: [Image, Name, Description, Created, Used, ID, Actions] */}
+            {/* Header - na mobilu schovaný */}
+            {/* Desktop grid layout: [Obrázek, Jméno, Popis, Vytvoření, Použito, ID, Akce] */}
             <div className="bg-background text-muted-foreground sticky top-0 z-10 hidden items-center gap-4 border-b px-5 py-3 text-sm md:grid md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]">
               <div /> {/* Místo pro náhled */}
               <span
@@ -374,7 +371,7 @@ export function TemplateSummary() {
                     key={isGallery ? `fav-${rowId}` : rowId}
                     className="hover:bg-muted/30 grid grid-cols-[70px_1fr_40px] items-center gap-4 border-b px-5 py-2 text-left transition-colors last:border-0 md:grid-cols-[70px_1fr_100px_80px_40px] lg:grid-cols-[70px_1fr_1.5fr_100px_80px_100px_40px]"
                   >
-                    {/* 1. Preview Image */}
+                    {/* 1. Preview obrázek */}
                     <div className="bg-muted relative aspect-[1.414/1] w-[70px] flex-shrink-0 overflow-hidden rounded border shadow-sm">
                       {rowPreview ? (
                         <Image
@@ -391,7 +388,7 @@ export function TemplateSummary() {
                       )}
                     </div>
 
-                    {/* 2. Name (All) + Mobile Meta + Gallery badge */}
+                    {/* 2. Jméno + mobile meta + gallery badge */}
                     <div className="flex flex-col gap-1 overflow-hidden">
                       <div className="flex items-center gap-1.5">
                         {isGallery && (
@@ -422,7 +419,7 @@ export function TemplateSummary() {
                           </span>
                         </Link>
                       </div>
-                      {/* Mobile Meta Info */}
+                      {/* Mobile meta info */}
                       <div className="text-muted-foreground flex flex-col gap-0.5 text-xs md:hidden">
                         {isGallery && (
                           <span className="text-[10px] font-medium text-red-500">
@@ -445,17 +442,17 @@ export function TemplateSummary() {
                       </div>
                     </div>
 
-                    {/* 3. Description (LG only) */}
+                    {/* 3. Popis (LG only) */}
                     <span className="hidden truncate text-sm lg:block">
                       {rowDesc ?? "-"}
                     </span>
 
-                    {/* 4. Date (MD+) */}
+                    {/* 4. Datum (MD+) */}
                     <span className={"hidden text-sm md:block"}>
                       {new Date(rowDate).toLocaleDateString("cs-CZ")}
                     </span>
 
-                    {/* 5. Usage (MD+) */}
+                    {/* 5. Využito (MD+) */}
                     <div className={"hidden text-sm md:block"}>
                       <TemplateUsageCounter templateId={rowId} />
                     </div>
@@ -479,7 +476,7 @@ export function TemplateSummary() {
                       </Button>
                     </div>
 
-                    {/* 7. Actions (All) */}
+                    {/* 7. Akce (All) */}
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}

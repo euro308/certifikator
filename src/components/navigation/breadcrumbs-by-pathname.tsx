@@ -32,42 +32,32 @@ const breadcrumbNameMap: Record<string, string> = {
   nahlaseni: "Nahlášení",
 };
 
-// Paths that should just be text (no link) to avoid 404s
+// Cesty bez odkazu
 const nonLinkableSegments = ["sablona", "certifikat", "nahlaseni"];
 
 function BreadcrumbsByPathnameContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Split path and remove empty strings (e.g. from leading slash)
+  // Rozdělení cesty a odstranění prázdných stringů
   const pathSegments = pathname.split("/").filter((segment) => segment !== "");
 
-  // Helper to get readable name
+  // Helper k získání jména
   const getBreadcrumbName = (segment: string) => {
     return breadcrumbNameMap[segment] ?? segment;
   };
 
-  // Check for IDs in search params to append as the last crumb
-  // Common ID params in the app based on context
+  // Kontrola ID v parametrech vyhledávání, která se mají přidat jako poslední breadcrumb
+  // Běžné parametry ID v aplikaci na základě kontextu
   const idSablony = searchParams.get("idSablony");
   const idCertifikatu = searchParams.get("idCertifikatu");
   const specificId = idSablony ?? idCertifikatu;
 
-  // Construct breadcrumbs
   const breadcrumbs = pathSegments.map((segment, index) => {
-    // Reconstruct path for the link
     const href = "/" + pathSegments.slice(0, index + 1).join("/");
     const name = getBreadcrumbName(segment);
     const isLast = index === pathSegments.length - 1;
-
-    // If it's the last segment and we have a specific ID in search params,
-    // this segment is likely "upravit" or similar, and we want to show the ID after it.
-    // BUT user asked for: "Mé šablony > Upravit > template.id"
-    // So if we have an ID, this current segment is NOT the last visual crumb.
     const isVisuallyLast = isLast && !specificId;
-
-    // Check if this segment should be a link
-    // It's a link if it's NOT the last item AND it's NOT in the nonLinkableSegments list
     const isLinkable =
       !isVisuallyLast && !nonLinkableSegments.includes(segment);
 
@@ -80,10 +70,9 @@ function BreadcrumbsByPathnameContent() {
     };
   });
 
-  // If we have a specific ID from query params, add it as a "fake" child
   if (specificId) {
     breadcrumbs.push({
-      href: "#", // No specific link for the ID itself usually, or same page
+      href: "#",
       name: specificId,
       isLast: true,
       isLinkable: false,
@@ -91,7 +80,7 @@ function BreadcrumbsByPathnameContent() {
     });
   }
 
-  // If on home/dashboard root only, or if the only segment is "dashboard"
+  // Pokud na domovské stránce dashboardu nebo dashboard jako jediný segment
   if (
     breadcrumbs.length === 0 ||
     (pathSegments.length === 1 && pathSegments[0] === "dashboard")

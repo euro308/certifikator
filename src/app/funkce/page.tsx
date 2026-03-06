@@ -162,26 +162,6 @@ export default function Funkce() {
               Náhled
             </div>
           </div>
-
-          {/* Funkce 6
-          <div className="mb-10 flex flex-col items-center gap-6 rounded-2xl bg-white/80 p-6 shadow-lg md:flex-row-reverse md:p-8">
-            <div className="flex-1">
-              <h2 className="mb-2 text-3xl font-bold text-gray-900">
-                Certifikáty zpracuje API za tebe
-              </h2>
-              <span className="text-lg text-gray-700">
-                Program nabízí jednoduché API, díky kterému jej lze propojit s
-                dalšími systémy, jako jsou přihlašovací formuláře, interní IS
-                školy nebo externí aplikace. To Vám umožní generovat a rozesílat
-                certifikáty automaticky na základě událostí ve Vašich vlastních
-                systémech.
-              </span>
-            </div>
-            <div className="h-48 w-full max-w-sm rounded-xl bg-gray-200 md:h-64 flex items-center justify-center text-muted-foreground">
-              Náhled
-            </div>
-          </div>
-          */}
         </div>
       </div>
 

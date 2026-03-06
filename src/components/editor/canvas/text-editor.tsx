@@ -58,7 +58,7 @@ function TextArea({
     textarea.style.overflowWrap = "break-word";
 
     // Scroll
-    textarea.style.overflow = "hidden"; // ← Hidden pro auto-resize
+    textarea.style.overflow = "hidden";
     textarea.style.overflowY = "hidden";
 
     // Transform
@@ -76,12 +76,12 @@ function TextArea({
       textarea.style.transform = transformStr.trim();
     }
 
-    // ===== AUTO-RESIZE VÝŠKY =====
+    // Auto-resize výšky
     const updateHeight = () => {
       textarea.style.height = "auto";
       const scrollHeight = textarea.scrollHeight;
 
-      // ===== MINIMÁLNÍ VÝŠKA = 1 řádek =====
+      // Minimální výška = 1 řádek
       const minHeight = Math.ceil(fontSize * lineHeight);
       const finalHeight = Math.max(scrollHeight, minHeight);
       const totalHeight =
@@ -97,7 +97,7 @@ function TextArea({
     textarea.focus();
     textarea.select();
 
-    // ===== HANDLERS =====
+    // Handlery
 
     const saveAndClose = () => {
       textarea.style.height = "auto";

@@ -1,10 +1,3 @@
-// =============================================================================
-// KONVA SHAPES - Definice základních tvarů
-// =============================================================================
-// Zdroj: https://konvajs.org/category/shapes
-
-export type ExtendedShapeType = ShapeType | "triangle";
-
 import type { ShapeType } from "../types/canvas-types";
 
 export interface ShapeDefinition {

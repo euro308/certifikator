@@ -16,11 +16,9 @@ export function useUndoRedo({
   const historyRef = useRef<CanvasElement[][]>([initialElements]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  /**
-   * Přidá nový stav do historie
-   * Mělo by se volat POUZE když uživatel dokončí akci (onDragEnd, onTransformEnd),
-   * ne při každém pohybu myší!
-   */
+  // Přidat nový stav do historie
+  // Volat POUZE když uživatel dokončí akci (onDragEnd, onTransformEnd),
+  // ne při každém pohybu myší
   const addToHistory = useCallback(
     (newElements: CanvasElement[]) => {
       // Pokud jsme uprostřed historie a uděláme změnu, zahodíme "budoucnost"

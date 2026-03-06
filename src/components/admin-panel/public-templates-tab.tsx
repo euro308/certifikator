@@ -142,8 +142,6 @@ export function PublicTemplatesTab() {
     return <div className="p-4 text-red-500">Chyba při načítání šablon.</div>;
   }
 
-  // Vyhledávání se nyní řeší na serveru prostřednictvím debouncedSearchQuery
-
   return (
     <div className="space-y-4">
       <div className="relative flex max-w-sm items-center gap-2">

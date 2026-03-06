@@ -33,7 +33,7 @@ export default function AdminDetailSablony() {
         ? idSablonyRaw[0]
         : idSablonyRaw;
 
-    // Fetch template data via admin connection
+    // Načtení dat šablony přes admin endpoint
     const {
         data: template,
         isLoading,
@@ -108,7 +108,7 @@ export default function AdminDetailSablony() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-12">
-                {/* Levý sloupec - Náhled (Větší část) */}
+                {/* Levý sloupec - náhled (větší část) */}
                 <div className="lg:col-span-7 xl:col-span-8">
                     <Card className="overflow-hidden border-2 py-0">
                         {template.previewImageUrl ? (
@@ -130,7 +130,7 @@ export default function AdminDetailSablony() {
                     </Card>
                 </div>
 
-                {/* Pravý sloupec - Info */}
+                {/* Pravý sloupec - info */}
                 <div className="space-y-6 lg:col-span-5 xl:col-span-4">
                     <Card>
                         <CardHeader>

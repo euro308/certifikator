@@ -1,4 +1,3 @@
-// editor/editor-context.tsx - Globální stav editoru šablon
 "use client";
 
 import {
@@ -47,7 +46,7 @@ interface EditorContextType {
     saveHistory?: boolean,
   ) => void;
   deleteElement: (id: string) => void;
-  deleteSelectedElements: () => void; // New method for multi-delete
+  deleteSelectedElements: () => void;
   reorderElements: (fromIndex: number, toIndex: number) => void;
 
   // Výběr (Multi-select)
@@ -96,9 +95,9 @@ const EditorContext = createContext<EditorContextType | null>(null);
 
 interface EditorProviderProps {
   children: ReactNode;
-  /** Callback při uložení šablony */
+  // Callback při uložení šablony
   onSave?: (data: TemplateExportData) => void;
-  /** Počáteční data (pro editaci existující šablony) */
+  // Počáteční data (pro editaci existující šablony)
   initialData?: TemplateExportData;
 }
 
@@ -197,7 +196,7 @@ export function EditorProvider({
   // SPRÁVA PRVKŮ
   // ==========================================================================
 
-  /** Přidá nový prvek */
+  // Přidat nový prvek
   const addElement = useCallback(
     (element: CanvasElement, shouldSelect = false) => {
       setElements((prev) => {
@@ -212,7 +211,7 @@ export function EditorProvider({
     [addToHistory],
   );
 
-  /** Aktualizuje vlastnosti prvku */
+  // Aktualizovat vlastnosti prvku
   const updateElement = useCallback(
     (id: string, updates: AnyElementUpdate, saveHistory = false) => {
       setElements((prev) => {
@@ -230,7 +229,7 @@ export function EditorProvider({
     [addToHistory],
   );
 
-  /** Smaže konkrétní prvek (legacy) */
+  // Smazat konkrétní prvek
   const deleteElement = useCallback(
     (id: string) => {
       setElements((prev) => {
@@ -245,7 +244,7 @@ export function EditorProvider({
     [addToHistory],
   );
 
-  /** Smaže všechny vybrané prvky */
+  // Smazat všechny vybrané prvky
   const deleteSelectedElements = useCallback(() => {
     if (selectedIds.length === 0) return;
 
@@ -260,7 +259,7 @@ export function EditorProvider({
     setSelectedIds([]);
   }, [selectedIds, addToHistory]);
 
-  /** Přeuspořádá prvky (pro vrstvy) */
+  // Přeuspořádat prvky (pro vrstvy)
   const reorderElements = useCallback(
     (fromIndex: number, toIndex: number) => {
       setElements((prev) => {
@@ -280,11 +279,11 @@ export function EditorProvider({
   // TOVÁRNÍ METODY PRO VYTVÁŘENÍ PRVKŮ
   // ==========================================================================
 
-  /** Generuje unikátní ID */
+  // Generovat unikátní ID
   const generateId = () =>
     `el_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
-  /** Vytvoří textový prvek */
+  // Vytvořit textový prvek
   const createTextElement = useCallback(() => {
     const id = generateId();
     const position = getCenteredPosition(
@@ -304,7 +303,7 @@ export function EditorProvider({
     addElement(element);
   }, [elements, addElement]);
 
-  /** Vytvoří placeholder prvek */
+  // Vytvořit placeholder prvek
   const createPlaceholderElement = useCallback(
     (placeholderKey: string) => {
       const id = generateId();
@@ -330,7 +329,7 @@ export function EditorProvider({
     [elements, addElement],
   );
 
-  /** Vytvoří tvarový prvek */
+  // Vytvořit tvarový prvek
   const createShapeElement = useCallback(
     (shapeType: ShapeType) => {
       const id = generateId();
@@ -458,7 +457,7 @@ export function EditorProvider({
     [elements, addElement],
   );
 
-  /** Vytvoří obrázkový prvek */
+  // Vytvořit obrázkový prvek
   const createImageElement = useCallback(
     (src: string, originalWidth: number, originalHeight: number) => {
       const id = generateId();
@@ -500,7 +499,7 @@ export function EditorProvider({
   // ZOOM A VIEW
   // ==========================================================================
 
-  /** Reset pohledu na výchozí */
+  // Reset pohledu na výchozí
   const resetView = useCallback(() => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -510,7 +509,7 @@ export function EditorProvider({
   // EXPORT A ULOŽENÍ
   // ==========================================================================
 
-  /** Získá seznam všech placeholderů */
+  // Získat seznam všech placeholderů
   const getPlaceholders = useCallback((): string[] => {
     const keys = new Set<string>();
 
@@ -529,7 +528,7 @@ export function EditorProvider({
     return Array.from(keys);
   }, [elements]);
 
-  /** Získá data pro export */
+  // Získat data pro export
   const getExportData = useCallback((): TemplateExportData => {
     return {
       version: "1.0",
@@ -546,7 +545,7 @@ export function EditorProvider({
     getPreviewImageCallbackRef.current = callback;
   }, []);
 
-  /** Uloží šablonu */
+  // Uložit šablonu
   const saveTemplate = useCallback(() => {
     const data = getExportData();
 

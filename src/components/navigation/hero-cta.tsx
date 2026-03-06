@@ -8,7 +8,6 @@ import { LogIn, ArrowRight, UserPlus } from "lucide-react";
 export function HeroCTA() {
   const { data: session, isPending } = authClient.useSession();
 
-  // While checking session, show nothing to avoid layout shift
   if (isPending) {
     return (
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -18,7 +17,6 @@ export function HeroCTA() {
     );
   }
 
-  // User is logged in — show "Vstup do systému"
   if (session?.user) {
     return (
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -36,7 +34,7 @@ export function HeroCTA() {
     );
   }
 
-  // User is not logged in — show Register + Login
+  // User není přihlášen
   return (
     <div className="mt-10 flex flex-col gap-4 sm:flex-row">
       <Button

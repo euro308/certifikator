@@ -27,7 +27,7 @@ function UpravitSablonuContent() {
   const searchParams = useSearchParams();
   const { saveDraft, loadDraft, clearDraft, hasDraft } = useTemplateDraft();
 
-  // Fetch template data
+  // Načtení dat šablony
   const {
     data: template,
     isLoading,
@@ -48,7 +48,7 @@ function UpravitSablonuContent() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Initialize state when template data is fetched
+  // Inicializace stavu po načtení dat šablony
   useEffect(() => {
     if (template && !isDataLoaded) {
       setTemplateName(template.name);
@@ -61,14 +61,14 @@ function UpravitSablonuContent() {
         setHasUnsavedChanges(true);
         toast.info("Načten automaticky uložený koncept.");
       } else {
-        // Ensure canvasData is typed correctly
+        // Zajistíme správný typ canvasData
         setCanvasData(template.canvasData as TemplateExportData);
       }
       setIsDataLoaded(true);
     }
   }, [template, hasDraft, loadDraft, isDataLoaded]);
 
-  // ===== BEFOREUNLOAD - Protection against leaving with unsaved changes =====
+  // Beforeunload - ochrana před odchodem s neuloženými změnami
   useEffect(() => {
     if (!hasUnsavedChanges) return;
 
@@ -84,7 +84,7 @@ function UpravitSablonuContent() {
     };
   }, [hasUnsavedChanges]);
 
-  // ===== SAVE CANVAS DRAFT =====
+  // Uložení canvas draftu
   const saveMockCanvas = (data: TemplateExportData) => {
     if (data.elements.length >= 1) {
       saveDraft(data);
@@ -97,7 +97,7 @@ function UpravitSablonuContent() {
     }
   };
 
-  // ===== SUBMIT FORM =====
+  // Submit formuláře
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -128,7 +128,7 @@ function UpravitSablonuContent() {
         name: templateName,
         placeholders: canvasData.placeholders,
         description: templateDescription,
-        canvasData: canvasData, // JSON structure is handled by TRPC/SuperJSON usually
+        canvasData: canvasData, // JSON strukturu řeší TRPC/SuperJSON
         previewImageUrl: canvasData.previewImageUrl ?? "",
         thumbnailImageUrl: canvasData.thumbnailImageUrl ?? "",
       },
@@ -140,7 +140,7 @@ function UpravitSablonuContent() {
 
           void (async () => {
             try {
-              // Mark as stale and force fetch to ensure data is ready before navigation
+              // Označíme jako neaktuální a vynutíme nový fetch před navigací
               await utils.templates.getUserTemplates.invalidate();
               if (idSablony) {
                 await utils.templates.getTemplateById.invalidate({
@@ -158,9 +158,9 @@ function UpravitSablonuContent() {
               }
               router.refresh();
             } catch (error) {
-              console.error("Failed to refresh templates:", error);
+              console.error("Nepodařilo se obnovit šablony:", error);
               toast.dismiss(toastId);
-              // Fallback navigation
+              // Záložní navigace
               router.push("/dashboard/me-sablony");
             }
           })();
@@ -292,7 +292,7 @@ function UpravitSablonuContent() {
               variant="outline"
               className="w-28 cursor-pointer"
               onClick={(e) => {
-                // Custom confirm for Next.js Link
+                // Potvrzení pro Next.js Link
                 if (hasUnsavedChanges) {
                   const confirm = window.confirm(
                     "Máte neuložené změny. Opravdu chcete odejít?",

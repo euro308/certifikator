@@ -1,7 +1,3 @@
-// =============================================================================
-// EDITOR SIDEBAR - Levý panel s nástroji
-// =============================================================================
-
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,17 +21,17 @@ export function EditorSidebar() {
     <div className="bg-background w-72 flex-shrink-0 border-r">
       <ScrollArea className="h-full">
         <div className="space-y-4 p-4">
-          {/* SEKCE: Přidat prvek */}
+          {/* Sekce přidat prvek */}
           <AddElementSection />
           <AddShapeSection />
 
-          {/* SEKCE: Formátování textu (zobrazí se při výběru textu) */}
+          {/* Sekce formátování textu (zobrazí se při výběru textu) */}
           <TextFormattingSection />
 
-          {/* SEKCE: Vlastnosti tvaru (zobrazí se při výběru tvaru) */}
+          {/* Sekce vlastnosti tvaru (zobrazí se při výběru tvaru) */}
           <ShapePropertiesSection />
 
-          {/* SEKCE: Vrstvy */}
+          {/* Sekce vrstvy */}
           <LayersSection />
         </div>
       </ScrollArea>

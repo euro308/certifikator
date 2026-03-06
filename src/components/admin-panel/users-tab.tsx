@@ -95,7 +95,7 @@ export function UsersTab() {
 
   const resetPasswordMutation = api.emails.sendPasswordReset.useMutation({
     onMutate: () => {
-      // UI state handled separately
+      // UI state řešen odděleně
     },
     onSuccess: () => {
       toast.success(

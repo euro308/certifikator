@@ -151,13 +151,12 @@ export function CertificateSummary() {
   };
 
   const handleCopyId = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Zabrání prokliku na detail certifikátu
+    e.stopPropagation();
     await navigator.clipboard.writeText(id);
     toast.success("ID zkopírováno");
   };
 
   const filteredCertificates = (userCertificates ?? [])
-    // Server-side filtering handles most of it, but keep date fallback just in case
     .filter((certificate) => {
       const createdDate = new Date(certificate.createdAt).toLocaleDateString(
         "cs-CZ",

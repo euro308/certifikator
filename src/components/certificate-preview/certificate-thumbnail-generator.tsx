@@ -13,7 +13,10 @@ import { ReadOnlyCanvasElement } from "./read-only-canvas-element";
 
 interface CertificateThumbnailGeneratorProps {
   elements: CanvasElement[];
-  onGenerate: (data: { certificateUrl: string; thumbnailImageUrl: string }) => void;
+  onGenerate: (data: {
+    certificateUrl: string;
+    thumbnailImageUrl: string;
+  }) => void;
 }
 
 export function CertificateThumbnailGenerator({
@@ -23,7 +26,7 @@ export function CertificateThumbnailGenerator({
   const stageRef = useRef<Konva.Stage>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // 1. Preload images to ensure they are ready for capture
+  // 1. Přednačtení obrázků, aby byly připravené pro zachycení
   useEffect(() => {
     let isMounted = true;
 
@@ -43,7 +46,7 @@ export function CertificateThumbnailGenerator({
           img.src = el.src;
           img.crossOrigin = "anonymous";
           img.onload = () => resolve();
-          img.onerror = () => resolve(); // Proceed even on error
+          img.onerror = () => resolve(); // Pokračujeme i při chybě
         });
       });
 
@@ -58,15 +61,15 @@ export function CertificateThumbnailGenerator({
     };
   }, [elements]);
 
-  // 2. Capture stage once images are loaded and stage is rendered
+  // 2. Zachycení stage po načtení obrázků a vykreslení
   useEffect(() => {
     if (imagesLoaded && stageRef.current) {
-      // Give Konva a moment to render the scene completely
+      // Dáme Konvě chvíli na kompletní vykreslení scény
       const timeout = setTimeout(() => {
         if (stageRef.current) {
           try {
             const certificateUrl = stageRef.current.toDataURL({
-              pixelRatio: 1, // 1:1 export
+              pixelRatio: 1, // Export v poměru 1:1
               mimeType: "image/png",
             });
             const thumbnailImageUrl = stageRef.current.toDataURL({
@@ -76,11 +79,11 @@ export function CertificateThumbnailGenerator({
             });
             onGenerate({ certificateUrl, thumbnailImageUrl });
           } catch (e) {
-            console.error("Failed to generate thumbnail", e);
+            console.error("Nepodařilo se vygenerovat náhled", e);
             onGenerate({ certificateUrl: "", thumbnailImageUrl: "" });
           }
         }
-      }, 100); // 100ms delay should be enough after images are loaded
+      }, 100); // 100ms zpoždění by mělo stačit po načtení obrázků
 
       return () => clearTimeout(timeout);
     }

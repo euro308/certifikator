@@ -1,17 +1,9 @@
-// =============================================================================
-// CANVAS TYPES - Definice všech typů pro editor šablon
-// =============================================================================
-
-/**
- * Rozměry plátna A4 na ležato (landscape)
- * 297mm × 210mm při 96 DPI = 1123 × 794 px
- */
+// Rozměry plátna A4 na ležato (landscape)
+// 297mm × 210mm při 96 DPI = 1123 × 794 px
 export const CANVAS_WIDTH = 1123;
 export const CANVAS_HEIGHT = 794;
 
-/**
- * Dostupné fonty pro text
- */
+// Dostupné fonty pro text
 export const AVAILABLE_FONTS = [
   "Arial",
   "Times New Roman",
@@ -24,14 +16,10 @@ export const AVAILABLE_FONTS = [
 
 export type FontFamily = (typeof AVAILABLE_FONTS)[number];
 
-/**
- * Typy zarovnání textu
- */
+// Typy zarovnání textu
 export type TextAlign = "left" | "center" | "right" | "justify";
 
-/**
- * Typy Konva tvarů dostupných v editoru
- */
+// Typy Konva tvarů dostupných v editoru
 export type ShapeType =
   | "arc"
   | "arrow"
@@ -46,14 +34,10 @@ export type ShapeType =
   | "wedge"
   | "square";
 
-/**
- * Typy všech prvků na plátně
- */
+// Typy všech prvků na plátně
 export type ElementType = "text" | "placeholder" | "shape" | "image";
 
-/**
- * Základní vlastnosti společné pro všechny prvky
- */
+// Základní vlastnosti společné pro všechny prvky
 export interface BaseElement {
   id: string;
   type: ElementType;
@@ -70,9 +54,7 @@ export interface BaseElement {
   name: string; // Pro zobrazení ve vrstvách
 }
 
-/**
- * Textový prvek - běžný text na plátně
- */
+// Textový prvek - běžný text na plátně
 export interface TextElement extends BaseElement {
   type: "text";
   text: string;
@@ -84,10 +66,8 @@ export interface TextElement extends BaseElement {
   fill: string; // Barva textu
 }
 
-/**
- * Placeholder prvek - speciální text s proměnnou {{nazev}}
- * Při generování certifikátu se nahradí skutečnými daty
- */
+// Placeholder prvek - speciální text s proměnnou {{nazev}}
+// Při generování certifikátu se nahradí skutečnými daty
 export interface PlaceholderElement extends BaseElement {
   type: "placeholder";
   placeholderKey: string; // Např. "Jméno" (bez závorek)
@@ -101,9 +81,7 @@ export interface PlaceholderElement extends BaseElement {
   backgroundColor: string;
 }
 
-/**
- * Tvarový prvek - geometrické tvary z Konva
- */
+// Tvarový prvek - geometrické tvary z Konva
 export interface ShapeElement extends BaseElement {
   type: "shape";
   shapeType: ShapeType;
@@ -121,9 +99,7 @@ export interface ShapeElement extends BaseElement {
   pointerWidth?: number; // Pro arrow
 }
 
-/**
- * Obrázkový prvek
- */
+// Obrázkový prvek
 export interface ImageElement extends BaseElement {
   type: "image";
   src: string; // Base64 nebo URL obrázku
@@ -131,9 +107,7 @@ export interface ImageElement extends BaseElement {
   originalHeight: number;
 }
 
-/**
- * Union type pro všechny typy prvků
- */
+// Union type pro všechny typy prvků
 export type CanvasElement =
   | TextElement
   | PlaceholderElement
@@ -144,17 +118,13 @@ export type CanvasElement =
 // EDITOR STATE TYPES
 // =============================================================================
 
-/**
- * Stav pro panning (posun plátna při zoomu)
- */
+// Stav pro panning (posun plátna při zoomu)
 export interface PanState {
   x: number;
   y: number;
 }
 
-/**
- * Konfigurace zoomu
- */
+// Konfigurace zoomu
 export interface ZoomConfig {
   min: number;
   max: number;
@@ -167,9 +137,7 @@ export const DEFAULT_ZOOM_CONFIG: ZoomConfig = {
   step: 0.1, // 10% kroky
 };
 
-/**
- * Vodící čáry pro centrování
- */
+// Vodící čáry pro centrování
 export interface CenteringGuides {
   showVertical: boolean;
   showHorizontal: boolean;
@@ -181,9 +149,7 @@ export interface CenteringGuides {
 // DEFAULT VALUES - Výchozí hodnoty pro nové prvky
 // =============================================================================
 
-/**
- * Výchozí hodnoty pro nový textový prvek
- */
+// Výchozí hodnoty pro nový textový prvek
 export const DEFAULT_TEXT_ELEMENT: Omit<
   TextElement,
   "id" | "x" | "y" | "name"
@@ -204,9 +170,7 @@ export const DEFAULT_TEXT_ELEMENT: Omit<
   fill: "#000000", // Černý text
 };
 
-/**
- * Výchozí hodnoty pro nový placeholder
- */
+// Výchozí hodnoty pro nový placeholder
 export const DEFAULT_PLACEHOLDER_ELEMENT: Omit<
   PlaceholderElement,
   "id" | "x" | "y" | "name" | "placeholderKey" | "displayText"
@@ -227,9 +191,7 @@ export const DEFAULT_PLACEHOLDER_ELEMENT: Omit<
   backgroundColor: "transparent",
 };
 
-/**
- * Výchozí hodnoty pro nový tvar
- */
+// Výchozí hodnoty pro nový tvar
 export const DEFAULT_SHAPE_ELEMENT: Omit<
   ShapeElement,
   "id" | "x" | "y" | "name" | "shapeType"
@@ -246,9 +208,7 @@ export const DEFAULT_SHAPE_ELEMENT: Omit<
   strokeWidth: 2,
 };
 
-/**
- * Výchozí hodnoty pro nový obrázek
- */
+// Výchozí hodnoty pro nový obrázek
 export const DEFAULT_IMAGE_ELEMENT: Omit<
   ImageElement,
   "id" | "x" | "y" | "name" | "src" | "originalWidth" | "originalHeight"
@@ -266,27 +226,21 @@ export const DEFAULT_IMAGE_ELEMENT: Omit<
 // HELPER TYPES
 // =============================================================================
 
-/**
- * Typ pro aktualizaci prvku - partial update
- */
+// Typ pro aktualizaci prvku - partial update
 export type ElementUpdate<T extends CanvasElement = CanvasElement> = Partial<
   Omit<T, "id" | "type">
 >;
 
-/**
- * Obecný typ pro aktualizaci libovolného prvku
- * Použití: Když nevíme přesný typ prvku, ale chceme aktualizovat jeho vlastnosti
- * Kombinuje všechny možné vlastnosti ze všech typů prvků
- */
+// Obecný typ pro aktualizaci libovolného prvku
+// Použití: Když nevíme přesný typ prvku, ale chceme aktualizovat jeho vlastnosti
+// Kombinuje všechny možné vlastnosti ze všech typů prvků
 export type AnyElementUpdate =
   | ElementUpdate<TextElement>
   | ElementUpdate<PlaceholderElement>
   | ElementUpdate<ShapeElement>
   | ElementUpdate<ImageElement>;
 
-/**
- * Parametry pro vytvoření nového prvku
- */
+// Parametry pro vytvoření nového prvku
 export interface CreateElementParams {
   type: ElementType;
   shapeType?: ShapeType;
@@ -296,9 +250,7 @@ export interface CreateElementParams {
   imageHeight?: number;
 }
 
-/**
- * Data pro export/uložení šablony
- */
+// Data pro export/uložení šablony
 export interface TemplateExportData {
   version: string;
   canvasWidth: number;

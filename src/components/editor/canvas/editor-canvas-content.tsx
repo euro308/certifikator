@@ -1,7 +1,3 @@
-// =============================================================================
-// EDITOR CANVAS CONTENT - Vnitřní implementace Konva plátna
-// =============================================================================
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,9 +26,7 @@ interface EditorCanvasContentProps {
   containerHeight: number;
 }
 
-/**
- * Vnitřní obsah plátna s Konva
- */
+// Vnitřní obsah plátna s Konva
 export function EditorCanvasContent({
   containerWidth,
   containerHeight,
@@ -75,7 +69,7 @@ export function EditorCanvasContent({
     setGetPreviewImageCallback,
   } = useEditorContext();
 
-  // Register preview image callback
+  // Registrace callbacku pro náhled šablony
   useEffect(() => {
     if (setGetPreviewImageCallback) {
       setGetPreviewImageCallback(() => {
@@ -171,12 +165,12 @@ export function EditorCanvasContent({
   });
 
   // ==========================================================================
-  // MOUSE HANDLERS (PANNING & SELECTION)
+  // Obsluha myši (panning a výběr)
   // ==========================================================================
 
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      // 1. Middle mouse button -> PANNING
+      // 1. Prostřední tlačítko myši -> panning
       if (e.evt.button === 1) {
         e.evt.preventDefault();
         setIsPanning(true);
@@ -186,7 +180,7 @@ export function EditorCanvasContent({
         return;
       }
 
-      // 2. Left mouse button on EMPTY space -> SELECTION RECT
+      // 2. Levé tlačítko na prázdné ploše -> obdélník pro výběr
       // Ignorujeme, pokud klikáme na transformer nebo prvek (to řeší handleElementClick/Drag)
       const clickedOnEmpty =
         e.target === e.target.getStage() || e.target.name() === "background";
@@ -236,7 +230,7 @@ export function EditorCanvasContent({
         return;
       }
 
-      // Selection Rect
+      // Výběrový obdélník
       if (isSelecting) {
         const stage = stageRef.current;
         if (!stage) return;
@@ -258,7 +252,7 @@ export function EditorCanvasContent({
 
   const handleMouseUp = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      // Panning end
+      // Konec panningu
       if (isPanning) {
         setIsPanning(false);
         lastPanPosition.current = null;
@@ -267,7 +261,7 @@ export function EditorCanvasContent({
         return;
       }
 
-      // Selection Rect end
+      // Konec výběrového obdélníku
       if (isSelecting) {
         setIsSelecting(false);
         isSelectingRef.current = false;
@@ -344,7 +338,7 @@ export function EditorCanvasContent({
     ],
   );
 
-  // Global mouse up handling
+  // Globální obsluha puštění myši
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       if (isPanning) {
@@ -373,7 +367,7 @@ export function EditorCanvasContent({
   }, []);
 
   // ==========================================================================
-  // TEXT EDITING
+  // Editace textu
   // ==========================================================================
 
   const handleTextDblClick = useCallback(
@@ -410,7 +404,7 @@ export function EditorCanvasContent({
   }, []);
 
   // ==========================================================================
-  // TRANSFORM HANDLERS (UPDATED FOR MULTI-SELECT)
+  // Obsluha transformací
   // ==========================================================================
   // Transformace se aplikuje na všechny vybrané uzly přes Transformer.
   // Transformer sám modifikuje properties uzlů (x, y, scaleX, rotation...).
@@ -447,7 +441,7 @@ export function EditorCanvasContent({
       const element = elements.find((el) => el.id === id);
       if (!element) return;
 
-      // Reset scale an update width/height/points
+      // Resetujeme scale a aktualizujeme rozměry/body
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
 
@@ -494,7 +488,7 @@ export function EditorCanvasContent({
   );
 
   // ==========================================================================
-  // DRAG & DROP + SNAPPING
+  // Drag & Drop + snapping
   // ==========================================================================
 
   const handleDragStart = (
@@ -544,7 +538,7 @@ export function EditorCanvasContent({
       return;
     }
 
-    // --- MULTI-SELECT LOGIKA ---
+    // Multi-select logika
 
     // 1. Zjistíme deltu pohybu taženého prvku oproti jeho startu
     const startPos = dragStartPosRef.current[id];
@@ -617,7 +611,7 @@ export function EditorCanvasContent({
       width: maxX - minX,
       height: maxY - minY,
       rotation: 0,
-      type: "shape", // Fiktivní typ aby prošel typovou kontrolou
+      type: "shape", // Fiktivní typ pro typovou kontrolu
       shapeType: "rect",
     };
 
@@ -663,7 +657,7 @@ export function EditorCanvasContent({
         }
       });
     } else {
-      // Single select update
+      // Aktualizace jednoho prvku
       const node = e.target;
       updateElement(id, {
         x: node.x(),
@@ -673,7 +667,7 @@ export function EditorCanvasContent({
   };
 
   // ==========================================================================
-  // CLICK HANDLERS
+  // Obsluha kliknutí
   // ==========================================================================
 
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -684,7 +678,7 @@ export function EditorCanvasContent({
     const clickedOnEmpty =
       e.target === e.target.getStage() || e.target.name() === "background";
     if (clickedOnEmpty) {
-      // Deselect all
+      // Zrušit výběr
       setSelectedIds([]);
     }
   };
@@ -716,7 +710,7 @@ export function EditorCanvasContent({
   };
 
   // ==========================================================================
-  // RENDER
+  // Render
   // ==========================================================================
 
   return (
@@ -762,7 +756,7 @@ export function EditorCanvasContent({
             isPanning={isPanning}
             // Callbacky
             onSelect={(_id) => {
-              /* handled by onClick directly now */
+              /* obsluha kliknutí je řešena přímo přes onClick */
             }}
             onClick={handleElementClick}
             onDblClick={handleTextDblClick}

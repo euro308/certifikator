@@ -45,7 +45,7 @@ export function useKeyboardHandler() {
       const currentSelectedIds = selectedIdsRef.current;
       const currentElements = elementsRef.current;
 
-      // --- CTRL + A (SELECT ALL) ---
+      // Ctrl + A (vybrat vše)
       if ((e.ctrlKey || e.metaKey) && (e.key === "a" || e.key === "A")) {
         e.preventDefault();
         const allIds = currentElements.map((el) => el.id);
@@ -53,7 +53,7 @@ export function useKeyboardHandler() {
         return;
       }
 
-      // --- POHYB ŠIPKAMI ---
+      // Pohyb šipkami
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         if (currentSelectedIds.length > 0) {
           e.preventDefault();
@@ -91,8 +91,7 @@ export function useKeyboardHandler() {
         }
       }
 
-      // CTRL+C (Duplicate) - zatím pouze pro jeden prvek (pro zjednodušení)
-      // TODO: Implementovat multi-duplicate
+      // Ctrl+C (duplikace) - zatím pouze pro jeden prvek
       if ((e.ctrlKey || e.metaKey) && (e.key === "c" || e.key === "C")) {
         if (currentSelectedIds.length === 1) {
           const id = currentSelectedIds[0];
@@ -112,7 +111,7 @@ export function useKeyboardHandler() {
         }
       }
 
-      // UNDO / REDO
+      // Undo / Redo
       if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
         e.preventDefault();
         if (e.shiftKey) {
@@ -129,7 +128,7 @@ export function useKeyboardHandler() {
       addElement,
       undo,
       redo,
-    ], // dependencies are stable methods
+    ],
   );
 
   const handleKeyUp = useCallback(

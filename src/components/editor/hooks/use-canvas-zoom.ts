@@ -3,47 +3,38 @@ import { useCallback } from "react";
 import type Konva from "konva";
 import { DEFAULT_ZOOM_CONFIG } from "../types/canvas-types";
 
-/**
- * Hook pro správu přibližování/oddalování plátna
- *
- * Implementace podle Konva dokumentace:
- * - Zoom kolečkem myši se středem pod kurzorem
- * - Podpora trackpadu (ctrlKey)
- * - scaleBy pattern pro plynulý zoom
- *
- * @see https://konvajs.org/docs/sandbox/Zooming_Relative_To_Pointer.html
- */
+// Hook pro správu přibližování/oddalování plátna
+// Implementace podle Konva dokumentace - zoom kolečkem myši se středem pod kurzorem
+// Podpora trackpadu (ctrlKey) a scaleBy pattern pro plynulý zoom
 
 // Konstanta pro zoom - čím vyšší, tím jemnější zoom
 const SCALE_BY = 1.05;
 
 interface UseCanvasZoomOptions {
-  /** Reference na Konva Stage */
+  // Reference na Konva Stage
   stageRef: React.RefObject<Konva.Stage | null>;
-  /** Základní scale pro fit-to-container */
+  // Základní scale pro fit-to-container
   baseScale: number;
-  /** Callback pro aktualizaci zoom hodnoty v kontextu */
+  // Callback pro aktualizaci zoom hodnoty v kontextu
   onZoomChange?: (zoom: number) => void;
-  /** Callback pro aktualizaci pan hodnoty v kontextu */
+  // Callback pro aktualizaci pan hodnoty v kontextu
   onPanChange?: (pan: { x: number; y: number }) => void;
-  /** Šířka kontejneru */
+  // Šířka kontejneru
   containerWidth: number;
-  /** Výška kontejneru */
+  // Výška kontejneru
   containerHeight: number;
-  /** Šířka plátna */
+  // Šířka plátna
   canvasWidth: number;
-  /** Výška plátna */
+  // Výška plátna
   canvasHeight: number;
 }
 
 interface UseCanvasZoomReturn {
-  /** Handler pro wheel event */
+  // Handler pro wheel event
   handleWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
 }
 
-/**
- * Hook pro zoom podle Konva dokumentace
- */
+// Hook pro zoom podle Konva dokumentace
 export function useCanvasZoom(
   options: UseCanvasZoomOptions,
 ): UseCanvasZoomReturn {
@@ -58,10 +49,7 @@ export function useCanvasZoom(
     canvasHeight,
   } = options;
 
-  /**
-   * Handler pro kolečko myši - zoom se středem pod kurzorem
-   * Implementace podle: https://konvajs.org/docs/sandbox/Zooming_Relative_To_Pointer.html
-   */
+  // Handler pro kolečko myši - zoom se středem pod kurzorem
   const handleWheel = useCallback(
     (e: Konva.KonvaEventObject<WheelEvent>) => {
       e.evt.preventDefault();
@@ -135,7 +123,5 @@ export function useCanvasZoom(
   };
 }
 
-/**
- * Konstanta SCALE_BY pro použití jinde
- */
+// Konstanta SCALE_BY pro použití jinde
 export { SCALE_BY };

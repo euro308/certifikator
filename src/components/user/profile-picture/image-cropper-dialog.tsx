@@ -16,7 +16,7 @@ import { Slider } from "@/components/ui/slider";
 import { Loader2, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 
-// Utility to load image
+// Utility na načítaní obrázků
 const createImage = (url: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
@@ -27,7 +27,7 @@ const createImage = (url: string) =>
     image.src = url;
   });
 
-// Generate Cropped Image Base64
+// Generace Base64 cropnutého obrázku
 async function getCroppedImg(
   imageSrc: string,
   pixelCrop: Area,
@@ -40,7 +40,7 @@ async function getCroppedImg(
     throw new Error("Nepodařilo se vytvořit kontext pro ořez obrázku.");
   }
 
-  // Profilovky chceme většinou kvadratické (512x512 je ideální)
+  // Profilovky chceme 1:1 (čtverec)
   const destSize = 512;
   canvas.width = destSize;
   canvas.height = destSize;

@@ -81,7 +81,7 @@ export default function AdminCertificateDetailPage() {
                 </div>
 
                 <div className="grid gap-8 lg:grid-cols-12">
-                    {/* Levý sloupec - Náhled (Větší část) */}
+                    {/* Levý sloupec - náhled (větší část) */}
                     <div className="lg:col-span-7 xl:col-span-8">
                         <Card className="overflow-hidden border-2 py-0">
                             <div className="bg-muted relative aspect-[1.414/1] w-full">
@@ -97,7 +97,7 @@ export default function AdminCertificateDetailPage() {
                         </Card>
                     </div>
 
-                    {/* Pravý sloupec - Info */}
+                    {/* Pravý sloupec - info */}
                     <div className="space-y-6 lg:col-span-5 xl:col-span-4">
                         <Card>
                             <CardHeader>

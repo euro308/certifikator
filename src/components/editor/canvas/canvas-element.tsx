@@ -1,7 +1,3 @@
-// =============================================================================
-// CANVAS ELEMENT RENDERER - Vykreslování jednotlivých prvků
-// =============================================================================
-
 import React from "react";
 import {
   Text,
@@ -43,7 +39,7 @@ interface CanvasElementRendererProps {
 }
 
 // =============================================================================
-// IMAGE ELEMENT COMPONENT - Separátní komponenta pro obrázky (kvůli useImage hook)
+// Separátní komponenta pro obrázky (kvůli useImage hook)
 // =============================================================================
 
 interface ImageElementRendererProps {
@@ -96,7 +92,7 @@ function ImageElementRenderer({
 }
 
 // =============================================================================
-// MAIN CANVAS ELEMENT RENDERER
+// Hlavní renderer prvků
 // =============================================================================
 
 /**
@@ -144,7 +140,7 @@ export function CanvasElementRenderer({
     onTransformEnd: (e: Konva.KonvaEventObject<Event>) =>
       onTransformEnd(element.id, e),
 
-    // Cursor handling
+    // Cursor
     onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
       if (!isPanning && !element.locked) {
         const stage = e.target.getStage();
@@ -161,7 +157,7 @@ export function CanvasElementRenderer({
     hitStrokeWidth: 20,
   };
 
-  // 1. TEXT ELEMENT
+  // Text
   if (element.type === "text") {
     const textEl = element;
     return (
@@ -180,7 +176,7 @@ export function CanvasElementRenderer({
     );
   }
 
-  // 2. PLACEHOLDER ELEMENT
+  // Placeholder
   if (element.type === "placeholder") {
     const placeholderEl = element;
     const displayText = placeholderEl.displayText;
@@ -201,11 +197,11 @@ export function CanvasElementRenderer({
     );
   }
 
-  // 3. SHAPE ELEMENT
+  // Tvar
   if (element.type === "shape") {
     const shapeEl = element;
 
-    // Společné shape props
+    // Společné props pro tvary
     const shapeProps = {
       ...commonProps,
       fill: shapeEl.fill,
@@ -311,12 +307,12 @@ export function CanvasElementRenderer({
           />
         );
       default:
-        // Fallback for unimplemented shapes
+        // Fallback pro neimplementované tvary
         return <Rect {...shapeProps} fill="#ccc" stroke="#888" dash={[5, 5]} />;
     }
   }
 
-  // 4. IMAGE ELEMENT
+  // Obrázek
   if (element.type === "image") {
     return <ImageElementRenderer element={element} commonProps={commonProps} />;
   }

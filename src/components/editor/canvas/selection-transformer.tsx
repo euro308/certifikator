@@ -1,7 +1,3 @@
-// =============================================================================
-// SELECTION TRANSFORMER - Transformace vybraného prvku (nebo prvků)
-// =============================================================================
-
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -69,7 +65,7 @@ export function SelectionTransformer({
     if (hideGuides) hideGuides();
   };
 
-  // --- LOGIKA PRO ANCHORY ---
+  // Logika pro anchory
   // Aplikuje se pouze pokud je vybrán JEDEN prvek.
   // Pokud je vybráno více prvků, použijeme obecné nastavení.
 

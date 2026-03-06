@@ -22,23 +22,23 @@ import { Separator } from "@/components/ui/separator";
 export default function NastaveniUzivatele() {
   const { data: session, isPending } = authClient.useSession();
 
-  // Profile state
+  // Stav profilu
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
-  // Cropper state
+  // Stav cropperu
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImageSrc, setCropperImageSrc] = useState<string | null>(null);
 
-  // Password state
+  // Stav hesla
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // Initialize form with session data
+  // Inicializace formuláře ze session
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || "");
@@ -80,7 +80,7 @@ export default function NastaveniUzivatele() {
       const promises = [];
       let emailChanged = false;
 
-      // Update name/image if changed
+      // Aktualizovat jméno/obrázek pokud se změnily
       const originalImage = session?.user?.image ?? "";
       if (session?.user?.name !== name || originalImage !== image) {
         promises.push(
@@ -91,13 +91,13 @@ export default function NastaveniUzivatele() {
         );
       }
 
-      // Change email if changed
+      // Změnit e-mail pokud se změnil
       if (session?.user?.email !== email) {
         emailChanged = true;
         promises.push(
           authClient.changeEmail({
             newEmail: email,
-            callbackURL: "/dashboard/nastaveni-uzivatele", // Redirect back here after verification
+            callbackURL: "/dashboard/nastaveni-uzivatele", // Přesměrování zpět po ověření
           }),
         );
       }
@@ -199,7 +199,7 @@ export default function NastaveniUzivatele() {
       </div>
 
       <div className="grid gap-6">
-        {/* Profile Settings */}
+        {/* Nastavení profilu */}
         <Card className="pb-0">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export default function NastaveniUzivatele() {
           </CardHeader>
           <form onSubmit={handleUpdateProfile}>
             <CardContent className="space-y-6">
-              {/* Profile Picture */}
+              {/* Profilová fotografie */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Avatar className="h-24 w-24 border">
                   <AvatarImage
@@ -301,7 +301,7 @@ export default function NastaveniUzivatele() {
           </form>
         </Card>
 
-        {/* Password Settings */}
+        {/* Nastavení hesla */}
         <Card className={"pb-0"}>
           <CardHeader>
             <div className="flex items-center gap-2">

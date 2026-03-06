@@ -1,9 +1,3 @@
-// =============================================================================
-// EDITOR CANVAS - Wrapper s dynamic importem pro SSR kompatibilitu
-// =============================================================================
-// Konva používá browser APIs (window, document), takže musíme
-// importovat Konva komponenty dynamicky s ssr: false
-
 "use client";
 
 import { useRef, useEffect, useState } from "react";
@@ -59,10 +53,8 @@ const EditorCanvasContent = dynamic(
   },
 );
 
-/**
- * Wrapper komponenta pro Konva plátno
- * Měří velikost kontejneru a předává ji do EditorCanvasContent
- */
+// Wrapper komponenta pro Konva plátno
+// Měří velikost kontejneru a předává ji do EditorCanvasContent
 export function EditorCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });

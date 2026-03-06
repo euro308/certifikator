@@ -26,7 +26,7 @@ interface ReadOnlyCanvasElementProps {
 }
 
 // =============================================================================
-// IMAGE ELEMENT
+// OBRÁZEK
 // =============================================================================
 
 function ReadOnlyImageElement({
@@ -46,7 +46,7 @@ function ReadOnlyImageElement({
 }
 
 // =============================================================================
-// MAIN COMPONENT
+// HLAVNÍ KOMPONENTA
 // =============================================================================
 
 export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
@@ -64,7 +64,7 @@ export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
     visible: element.visible,
   };
 
-  // 1. TEXT & PLACEHOLDER
+  // 1. Text & proměnná
   if (element.type === "text" || element.type === "placeholder") {
     // Pro náhledy placeholder vykreslíme jako normální text (již by měl mít nahrazený text)
     // Pokud je to stále placeholder typ, použijeme displayText, jinak text
@@ -86,7 +86,7 @@ export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
     );
   }
 
-  // 2. SHAPE
+  // 2. Tvar
   if (element.type === "shape") {
     const shapeEl = element;
     const shapeProps = {
@@ -199,7 +199,7 @@ export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
     }
   }
 
-  // 3. IMAGE
+  // 3. Obrázek
   if (element.type === "image") {
     return <ReadOnlyImageElement element={element} commonProps={commonProps} />;
   }

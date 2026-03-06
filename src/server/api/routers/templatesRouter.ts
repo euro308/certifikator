@@ -36,7 +36,7 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Count certificates per template, return top N
+      // Počet certifikátů na šablonu, vrací prvních N
       const results = await db
         .select({
           templateId: certificates.templateId,
@@ -50,7 +50,7 @@ export const templatesRouter = createTRPCRouter({
 
       if (results.length === 0) return [];
 
-      // Fetch template details for the matched IDs
+      // Fetch detailů šablony pro stejná ID
       const templateIds = results.map((r) => r.templateId);
       const matchedTemplates = await db.query.templates.findMany({
         where: and(
@@ -112,7 +112,7 @@ export const templatesRouter = createTRPCRouter({
           )
         : undefined;
 
-      // 1. Fetch user's own templates
+      // 1. Fetch vlastních šablon uživatele
       const ownTemplates = await ctx.db.query.templates.findMany({
         where: and(
           eq(templates.userId, ctx.session.user.id),
@@ -140,7 +140,7 @@ export const templatesRouter = createTRPCRouter({
         offset: offset,
       });
 
-      // 2. Fetch user's favorite public templates
+      // 2. Fetch oblíbených veřejných šablon uživatele
       const favBaseQuery = ctx.db
         .select({
           favoriteId: templateFavorites.id,
@@ -180,11 +180,6 @@ export const templatesRouter = createTRPCRouter({
       const favTemplatesRaw = await favTemplatesRawQuery
         .limit(limit + 1)
         .offset(offset);
-
-      // Map favTemplates to the same structure (with a gallery flag/type) if needed by the client,
-      // but to keep it simple and backwards compatible, we can just return them under distinct keys,
-      // or map them to a unified structure. The client expects them separately right now in the page.
-      // Easiest is to return both arrays from this single procedure.
 
       const favTemplates = favTemplatesRaw.map((r) => ({
         ...r,
@@ -255,7 +250,7 @@ export const templatesRouter = createTRPCRouter({
         name: z.string().min(1),
         description: z.string().optional(),
         canvasData: z.any(),
-        placeholders: z.array(z.string()), // Changed to string array as per editor
+        placeholders: z.array(z.string()),
         previewImageUrl: z.string(),
         thumbnailImageUrl: z.string(),
         isPublic: z.boolean(),
@@ -293,7 +288,7 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Verify ownership
+      // 1. Ověření vlastnictví
       const existingTemplate = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.id),
@@ -331,7 +326,7 @@ export const templatesRouter = createTRPCRouter({
   getPublicStats: protectedProcedure
     .input(z.object({ templateId: z.string() }))
     .query(async ({ input }) => {
-      // Verify the template is public
+      // Ověření, zda je šablona veřejná
       const template = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.templateId),
@@ -346,7 +341,7 @@ export const templatesRouter = createTRPCRouter({
       }
 
       const [usageResult, favoritesResult] = await Promise.all([
-        // Count certificates created by OTHER users using this template
+        // Spočítat certifikáty vytvořené jinými uživateli s touto šablonou
         db
           .select({ count: count(certificates.id) })
           .from(certificates)
@@ -356,7 +351,7 @@ export const templatesRouter = createTRPCRouter({
               ne(certificates.userId, template.userId),
             ),
           ),
-        // Count favorites
+        // Spočítat počet oblíbení
         db
           .select({ count: count(templateFavorites.id) })
           .from(templateFavorites)
@@ -376,7 +371,7 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Verify ownership
+      // 1. Ověření vlastnictví
       const existingTemplate = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.id),
@@ -405,14 +400,10 @@ export const templatesRouter = createTRPCRouter({
       return hiddenTemplate;
     }),
 
-  // =============================================
-  // GALERIE – veřejné endpointy
-  // =============================================
-
   reportTemplate: protectedProcedure
     .input(z.object({ templateId: z.string(), reason: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      // 1. Verify template exists and is public
+      // 1. Ověření, že šablona existuje a je veřejná
       const template = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.templateId),
@@ -429,7 +420,7 @@ export const templatesRouter = createTRPCRouter({
         });
       }
 
-      // 2. Check if already reported
+      // 2. Kontrola, jestli už neexistuje hlášení
       const existingReport = await db.query.templateReports.findFirst({
         where: and(
           eq(templateReports.reporterId, ctx.session.user.id),
@@ -445,7 +436,7 @@ export const templatesRouter = createTRPCRouter({
         });
       }
 
-      // 3. Create report
+      // 3. Vytvořit hlášení
       await db.insert(templateReports).values({
         reporterId: ctx.session.user.id,
         templateId: input.templateId,
@@ -558,19 +549,17 @@ export const templatesRouter = createTRPCRouter({
           break;
       }
 
-      // Fetch limit + 1 items to see if there is a next page
       const results = await orderedQuery.limit(limit + 1).offset(offset);
 
       let nextCursor: typeof offset | undefined = undefined;
       if (results.length > limit) {
-        // Pop the extra item
         results.pop();
         nextCursor = offset + limit;
       }
 
       const templateIds = results.map((r) => r.id);
 
-      // Check which templates are favorited by the current user
+      // Které šablony má uživatel v oblíbených
       let userFavoritesSet = new Set<string>();
       if (ctx.session?.user?.id && templateIds.length > 0) {
         const userFavs = await db
@@ -585,7 +574,7 @@ export const templatesRouter = createTRPCRouter({
         userFavoritesSet = new Set(userFavs.map((f) => f.templateId));
       }
 
-      // Check which templates are reported by the current user
+      // Které šablony uživatel nahlásil
       let userReportsSet = new Set<string>();
       if (ctx.session?.user?.id && templateIds.length > 0) {
         const userReports = await db
@@ -653,14 +642,14 @@ export const templatesRouter = createTRPCRouter({
 
       const tmpl = result[0]!;
 
-      // Favorites count
+      // Počet oblíbení
       const favCountResult = await db
         .select({ count: count(templateFavorites.id) })
         .from(templateFavorites)
         .where(eq(templateFavorites.templateId, tmpl.id));
       const favoritesCount = favCountResult[0]?.count ?? 0;
 
-      // Is favorited and reported by current user
+      // Zda-li je šablona oblíbena či nahlášena aktuálním uživatelem
       let isFavorited = false;
       let isReportedByMe = false;
       if (ctx.session?.user?.id) {
@@ -704,7 +693,7 @@ export const templatesRouter = createTRPCRouter({
   toggleFavorite: protectedProcedure
     .input(z.object({ templateId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check that the template is public
+      // Ověření, že šablona je veřejná
       const template = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.templateId),
@@ -721,7 +710,7 @@ export const templatesRouter = createTRPCRouter({
         });
       }
 
-      // Check if already favorited
+      // Kontrola, jestli už šablona není v oblíbených
       const existing = await db.query.templateFavorites.findFirst({
         where: and(
           eq(templateFavorites.userId, ctx.session.user.id),
@@ -730,13 +719,13 @@ export const templatesRouter = createTRPCRouter({
       });
 
       if (existing) {
-        // Remove favorite
+        // Odebrat oblíbení
         await db
           .delete(templateFavorites)
           .where(eq(templateFavorites.id, existing.id));
         return { isFavorited: false };
       } else {
-        // Add favorite
+        // Přidat oblíbení
         await db.insert(templateFavorites).values({
           userId: ctx.session.user.id,
           templateId: input.templateId,

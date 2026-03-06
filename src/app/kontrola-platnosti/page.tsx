@@ -66,7 +66,7 @@ export default function KontrolaPlatnosti() {
             s certifikátem.
           </p>
 
-          {/* Search area */}
+          {/* Vyhlédavání */}
           <div className="mx-auto mb-10 max-w-xl rounded-2xl bg-white/80 p-6 shadow-lg md:p-8">
             <label
               htmlFor="validation-token"
@@ -100,7 +100,7 @@ export default function KontrolaPlatnosti() {
             </div>
           </div>
 
-          {/* Loading state */}
+          {/* Načítání */}
           {isLoading && (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="mr-3 size-6 animate-spin text-gray-400" />
@@ -110,7 +110,7 @@ export default function KontrolaPlatnosti() {
             </div>
           )}
 
-          {/* Error / not found */}
+          {/* Error / nenalezeno */}
           {isInvalid && (
             <div className="mx-auto max-w-xl rounded-2xl border border-red-200 bg-red-50/80 p-6 text-center shadow-lg md:p-8">
               <ShieldX className="mx-auto mb-3 size-12 text-red-400" />
@@ -124,7 +124,7 @@ export default function KontrolaPlatnosti() {
             </div>
           )}
 
-          {/* Valid certificate found */}
+          {/* Validní certifikát nalezen */}
           {isValid && certificate && (
             <div className="mx-auto max-w-xl overflow-hidden rounded-2xl bg-white/80 shadow-lg">
               {/* Success header */}
@@ -136,7 +136,7 @@ export default function KontrolaPlatnosti() {
                 </p>
               </div>
 
-              {/* Certificate details */}
+              {/* Detaily certifikátu */}
               <div className="space-y-4 p-6 md:p-8">
                 <div className="flex items-center gap-3">
                   <User className="size-5 shrink-0 text-gray-400" />
@@ -175,29 +175,6 @@ export default function KontrolaPlatnosti() {
                   </div>
                 </div>
 
-                {/*
-                 * expiresAt — připraveno pro budoucí použití.
-                 * Pokud bude v DB sloupec expiresAt, odkomenrovat:
-                 *
-                 * {certificate.expiresAt && (
-                 *   <div className="flex items-center gap-3">
-                 *     <Clock className="size-5 shrink-0 text-gray-400" />
-                 *     <div>
-                 *       <p className="text-xs text-gray-500">Platnost do</p>
-                 *       <p className="font-medium text-gray-700">
-                 *         {new Date(certificate.expiresAt).toLocaleDateString(
-                 *           "cs-CZ",
-                 *           { day: "numeric", month: "long", year: "numeric" },
-                 *         )}
-                 *       </p>
-                 *     </div>
-                 *   </div>
-                 * )}
-                 *
-                 * Nezapomenout přidat Clock do importu z lucide-react
-                 * a expiresAt do DB schématu (schema.ts).
-                 */}
-
                 <div className="flex items-center gap-3">
                   <Hash className="size-5 shrink-0 text-gray-400" />
                   <div>
@@ -208,7 +185,7 @@ export default function KontrolaPlatnosti() {
                   </div>
                 </div>
 
-                {/* Certificate image preview */}
+                {/* Preview obrázek certifikátu */}
                 {certificate.certificateUrl && (
                   <>
                     <div className="my-2 border-t" />

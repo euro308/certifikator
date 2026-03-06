@@ -59,7 +59,7 @@ function GalleryContentInner() {
     }
   };
 
-  // Flatten the pages into a single array
+  // Stránky v jednom poli
   const visible = data?.pages.flatMap((page) => page.items) ?? [];
 
   // Infinite Scroll Observer
@@ -74,7 +74,7 @@ function GalleryContentInner() {
           void fetchNextPage();
         }
       },
-      { threshold: 0.1, rootMargin: "400px" }, // Load a bit earlier
+      { threshold: 0.1, rootMargin: "400px" }, // Načíst trochu dříve
     );
 
     observer.observe(loadMoreRef.current);

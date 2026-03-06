@@ -1,8 +1,6 @@
 import JSZip from "jszip";
 
-/**
- * Helper pro stažení Data URL nebo běžné URL jako souboru v prohlížeči.
- */
+// Helper pro stažení Data URL nebo běžné URL jako souboru v prohlížeči.
 export function downloadFile(url: string, filename: string) {
     const a = document.createElement("a");
     a.href = url;
@@ -13,9 +11,9 @@ export function downloadFile(url: string, filename: string) {
 }
 
 /**
- * Zabalí pole certifikátů do ZIP souboru a automaticky stáhne.
- * @param certificates Pole objektů obsahující jméno příjemce a data URL certifikátu.
- * @param zipFilename Název výsledného ZIP souboru (např. "certifikaty.zip")
+ * Zabalí certifikáty do ZIP souboru a automaticky stáhne.
+ * @param certificates
+ * @param zipFilename
  */
 export async function downloadCertificatesAsZip(
     certificates: { recipientName: string; certificateUrl: string; validationToken: string }[],
@@ -26,7 +24,6 @@ export async function downloadCertificatesAsZip(
     for (const cert of certificates) {
         if (!cert.certificateUrl || cert.certificateUrl === "pending") continue;
 
-        // Data z data:image/png;base64,...
         const base64Data = cert.certificateUrl.split(",")[1];
         if (!base64Data) continue;
 
@@ -36,7 +33,7 @@ export async function downloadCertificatesAsZip(
 
     const blob = await zip.generateAsync({ type: "blob" });
 
-    // Vytvoření dočasné URL pro stažení
+    // Vytvořit dočasnou URL pro stažení
     const url = URL.createObjectURL(blob);
     downloadFile(url, zipFilename);
     URL.revokeObjectURL(url);

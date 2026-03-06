@@ -29,7 +29,7 @@ export function NavbarInside() {
           Uživatelský panel
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop navigace */}
         <div className="hidden items-center gap-6 whitespace-nowrap lg:flex lg:gap-8">
           <Link
             href="/dashboard"
@@ -57,12 +57,12 @@ export function NavbarInside() {
           </Link>
         </div>
 
-        {/* Desktop User Button */}
+        {/* Desktop user button */}
         <div className="hidden lg:block">
           <UserButton />
         </div>
 
-        {/* Mobile Burger Menu */}
+        {/* Mobile burger menu */}
         <Sheet>
           <SheetTrigger asChild className="lg:hidden">
             <Button variant="ghost" size="icon" className="h-10 w-10">
@@ -75,7 +75,7 @@ export function NavbarInside() {
               <SheetTitle className="text-2xl font-bold">Menu</SheetTitle>
             </SheetHeader>
 
-            {/* Mobile Navigation Links */}
+            {/* Mobile navigation links */}
             <div className="mt-6 flex flex-1 flex-col gap-2">
               <SheetClose asChild>
                 <Link
@@ -111,7 +111,7 @@ export function NavbarInside() {
               </SheetClose>
             </div>
 
-            {/* User Card at Bottom */}
+            {/* User card */}
             {user && (
               <SheetClose asChild>
                 <div className="mt-auto flex items-center justify-center border-t pt-2">

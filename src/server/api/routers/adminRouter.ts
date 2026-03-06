@@ -143,11 +143,11 @@ export const adminRouter = createTRPCRouter({
       latestReportAt: Date;
     };
 
-    // Grouping by template ID
+    // Seskupení podle ID šablony
     const grouped = new Map<string, GroupedReport>();
 
     for (const report of reports) {
-      if (!report.template) continue; // Skip if templated was deleted outside cascade
+      if (!report.template) continue; // Přeskočit, pokud byla šablona smazána mimo kaskádu
 
       const tid = report.template.id;
       if (!grouped.has(tid)) {
@@ -165,8 +165,7 @@ export const adminRouter = createTRPCRouter({
       const entry = grouped.get(tid);
       if (entry) {
         entry.reportCount += 1;
-        // We rely on orderBy desc earlier to have the first one be the latest,
-        // but let's be safe:
+        // Spoléháme na dřívější orderBy desc, ale pro jistotu kontrolujeme:
         if (new Date(report.createdAt) > new Date(entry.latestReportAt)) {
           entry.latestReportAt = report.createdAt;
         }
@@ -287,7 +286,7 @@ export const adminRouter = createTRPCRouter({
 
       let nextCursor: typeof offset | undefined = undefined;
       if (results.length > limit) {
-        results.pop(); // remove last item
+        results.pop(); // odebrání posledního záznamu
         nextCursor = offset + limit;
       }
 
@@ -545,7 +544,7 @@ export const adminRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       requireAdmin(ctx.session.user.id);
 
-      // Drizzle ORM delete by user ID (cascade deletes defined in schema)
+      // Smazání uživatele podle ID (kaskádové mazání je definované ve schématu)
       await db.delete(user).where(eq(user.id, input.userId));
 
       return { success: true };

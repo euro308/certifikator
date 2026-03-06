@@ -1,7 +1,3 @@
-// =============================================================================
-// ADD SHAPE SECTION - Sekce pro přidávání tvarů
-// =============================================================================
-
 "use client";
 
 import {
@@ -34,9 +30,7 @@ import {
 import React from "react";
 import type { CanvasElement } from "@/components/editor/types/canvas-types";
 
-/**
- * Sekce pro správu pořadí prvků na plátně
- */
+// Sekce pro správu pořadí prvků na plátně
 export function LayersSection() {
   const { reorderElements, elements, deleteElement } = useEditorContext();
   const [isOpen, setIsOpen] = React.useState(true);
@@ -102,16 +96,16 @@ export function LayersSection() {
                 Pro úpravu vrstev nejdříve přidejte prvek.
               </p>
             ) : (
-              // ===== REVERSE pro zobrazení (nahoře = vepředu) =====
+              // Reverse pro zobrazení (nahoře = vepředu)
               [...elements].reverse().map((el) => {
-                // Najdi skutečný index v PŮVODNÍM poli
+                // Najdi skutečný index v původním poli
                 const realIndex = elements.findIndex((e) => e.id === el.id);
                 const isTop = realIndex === elements.length - 1; // Poslední = vepředu
                 const isBottom = realIndex === 0; // První = vzadu
 
                 return (
                   <div
-                    key={el.id} // ← OPRAVA: key={el.id}
+                    key={el.id}
                     className={"flex items-center justify-between"}
                   >
                     <div className={"flex items-center justify-start gap-2"}>
@@ -126,7 +120,7 @@ export function LayersSection() {
                     </div>
 
                     <div className={"flex items-center justify-end gap-[6px]"}>
-                      {/* ===== POSUNUTÍ NAHORU (směrem k vyšším vrstvám) ===== */}
+                      {/* Posunutí nahoru (směrem k vyšším vrstvám) */}
                       <ChevronUp
                         className={`size-4 transition-colors ${
                           isTop
@@ -140,7 +134,7 @@ export function LayersSection() {
                         }}
                       />
 
-                      {/* ===== POSUNUTÍ ÚPLNĚ NAHORU (nejvyšší vrstva) ===== */}
+                      {/* Posunutí úplně nahoru (nejvyšší vrstva) */}
                       <ChevronsUp
                         className={`size-4 transition-colors ${
                           isTop
@@ -154,7 +148,7 @@ export function LayersSection() {
                         }}
                       />
 
-                      {/* ===== POSUNUTÍ DOLŮ (směrem k nižším vrstvám) ===== */}
+                      {/* Posunutí dolů (směrem k nižším vrstvám) */}
                       <ChevronDown
                         className={`size-4 transition-colors ${
                           isBottom
@@ -168,7 +162,7 @@ export function LayersSection() {
                         }}
                       />
 
-                      {/* ===== POSUNUTÍ ÚPLNĚ DOLŮ (nejnižší vrstva) ===== */}
+                      {/* Posunutí úplně dolů (nejnižší vrstva) */}
                       <ChevronsDown
                         className={`size-4 transition-colors ${
                           isBottom
@@ -182,7 +176,7 @@ export function LayersSection() {
                         }}
                       />
 
-                      {/* ===== SMAZÁNÍ ===== */}
+                      {/* Smazání */}
                       <Trash
                         className={
                           "size-4 cursor-pointer transition-colors hover:text-red-600"

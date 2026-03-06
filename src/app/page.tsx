@@ -38,7 +38,6 @@ export default async function Home() {
 
         <section className="container mx-auto px-6 py-12 pb-20">
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {/* Feature 1 */}
             <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
                 <svg

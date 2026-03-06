@@ -1,26 +1,16 @@
-// =============================================================================
-// USE TEMPLATE DRAFT - Hook pro ukládání draftu šablony do localStorage
-// =============================================================================
-
 import { useCallback } from "react";
 import type { TemplateExportData } from "@/components/editor/types/canvas-types";
 
-/** Klíč pro localStorage */
+// Klíč pro localStorage
 const DRAFT_KEY = "template-draft";
 
-/**
- * Hook pro správu draftu šablony v localStorage
- *
- * Použití:
- * - saveDraft(data) - Uloží data šablony do localStorage
- * - loadDraft() - Načte data z localStorage (nebo null)
- * - clearDraft() - Smaže draft z localStorage
- * - hasDraft() - Vrátí true, pokud existuje uložený draft
- */
+// Hook pro správu draftu šablony v localStorage
+// saveDraft(data) - Uloží data šablony do localStorage
+// loadDraft() - Načte data z localStorage (nebo null)
+// clearDraft() - Smaže draft z localStorage
+// hasDraft() - Vrátí true, pokud existuje uložený draft
 export function useTemplateDraft() {
-  /**
-   * Uloží data šablony do localStorage
-   */
+  // Uložit data šablony do localStorage
   const saveDraft = useCallback((data: TemplateExportData) => {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
@@ -29,10 +19,7 @@ export function useTemplateDraft() {
     }
   }, []);
 
-  /**
-   * Načte data šablony z localStorage
-   * @returns TemplateExportData nebo null pokud draft neexistuje
-   */
+  // Načíst data šablony z localStorage
   const loadDraft = useCallback((): TemplateExportData | null => {
     try {
       const stored = localStorage.getItem(DRAFT_KEY);
@@ -45,16 +32,12 @@ export function useTemplateDraft() {
     }
   }, []);
 
-  /**
-   * Smaže draft z localStorage
-   */
+  // Smazat draft z localStorage
   const clearDraft = useCallback(() => {
     localStorage.removeItem(DRAFT_KEY);
   }, []);
 
-  /**
-   * Zkontroluje, zda existuje uložený draft
-   */
+  // Zkontrolovat, zda existuje uložený draft
   const hasDraft = useCallback((): boolean => {
     return localStorage.getItem(DRAFT_KEY) !== null;
   }, []);

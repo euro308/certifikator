@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/+navigation";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

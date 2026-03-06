@@ -5,10 +5,10 @@ import {
   CANVAS_HEIGHT,
 } from "../types/canvas-types";
 
-// --- KONFIGURACE ---
+// Konfigurace
 const SNAP_THRESHOLD = 5;
 
-// --- TYPY ---
+// Typy
 export type Orientation = "V" | "H";
 
 export interface SnapLine {
@@ -36,12 +36,10 @@ export interface ElementBounds {
   shapeType?: string;
 }
 
-// --- LOGIKA NORMALIZACE (TOTO JE KLÍČOVÁ OPRAVA) ---
+// Logika normalizace
 
-/**
- * Převede souřadnice prvku na "Box" (x=levý, y=horní),
- * bez ohledu na to, jestli je prvek definovaný středem nebo rohem.
- */
+// Převede souřadnice prvku na "Box" (x=levý, y=horní),
+// bez ohledu na to, jestli je prvek definovaný středem nebo rohem.
 function getNormalizedBox(el: ElementBounds) {
   // Seznam tvarů, které mají anchor ve středu (stejný jako v EditorContext)
   const isCenteredShape =
@@ -80,7 +78,7 @@ function getNormalizedBox(el: ElementBounds) {
   };
 }
 
-// --- POMOCNÉ FUNKCE ---
+// Pomocné funkce
 
 function getLineGuideStops(
   elements: CanvasElement[],
@@ -207,7 +205,7 @@ function getGuides(
   return { guides, snapOffsetX, snapOffsetY };
 }
 
-// --- EXPORTY ---
+// Exporty
 
 export function getCenteredPosition(
   elementWidth: number,
@@ -230,7 +228,7 @@ export function getResizeSnapPositions(
   return getLineGuideStops(elements, skipIds, canvasWidth, canvasHeight);
 }
 
-// --- HLAVNÍ HOOK ---
+// Hlavní hook
 
 interface UseSnapToCenterOptions {
   threshold?: number;
@@ -276,7 +274,7 @@ export function useSnapToCenter({
       setGuides(detectedGuides);
 
       // Pokud nastal snap, musíme vrátit novou pozici.
-      // POZOR: snapOffsetX/Y je pozice levého horního rohu (protože jsme tak normalizovali).
+      // snapOffsetX/Y je pozice levého horního rohu (protože jsme tak normalizovali).
       // Pokud je ale hýbaný prvek "centered shape", musíme vrátit střed (x + w/2).
 
       let finalX = bounds.x;

@@ -41,7 +41,7 @@ export default function DetailSablony() {
     ? idSablonyRaw[0]
     : idSablonyRaw;
 
-  // Fetch template data
+  // Načtení dat šablony
   const {
     data: template,
     isLoading,
@@ -61,7 +61,7 @@ export default function DetailSablony() {
   const utils = api.useUtils();
   const hideTemplateMutation = api.templates.hideTemplate.useMutation();
 
-  // Fetch certificates for this template (lazy — only when expanded)
+  // Načtení certifikátů pro tuto šablonu (lazy — jen po rozbalení)
   const { data: templateCertificates, isLoading: certsLoading } =
     api.certificates.getByTemplate.useQuery(
       { templateId: idSablony ?? "" },
@@ -79,7 +79,7 @@ export default function DetailSablony() {
     );
   });
 
-  // Fetch public stats (only for public templates)
+  // Načtení veřejných statistik (jen pro veřejné šablony)
   const { data: publicStats } = api.templates.getPublicStats.useQuery(
     { templateId: idSablony ?? "" },
     { enabled: !!idSablony && !!template?.isPublic },
@@ -289,13 +289,13 @@ export default function DetailSablony() {
                       setSearchFocused(true);
                     }}
                     onBlur={() => {
-                      // Small delay to allow clicking on links
+                      // Malé zpoždění, aby šlo kliknout na odkaz
                       setTimeout(() => setSearchFocused(false), 200);
                     }}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
 
-                  {/* Floating results list */}
+                  {/* Plovoucí seznam výsledků */}
                   {searchFocused && (
                     <div className="absolute top-full right-0 left-0 z-10 mt-1 max-h-[200px] overflow-y-auto rounded-md border bg-white shadow-lg">
                       {certsLoading ? (

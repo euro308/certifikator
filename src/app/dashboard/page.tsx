@@ -126,7 +126,7 @@ export default async function Dashboard() {
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Statistiky */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="transition-shadow hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -173,7 +173,7 @@ export default async function Dashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Rychlé akce */}
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Rychlé akce</CardTitle>
@@ -207,9 +207,9 @@ export default async function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Grid Layout - Recent Activity + Favorites */}
+      {/* Grid layout - nedávná aktivita + oblíbené */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
+        {/* Aktivita */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -233,7 +233,7 @@ export default async function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Favorite Templates (Most Used) */}
+        {/* Oblíbené šablony */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>

@@ -1,7 +1,3 @@
-// =============================================================================
-// EDITOR DIALOG - Modal pro editor šablon
-// =============================================================================
-
 "use client";
 
 import { useState, useCallback } from "react";
@@ -41,10 +37,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Check, RotateCcw, ZoomIn, ZoomOut, Info } from "lucide-react";
 import Link from "next/link";
-
-// =============================================================================
-// EDITOR FOOTER - Komponenta uvnitř EditorProvider (má přístup ke contextu)
-// =============================================================================
 
 interface EditorFooterProps {
   isSaving: boolean;
@@ -92,7 +84,7 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
   return (
     <DialogFooter className="mt-4 flex-shrink-0 select-none">
       <div className="flex w-full items-center justify-between">
-        {/* LEVÁ STRANA - Ovládání zoomu */}
+        {/* Levá strana - ovládání zoomu */}
         <TooltipProvider>
           <div className="flex items-center gap-2">
             <Tooltip>
@@ -155,7 +147,7 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
           </div>
         </TooltipProvider>
 
-        {/* PRAVÁ STRANA - Akční tlačítka */}
+        {/* Pravá strana - akční tlačítka */}
         <div className="flex items-center gap-3">
           <TooltipProvider>
             <Tooltip>
@@ -198,20 +190,15 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
   );
 }
 
-// =============================================================================
-// EDITOR DIALOG - Hlavní komponenta
-// =============================================================================
-
 interface EditorDialogProps {
-  /** Počáteční data plátna pro editaci existující šablony */
+  // Počáteční data plátna pro editaci existující šablony
   canvasData?: TemplateExportData | null;
-  /** Callback volaný při uložení (po kliknutí na "Uložit šablonu") */
+  // Callback volaný při uložení (po kliknutí na "Uložit šablonu")
   saveMockCanvas?: (data: TemplateExportData) => void;
 }
 
-/**
- * Dialog (modal) pro editor šablon certifikátů
- */
+
+// Dialog (modal) pro editor šablon certifikátů
 export function EditorDialog({
   canvasData,
   saveMockCanvas,
@@ -233,9 +220,7 @@ export function EditorDialog({
     [saveMockCanvas],
   );
 
-  /**
-   * Handler pro pokus o zavření dialogu (kromě uložení)
-   */
+  // Handler pro pokus o zavření dialogu (kromě uložení)
   const handleOpenChange = (open: boolean) => {
     if (!open && !isSaving && isOpen) {
       // Pokus o zavření - zobrazit potvrzení
@@ -245,27 +230,21 @@ export function EditorDialog({
     }
   };
 
-  /**
-   * Potvrzení zavření - zahodit změny
-   */
+  // Potvrzení zavření - zahodit změny
   const handleConfirmClose = () => {
     setShowCloseConfirm(false);
     setIsOpen(false);
   };
 
-  /**
-   * Zrušení zavření - zůstat v editoru
-   */
+  // Zrušení zavření - zůstat v editoru
   const handleCancelClose = () => {
     setShowCloseConfirm(false);
   };
 
-  /**
-   * Uložit a zavřít (BEZ potvrzení)
-   */
+  // Uložit a zavřít (BEZ potvrzení
   const handleSaveAndClose = useCallback(() => {
     setIsSaving(true);
-    // Krátké zpoždění aby se state stihl uložit
+    // Krátké zpoždění, aby se state stihl uložit
     setTimeout(() => {
       setIsOpen(false);
       setIsSaving(false);
@@ -300,16 +279,12 @@ export function EditorDialog({
         <DialogContent
           className="flex h-[95vh] w-[97vw] max-w-none flex-col"
           onEscapeKeyDown={(e) => {
-            // Zabránit výchozímu chování Escape (zavření dialogu)
-            // Keyboard handler v editoru zpracuje Escape pro zrušení selekce
             e.preventDefault();
           }}
           onPointerDownOutside={(e) => {
-            // Zabránit zavření při kliknutí mimo dialog
             e.preventDefault();
           }}
           onInteractOutside={(e) => {
-            // Zabránit zavření při interakci mimo dialog
             e.preventDefault();
           }}
         >

@@ -25,8 +25,6 @@ export const user = createTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .$defaultFn(() => new Date()),
-
-  // Cerfikator-specific info
   role: text("role").notNull().default("user"),
 });
 
@@ -101,7 +99,7 @@ export const templates = createTable(
       .notNull()
       .$defaultFn(() => new Date()),
   },
-  // Indexing
+  // Indexování
   (table) => ({
     userDeletedIdx: index("templates_user_deleted_idx").on(
       table.userId,
@@ -133,7 +131,7 @@ export const certificates = createTable(
       .notNull()
       .$defaultFn(() => new Date()),
   },
-  // Indexing
+  // Indexování
   (table) => ({
     validationTokenIdx: uniqueIndex("certificates_validation_token_idx").on(
       table.validationToken,
