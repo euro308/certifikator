@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   title: "Funkce",
 };
 
-
 export default function Funkce() {
   return (
     <main className="flex min-h-screen max-w-screen flex-col bg-gradient-to-br from-red-50 via-white to-rose-50 text-justify">
@@ -152,14 +151,20 @@ export default function Funkce() {
               <span className="text-lg text-gray-700">
                 V galerii máte přehled všech svých šablon a snadno se vrátíte k
                 těm, které už jste někdy použili. Zároveň je k dispozici veřejná
-                galerie, kde najdete předpřipravené šablony, které můžete rovnou
-                použít nebo si je upravit podle sebe. Své šablony také můžete
-                jedním kliknutím publikovat a nabídnout ji tak ostatním
-                uživatelům Certifikátoru.
+                galerie, kde najdete předpřipravené šablony, které jsou rovnou
+                připravené k Vašemu použití. Své šablony také můžete jedním
+                kliknutím publikovat a nabídnout je tak ostatním uživatelům
+                Certifikátoru.
               </span>
             </div>
-            <div className="text-muted-foreground flex h-48 w-full max-w-sm items-center justify-center rounded-xl bg-gray-200 md:h-64">
-              Náhled
+            <div className="relative aspect-video w-full max-w-[28rem] shrink-0 overflow-hidden rounded-xl shadow-md">
+              <Image
+                src={"/funkce/funkce5.gif"}
+                alt="Náhled galerie šablon"
+                fill
+                className="object-cover object-center"
+                unoptimized
+              />
             </div>
           </div>
         </div>
