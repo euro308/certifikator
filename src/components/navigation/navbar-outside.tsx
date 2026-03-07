@@ -23,7 +23,7 @@ export function NavbarOutside() {
         </Link>
 
         {/* Desktop menu - skrytý na mobilu */}
-        <div className="hidden gap-2 bg-white md:flex">
+        <div className="hidden gap-2 md:flex">
           <Button variant="ghost" className="hover:bg-red-50">
             <Link href={"/galerie"}>Galerie šablon</Link>
           </Button>
