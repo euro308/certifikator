@@ -118,11 +118,18 @@ function GalleryContentInner() {
             >
               {field.label}
               {isActive &&
-                (sortDir === "desc" ? (
-                  <ArrowDown className="size-3" />
-                ) : (
-                  <ArrowUp className="size-3" />
-                ))}
+                (() => {
+                  // Šipka dolů = přirozený směr (A-Z u názvu, nejvíc u ostatních)
+                  const isNatural =
+                    field.key === "name"
+                      ? sortDir === "asc"
+                      : sortDir === "desc";
+                  return isNatural ? (
+                    <ArrowDown className="size-3" />
+                  ) : (
+                    <ArrowUp className="size-3" />
+                  );
+                })()}
             </Button>
           );
         })}
