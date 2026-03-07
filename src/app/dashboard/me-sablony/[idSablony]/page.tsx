@@ -212,7 +212,7 @@ export default function DetailSablony() {
                   <span className="text-muted-foreground text-sm font-medium">
                     Popis
                   </span>
-                  <p className="text-sm leading-relaxed break-words whitespace-normal">
+                  <p className="text-sm leading-relaxed break-words whitespace-pre-line">
                     {template.description ?? "Bez popisu"}
                   </p>
                 </div>
@@ -235,8 +235,8 @@ export default function DetailSablony() {
                     <span>
                       {template.updatedAt
                         ? new Date(template.updatedAt).toLocaleDateString(
-                          "cs-CZ",
-                        )
+                            "cs-CZ",
+                          )
                         : "-"}
                     </span>
                   </div>
