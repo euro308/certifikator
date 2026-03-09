@@ -11,9 +11,18 @@ export const metadata: Metadata = {
     template: "%s | Certifikátor",
     default: "Certifikátor",
   },
-  description: "Jednotné prostředí pro tvorbu, správu, rozeslání a validaci certifikátů",
+  description:
+    "Jednotné prostředí pro tvorbu, správu, rozeslání a validaci certifikátů",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: { url: "/apple-touch-icon.png" },
+  },
+  manifest: "/site.webmanifest",
 };
-
 
 const geist = Geist({
   subsets: ["latin"],
