@@ -15,7 +15,7 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Administrace zóny</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Zóna administrace</h1>
         <p className="text-muted-foreground mt-2 text-lg">
           Správa uživatelů, veřejných šablon a systémových dat
         </p>

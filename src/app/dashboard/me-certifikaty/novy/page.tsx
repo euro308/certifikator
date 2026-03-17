@@ -1014,7 +1014,7 @@ function NovyCertifikatContent() {
           Vytvořit nové certifikáty
         </h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Krok {step} z 3: {step === 1 ? "Výběr šablony" : "Zadání dat"}
+          Krok {step} z 2: {step === 1 ? "Výběr šablony" : "Zadání dat"}
         </p>
       </div>
 

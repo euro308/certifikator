@@ -25,7 +25,6 @@ export const user = createTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .$defaultFn(() => new Date()),
-  role: text("role").notNull().default("user"),
 });
 
 export const session = createTable("session", {
