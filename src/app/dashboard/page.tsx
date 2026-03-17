@@ -95,10 +95,10 @@ export default async function Dashboard() {
       recentActivity,
       mostUsedTemplates,
     ] = await Promise.all([
-      api.certificates.getUserCertificateCount({ userId: session.user.id }),
-      api.templates.getUserTemplateCount({ userId: session.user.id }),
-      api.certificates.pastWeeksChange({ userId: session.user.id }),
-      api.templates.pastWeeksChange({ userId: session.user.id }),
+      api.certificates.getUserCertificateCount(),
+      api.templates.getUserTemplateCount(),
+      api.certificates.pastWeeksChange(),
+      api.templates.pastWeeksChange(),
       api.activity.getRecentActivity({ limit: 10 }),
       api.templates.getMostUsedTemplates({ limit: 10 }),
     ]);
