@@ -166,6 +166,7 @@ function NovyCertifikatContent() {
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(
     new Set(),
   );
+  const [sentEmails, setSentEmails] = useState<Set<string>>(new Set());
   const [senderName, setSenderName] = useState("");
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const hasInitializedSenderName = useRef(false);
@@ -279,10 +280,25 @@ function NovyCertifikatContent() {
   // tRPC mutace pro odesílání e-mailů
   const sendEmailsMutation = api.emails.sendCertificatesBatch.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        `Úspěšně odesláno ${data.sentCount} z ${data.total} e-mailů.`,
-      );
-      router.push("/dashboard/me-certifikaty");
+      setIsSendingEmails(false);
+
+      if (data.successfulRecipientIds && data.successfulRecipientIds.length > 0) {
+        setSentEmails((prev) => new Set([...prev, ...data.successfulRecipientIds]));
+      }
+
+      if (data.sentCount === data.total) {
+        toast.success(
+          `Úspěšně odesláno ${data.sentCount} z ${data.total} e-mailů.`,
+        );
+        router.push("/dashboard/me-certifikaty");
+      } else {
+        toast.warning(
+          `Podařilo se odeslat pouze ${data.sentCount} z ${data.total} e-mailů. Vadné e-maily zůstaly zaškrtnuté pro opětovný pokus.`,
+        );
+        if (data.failedRecipientIds) {
+          setSelectedRecipients(new Set(data.failedRecipientIds));
+        }
+      }
     },
     onError: (err) => {
       toast.error("Chyba při odesílání e-mailů: " + err.message);
@@ -655,11 +671,11 @@ function NovyCertifikatContent() {
 
   const handleSendEmails = () => {
     const recipientsToSend = savedCertificates.filter(
-      (c) => selectedRecipients.has(c.id) && !!c.recipientEmail,
+      (c) => selectedRecipients.has(c.id) && !!c.recipientEmail && !sentEmails.has(c.id),
     );
 
     if (recipientsToSend.length === 0) {
-      toast.error("Vyberte alespoň jednoho příjemce se zadaným e-mailem.");
+      toast.error("Vyberte alespoň jednoho nevyřízeného příjemce se zadaným e-mailem.");
       return;
     }
 
@@ -671,6 +687,7 @@ function NovyCertifikatContent() {
     setIsSendingEmails(true);
     sendEmailsMutation.mutate({
       recipients: recipientsToSend.map((c) => ({
+        id: c.id,
         email: c.recipientEmail,
         name: c.recipientName,
         validationToken: c.validationToken,
@@ -681,6 +698,7 @@ function NovyCertifikatContent() {
   };
 
   const toggleRecipient = (id: string, checked: boolean) => {
+    if (sentEmails.has(id)) return;
     setSelectedRecipients((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -691,8 +709,8 @@ function NovyCertifikatContent() {
 
   const toggleAllRecipients = (checked: boolean) => {
     if (checked) {
-      const allIds = savedCertificates.map((c) => c.id);
-      setSelectedRecipients(new Set(allIds));
+      const allUnsent = savedCertificates.filter((c) => !sentEmails.has(c.id)).map((c) => c.id);
+      setSelectedRecipients(new Set(allUnsent));
     } else {
       setSelectedRecipients(new Set());
     }
@@ -918,16 +936,18 @@ function NovyCertifikatContent() {
                   <Checkbox
                     id="select-all-emails"
                     checked={
-                      selectedRecipients.size === savedCertificates.length &&
+                      selectedRecipients.size > 0 && 
+                      selectedRecipients.size === savedCertificates.filter(c => !sentEmails.has(c.id)).length &&
                       savedCertificates.length > 0
                     }
+                    disabled={savedCertificates.filter(c => !sentEmails.has(c.id)).length === 0}
                     onCheckedChange={(v) => toggleAllRecipients(!!v)}
                   />
                   <Label
                     htmlFor="select-all-emails"
                     className="cursor-pointer font-normal"
                   >
-                    Vybrat vše
+                    Vybrat vše (neodeslané)
                   </Label>
                 </div>
               </CardTitle>
@@ -941,25 +961,34 @@ function NovyCertifikatContent() {
               <div className="flex flex-col gap-2">
                 {savedCertificates.map((cert) => {
                   const hasEmail = !!cert.recipientEmail;
-                  const isSelected = selectedRecipients.has(cert.id);
+                  const isSent = sentEmails.has(cert.id);
+                  const isSelected = selectedRecipients.has(cert.id) || isSent;
 
                   return (
                     <div
                       key={cert.id}
                       className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                        isSelected
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-white"
+                        isSent
+                          ? "bg-gray-100 opacity-60 grayscale"
+                          : isSelected
+                            ? "bg-primary/5 border-primary/20"
+                            : "bg-white"
                       }`}
                     >
                       <Checkbox
                         id={`action-recipient-${cert.id}`}
                         checked={isSelected}
+                        disabled={isSent || !hasEmail}
                         onCheckedChange={(v) => toggleRecipient(cert.id, !!v)}
                       />
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-medium">
-                          {cert.recipientName}
+                          {cert.recipientName}{" "}
+                          {isSent && (
+                            <span className="ml-1 text-xs font-bold text-green-600">
+                              (Odesláno)
+                            </span>
+                          )}
                         </div>
                         <div className="text-muted-foreground truncate text-sm">
                           {hasEmail

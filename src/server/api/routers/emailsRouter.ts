@@ -43,7 +43,7 @@ export const emailsRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
           from: "Certifikátor <info@certifikator.eu>",
           to: input.emailAddress,
           subject: "Šablona stažena z veřejné galerie",
@@ -54,6 +54,11 @@ export const emailsRouter = createTRPCRouter({
             reason: input.reason,
           }),
         });
+
+        if (error) {
+          console.error("Chyba z Resend API:", error);
+          return { success: false };
+        }
 
         return { success: true };
       } catch (error) {
@@ -73,7 +78,7 @@ export const emailsRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
           from: "Certifikátor <info@certifikator.eu>",
           to: input.emailAddresses,
           subject: "Obdrželi jste nový certifikát",
@@ -91,6 +96,11 @@ export const emailsRouter = createTRPCRouter({
           ],
         });
 
+        if (error) {
+          console.error("Chyba z Resend API:", error);
+          return { success: false };
+        }
+
         return { success: true };
       } catch (error) {
         console.error("Chyba při odesílání emailu:", error);
@@ -103,6 +113,7 @@ export const emailsRouter = createTRPCRouter({
       z.object({
         recipients: z.array(
           z.object({
+            id: z.string(),
             email: z.string().email(),
             name: z.string(),
             validationToken: z.string(),
@@ -114,11 +125,53 @@ export const emailsRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       const senderString = input.senderName;
+      const statuses = new Map<string, boolean>();
 
-      const results = await Promise.allSettled(
-        input.recipients.map(async (recipient) => {
+      for (const recipient of input.recipients) {
+        try {
+          const { error } = await resend.emails.send({
+            from: "Certifikátor <info@certifikator.eu>",
+            to: recipient.email,
+            subject: "Obdrželi jste nový certifikát",
+            react: EmailTemplate({
+              emailType: "CERTIFICATE_SENT",
+              validationToken: recipient.validationToken,
+              username: senderString,
+            }),
+            attachments: [
+              {
+                filename: `${recipient.validationToken}.png`,
+                content: recipient.certificateUrl.split(",")[1],
+                contentType: "image/png",
+              },
+            ],
+          });
+
+          if (error) {
+            console.error(`Chyba z Resend API pro ${recipient.email}:`, error);
+            statuses.set(recipient.id, false);
+          } else {
+            statuses.set(recipient.id, true);
+          }
+        } catch (error) {
+          console.error(
+            `Neočekávaná chyba při odesílání e-mailu na ${recipient.email}:`,
+            error,
+          );
+          statuses.set(recipient.id, false);
+        }
+      }
+
+      // Pokus poslat neodeslané znovu
+      const failedRecipients = input.recipients.filter(r => !statuses.get(r.id));
+      if (failedRecipients.length > 0) {
+        console.log(`Opakovaný pokus pro ${failedRecipients.length} e-mailů...`);
+        // Počkáme 2 sekundy, abychom nenaběhli znovu do rate limitu
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        for (const recipient of failedRecipients) {
           try {
-            await resend.emails.send({
+            const { error } = await resend.emails.send({
               from: "Certifikátor <info@certifikator.eu>",
               to: recipient.email,
               subject: "Obdrželi jste nový certifikát",
@@ -135,24 +188,35 @@ export const emailsRouter = createTRPCRouter({
                 },
               ],
             });
-            return { email: recipient.email, status: "fulfilled" };
+
+            if (error) {
+              console.error(`Opakovaná chyba z Resend API pro ${recipient.email}:`, error);
+            } else {
+              statuses.set(recipient.id, true);
+            }
           } catch (error) {
             console.error(
-              `Nastala chyba při odesílání e-mailu na ${recipient.email}:`,
+              `Opakovaná neočekávaná chyba při odesílání e-mailu na ${recipient.email}:`,
               error,
             );
-            throw error;
           }
-        }),
-      );
+        }
+      }
 
-      const successCount = results.filter(
-        (r) => r.status === "fulfilled",
-      ).length;
+      const successfulRecipientIds = Array.from(statuses.entries())
+        .filter(([_, success]) => success)
+        .map(([id]) => id);
+
+      const failedRecipientIds = Array.from(statuses.entries())
+        .filter(([_, success]) => !success)
+        .map(([id]) => id);
+
       return {
         success: true,
-        sentCount: successCount,
+        sentCount: successfulRecipientIds.length,
         total: input.recipients.length,
+        successfulRecipientIds,
+        failedRecipientIds,
       };
     }),
 });
