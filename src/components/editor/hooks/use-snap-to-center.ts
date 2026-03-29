@@ -5,10 +5,7 @@ import {
   CANVAS_HEIGHT,
 } from "../types/canvas-types";
 
-// Konfigurace
 const SNAP_THRESHOLD = 5;
-
-// Typy
 export type Orientation = "V" | "H";
 
 export interface SnapLine {
@@ -31,7 +28,6 @@ export interface ElementBounds {
   width: number;
   height: number;
   rotation?: number;
-  // Přidáváme typ, abychom poznali centered shapes
   type?: string;
   shapeType?: string;
 }

@@ -11,26 +11,17 @@ import { DEFAULT_ZOOM_CONFIG } from "../types/canvas-types";
 const SCALE_BY = 1.05;
 
 interface UseCanvasZoomOptions {
-  // Reference na Konva Stage
   stageRef: React.RefObject<Konva.Stage | null>;
-  // Základní scale pro fit-to-container
   baseScale: number;
-  // Callback pro aktualizaci zoom hodnoty v kontextu
   onZoomChange?: (zoom: number) => void;
-  // Callback pro aktualizaci pan hodnoty v kontextu
   onPanChange?: (pan: { x: number; y: number }) => void;
-  // Šířka kontejneru
   containerWidth: number;
-  // Výška kontejneru
   containerHeight: number;
-  // Šířka plátna
   canvasWidth: number;
-  // Výška plátna
   canvasHeight: number;
 }
 
 interface UseCanvasZoomReturn {
-  // Handler pro wheel event
   handleWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
 }
 

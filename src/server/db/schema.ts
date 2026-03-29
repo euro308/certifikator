@@ -98,7 +98,6 @@ export const templates = createTable(
       .notNull()
       .$defaultFn(() => new Date()),
   },
-  // Indexování
   (table) => ({
     userDeletedIdx: index("templates_user_deleted_idx").on(
       table.userId,
@@ -130,7 +129,6 @@ export const certificates = createTable(
       .notNull()
       .$defaultFn(() => new Date()),
   },
-  // Indexování
   (table) => ({
     validationTokenIdx: uniqueIndex("certificates_validation_token_idx").on(
       table.validationToken,

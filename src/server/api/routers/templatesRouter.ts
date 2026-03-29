@@ -36,7 +36,6 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Počet certifikátů na šablonu, vrací prvních N
       const results = await db
         .select({
           templateId: certificates.templateId,
@@ -50,7 +49,6 @@ export const templatesRouter = createTRPCRouter({
 
       if (results.length === 0) return [];
 
-      // Fetch detailů šablony pro stejná ID
       const templateIds = results.map((r) => r.templateId);
       const matchedTemplates = await db.query.templates.findMany({
         where: and(
@@ -112,7 +110,6 @@ export const templatesRouter = createTRPCRouter({
           )
         : undefined;
 
-      // 1. Fetch vlastních šablon uživatele
       const ownTemplates = await ctx.db.query.templates.findMany({
         where: and(
           eq(templates.userId, ctx.session.user.id),
@@ -140,7 +137,6 @@ export const templatesRouter = createTRPCRouter({
         offset: offset,
       });
 
-      // 2. Fetch oblíbených veřejných šablon uživatele
       const favBaseQuery = ctx.db
         .select({
           favoriteId: templateFavorites.id,
@@ -279,7 +275,6 @@ export const templatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Ověření vlastnictví
       const existingTemplate = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.id),
@@ -295,7 +290,6 @@ export const templatesRouter = createTRPCRouter({
         });
       }
 
-      // 2. Update
       const [updatedTemplate] = await db
         .update(templates)
         .set({
@@ -317,7 +311,6 @@ export const templatesRouter = createTRPCRouter({
   getPublicStats: protectedProcedure
     .input(z.object({ templateId: z.string() }))
     .query(async ({ input }) => {
-      // Ověření, zda je šablona veřejná
       const template = await db.query.templates.findFirst({
         where: and(
           eq(templates.id, input.templateId),
@@ -332,7 +325,6 @@ export const templatesRouter = createTRPCRouter({
       }
 
       const [usageResult, favoritesResult] = await Promise.all([
-        // Spočítat certifikáty vytvořené jinými uživateli s touto šablonou
         db
           .select({ count: count(certificates.id) })
           .from(certificates)
@@ -342,7 +334,6 @@ export const templatesRouter = createTRPCRouter({
               ne(certificates.userId, template.userId),
             ),
           ),
-        // Spočítat počet oblíbení
         db
           .select({ count: count(templateFavorites.id) })
           .from(templateFavorites)

@@ -22,17 +22,14 @@ import { Separator } from "@/components/ui/separator";
 export default function NastaveniUzivatele() {
   const { data: session, isPending } = authClient.useSession();
 
-  // Stav profilu
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
-  // Stav cropperu
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImageSrc, setCropperImageSrc] = useState<string | null>(null);
 
-  // Stav hesla
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -97,7 +94,7 @@ export default function NastaveniUzivatele() {
         promises.push(
           authClient.changeEmail({
             newEmail: email,
-            callbackURL: "/dashboard/nastaveni-uzivatele", // Přesměrování zpět po ověření
+            callbackURL: "/dashboard/nastaveni-uzivatele",
           }),
         );
       }

@@ -21,7 +21,6 @@ export const activityRouter = createTRPCRouter({
     .query(async ({ ctx, input }): Promise<ActivityItem[]> => {
       const userId = ctx.session.user.id;
 
-      // Načtení posledních šablon
       const recentTemplates = await db.query.templates.findMany({
         where: and(eq(templates.userId, userId), isNull(templates.deletedAt)),
         orderBy: [desc(templates.createdAt)],
@@ -33,7 +32,6 @@ export const activityRouter = createTRPCRouter({
         },
       });
 
-      // Načtení posledních certifikátů
       const recentCertificates = await db.query.certificates.findMany({
         where: eq(certificates.userId, userId),
         orderBy: [desc(certificates.createdAt)],
@@ -45,7 +43,6 @@ export const activityRouter = createTRPCRouter({
         },
       });
 
-      // Spojení a seřazení podle data
       const activity: ActivityItem[] = [
         ...recentTemplates.map((t) => ({
           id: t.id,
@@ -61,7 +58,6 @@ export const activityRouter = createTRPCRouter({
         })),
       ];
 
-      // Seřazení od nejnovějšího a vrácení prvních N
       activity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       return activity.slice(0, input.limit);

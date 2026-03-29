@@ -43,7 +43,6 @@ export default function KontrolaPlatnosti() {
     if (e.key === "Enter") handleSearch();
   };
 
-  // Determine state
   const hasSearched = submittedToken !== null;
   const isValid = hasSearched && !isLoading && !isError && !!certificate;
   const isInvalid = hasSearched && !isLoading && isError;

@@ -72,10 +72,8 @@ export function EditorCanvas() {
     updateElement,
   } = useEditorContext();
 
-  // Klávesové zkratky
   useKeyboardHandler();
 
-  // Měření velikosti kontejneru
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -93,10 +91,8 @@ export function EditorCanvas() {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Zobrazení zoomu v procentech
   const zoomPercent = Math.round(zoom * 100);
 
-  // Kopírování objektu přes Context Menu
   const copyElement = () => {
     const el = selectedElement;
     if (el) {
@@ -125,7 +121,6 @@ export function EditorCanvas() {
       const localCx = (el.width * (el.scaleX ?? 1)) / 2;
       const localCy = (el.height * (el.scaleY ?? 1)) / 2;
 
-      // Natočení aktuálního stavu v radiánech
       const currentRad = (el.rotation * Math.PI) / 180;
 
       // Pozice středu globálně

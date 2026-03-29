@@ -83,7 +83,7 @@ export function CertificateThumbnailGenerator({
             onGenerate({ certificateUrl: "", thumbnailImageUrl: "" });
           }
         }
-      }, 100); // 100ms zpoždění by mělo stačit po načtení obrázků
+      }, 100);
 
       return () => clearTimeout(timeout);
     }

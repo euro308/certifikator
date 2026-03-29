@@ -36,7 +36,6 @@ import { useUndoRedo } from "./hooks/use-undo-redo";
 // =============================================================================
 
 interface EditorContextType {
-  // Prvky na plátně
   elements: CanvasElement[];
   setElements: (elements: CanvasElement[]) => void;
   addElement: (element: CanvasElement, shouldSelect?: boolean) => void;
@@ -60,20 +59,17 @@ interface EditorContextType {
   setSelectedId: (id: string | null) => void;
   selectedElement: CanvasElement | null;
 
-  // Zoom a pan
   zoom: number;
   setZoom: (zoom: number) => void;
   pan: PanState;
   setPan: (pan: PanState) => void;
   resetView: () => void;
 
-  // Tovární metody pro vytváření prvků
   createTextElement: () => void;
   createPlaceholderElement: (placeholderKey: string) => void;
   createShapeElement: (shapeType: ShapeType) => void;
   createImageElement: (src: string, width: number, height: number) => void;
 
-  // Uložení a export
   saveTemplate: () => void;
   getExportData: () => TemplateExportData;
   getPlaceholders: () => string[];
@@ -81,7 +77,6 @@ interface EditorContextType {
     callback: () => { previewImageUrl: string; thumbnailImageUrl: string },
   ) => void;
 
-  // Undo/Redo
   undo: () => void;
   redo: () => void;
   canUndo: boolean;

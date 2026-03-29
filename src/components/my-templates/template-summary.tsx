@@ -71,7 +71,6 @@ type TemplateRow =
   | { type: "gallery"; data: FavoriteTemplate };
 
 const TemplateUsageCounter = ({ templateId }: { templateId: string }) => {
-  // tRPC hook pro načtení dat
   const { data: count, isLoading } =
     api.certificates.getCertificateCountByTemplate.useQuery({
       templateId,
@@ -184,7 +183,7 @@ export function TemplateSummary() {
   };
 
   const handleCopyId = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Zabrání prokliku na detail šablony
+    e.stopPropagation();
     await navigator.clipboard.writeText(id);
     toast.success("ID šablony zkopírováno");
   };
@@ -232,7 +231,7 @@ export function TemplateSummary() {
       if (searchValue.length > 0 && date.includes(searchValue)) {
         return true;
       }
-      return true; // Zbytek na serveru
+      return true;
     })
     .sort((a, b) => {
       const nameA = getRowName(a);

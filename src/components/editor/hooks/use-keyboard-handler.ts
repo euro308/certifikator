@@ -3,9 +3,9 @@ import { useEditorContext } from "../editor-context";
 
 export function useKeyboardHandler() {
   const {
-    selectedIds, // Používáme pole ID
+    selectedIds,
     setSelectedIds,
-    deleteSelectedElements, // Používáme hromadné mazání
+    deleteSelectedElements,
     updateElement,
     addElement,
     undo,

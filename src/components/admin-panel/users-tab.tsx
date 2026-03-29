@@ -94,9 +94,6 @@ export function UsersTab() {
   } | null>(null);
 
   const resetPasswordMutation = api.emails.sendPasswordReset.useMutation({
-    onMutate: () => {
-      // UI state řešen odděleně
-    },
     onSuccess: () => {
       toast.success(
         "Odkaz na obnovu hesla byl úspěšně odeslán uživateli na e-mail.",

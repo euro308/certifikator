@@ -75,8 +75,8 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
   };
 
   const handleSave = () => {
-    saveTemplate(); // Uloží data přes context
-    onSaveAndClose(); // Zavře dialog
+    saveTemplate();
+    onSaveAndClose();
   };
 
   const zoomPercentage = Math.round(zoom * 100);
@@ -191,13 +191,10 @@ function EditorFooter({ isSaving, onSaveAndClose }: EditorFooterProps) {
 }
 
 interface EditorDialogProps {
-  // Počáteční data plátna pro editaci existující šablony
   canvasData?: TemplateExportData | null;
-  // Callback volaný při uložení (po kliknutí na "Uložit šablonu")
   saveMockCanvas?: (data: TemplateExportData) => void;
 }
 
-// Dialog (modal) pro editor šablon certifikátů
 export function EditorDialog({
   canvasData,
   saveMockCanvas,
@@ -219,7 +216,6 @@ export function EditorDialog({
     [saveMockCanvas],
   );
 
-  // Handler pro pokus o zavření dialogu (kromě uložení)
   const handleOpenChange = (open: boolean) => {
     if (!open && !isSaving && isOpen) {
       // Pokus o zavření - zobrazit potvrzení
@@ -240,10 +236,9 @@ export function EditorDialog({
     setShowCloseConfirm(false);
   };
 
-  // Uložit a zavřít (BEZ potvrzení
+  // Uložit a zavřít (BEZ potvrzení)
   const handleSaveAndClose = useCallback(() => {
     setIsSaving(true);
-    // Krátké zpoždění, aby se state stihl uložit
     setTimeout(() => {
       setIsOpen(false);
       setIsSaving(false);

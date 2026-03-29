@@ -32,17 +32,14 @@ const breadcrumbNameMap: Record<string, string> = {
   nahlaseni: "Nahlášení",
 };
 
-// Cesty bez odkazu
 const nonLinkableSegments = ["sablona", "certifikat", "nahlaseni"];
 
 function BreadcrumbsByPathnameContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Rozdělení cesty a odstranění prázdných stringů
   const pathSegments = pathname.split("/").filter((segment) => segment !== "");
 
-  // Helper k získání jména
   const getBreadcrumbName = (segment: string) => {
     return breadcrumbNameMap[segment] ?? segment;
   };

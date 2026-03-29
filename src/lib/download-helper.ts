@@ -37,7 +37,6 @@ export async function downloadCertificatesAsZip(
 
   const blob = await zip.generateAsync({ type: "blob" });
 
-  // Vytvořit dočasnou URL pro stažení
   const url = URL.createObjectURL(blob);
   downloadFile(url, zipFilename);
   URL.revokeObjectURL(url);

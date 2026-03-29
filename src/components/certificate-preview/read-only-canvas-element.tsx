@@ -60,11 +60,10 @@ export function ReadOnlyCanvasElement({ element }: ReadOnlyCanvasElementProps) {
     scaleY: element.scaleY ?? 1,
     opacity: element.opacity,
     draggable: false,
-    listening: false, // Vypne interakci
+    listening: false,
     visible: element.visible,
   };
 
-  // 1. Text & proměnná
   if (element.type === "text" || element.type === "placeholder") {
     // Pro náhledy placeholder vykreslíme jako normální text (již by měl mít nahrazený text)
     // Pokud je to stále placeholder typ, použijeme displayText, jinak text

@@ -76,7 +76,7 @@ export const certificatesRouter = createTRPCRouter({
           certificateUrl: true,
           validationToken: true,
           createdAt: true,
-        }, // Optimalizace - nenačítáme dlouhý recipientData a velký certificateUrl, který tu není potřeba
+        },
         orderBy: (certificates, { asc, desc }) => {
           if (sortBy === "name")
             return sortDir === "asc"
@@ -253,7 +253,6 @@ export const certificatesRouter = createTRPCRouter({
         })
         .returning();
 
-      // Zvýšit počet stáhnutí při použití cizí šablony
       await db
         .update(templates)
         .set({ downloads: sql`${templates.downloads} + 1` })
@@ -312,7 +311,6 @@ export const certificatesRouter = createTRPCRouter({
         thumbnailImageUrl: c.thumbnailImageUrl ?? "",
       }));
 
-      // Zvýšit počet stáhnutí pro každou využitou cizí šablonu
       const uniqueTemplateIds = [...new Set(input.map((c) => c.templateId))];
       for (const templateId of uniqueTemplateIds) {
         const count = input.filter((c) => c.templateId === templateId).length;
@@ -337,7 +335,6 @@ export const certificatesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Ověření vlastnictví
       const existingCertificate = await db.query.certificates.findFirst({
         where: and(
           eq(certificates.id, input.id),
@@ -353,7 +350,6 @@ export const certificatesRouter = createTRPCRouter({
         });
       }
 
-      // 2. Update
       const [deletedCertificate] = await db
         .delete(certificates)
         .where(eq(certificates.id, input.id))

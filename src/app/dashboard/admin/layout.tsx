@@ -1,4 +1,3 @@
-// src/app/admin/layout.tsx
 import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
 import React from "react";

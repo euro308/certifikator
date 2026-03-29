@@ -16,7 +16,6 @@ import { Slider } from "@/components/ui/slider";
 import { Loader2, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 
-// Utility na načítaní obrázků
 const createImage = (url: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();

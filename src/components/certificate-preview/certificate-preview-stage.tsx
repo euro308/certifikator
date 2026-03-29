@@ -17,7 +17,7 @@ import {
 
 interface CertificatePreviewStageProps {
   elements: CanvasElement[];
-  width: number; // Požadovaná šířka kontejneru pro náhled
+  width: number;
 }
 
 export function CertificatePreviewStage({

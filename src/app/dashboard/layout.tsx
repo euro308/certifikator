@@ -1,4 +1,3 @@
-// src/app/dashboard/layout.tsx
 import { auth } from "@/server/better-auth/config";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

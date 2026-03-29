@@ -57,7 +57,6 @@ export const adminRouter = createTRPCRouter({
     };
   }),
 
-  // -- STAŽENÍ ŠABLONY Z GALERIE --
   takeDownTemplate: protectedProcedure
     .input(
       z.object({
@@ -68,7 +67,6 @@ export const adminRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       requireAdmin(ctx.session.user.id);
 
-      // 1. Získáme info o šabloně a uživateli
       const templateData = await db.query.templates.findFirst({
         where: eq(templates.id, input.templateId),
         columns: {
@@ -85,18 +83,15 @@ export const adminRouter = createTRPCRouter({
         });
       }
 
-      // 2. Skryjeme šablonu (změníme isPublic na false)
       await db
         .update(templates)
         .set({ isPublic: false })
         .where(eq(templates.id, input.templateId));
 
-      // 3. Smažeme všechny reporty pro danou šablonu, protože už byla stažena
       await db
         .delete(templateReports)
         .where(eq(templateReports.templateId, input.templateId));
 
-      // 4. Pošleme notifikační e-mail autorovi (pokud existuje)
       if (templateData.user?.email) {
         try {
           await resend.emails.send({
@@ -112,18 +107,15 @@ export const adminRouter = createTRPCRouter({
           });
         } catch (err) {
           console.error("Nepodařilo se odeslat email o stažení šablony:", err);
-          // Necháme projít, šablona se stáhla, e-mail je bonusový side-effect
         }
       }
 
       return { success: true };
     }),
 
-  // -- NAHLÁŠENÍ (REPORTS) --
   getReports: protectedProcedure.query(async ({ ctx }) => {
     requireAdmin(ctx.session.user.id);
 
-    // Vytáhneme všechny reporty a agregujeme je podle šablon
     const reports = await db.query.templateReports.findMany({
       with: {
         template: {
@@ -143,7 +135,6 @@ export const adminRouter = createTRPCRouter({
       latestReportAt: Date;
     };
 
-    // Seskupení podle ID šablony
     const grouped = new Map<string, GroupedReport>();
 
     for (const report of reports) {
@@ -165,7 +156,6 @@ export const adminRouter = createTRPCRouter({
       const entry = grouped.get(tid);
       if (entry) {
         entry.reportCount += 1;
-        // Spoléháme na dřívější orderBy desc, ale pro jistotu kontrolujeme:
         if (new Date(report.createdAt) > new Date(entry.latestReportAt)) {
           entry.latestReportAt = report.createdAt;
         }
@@ -179,7 +169,6 @@ export const adminRouter = createTRPCRouter({
     );
   }),
 
-  // -- DETAIL REPORTŮ PRO KONKRÉTNÍ ŠABLONU --
   getTemplateReports: protectedProcedure
     .input(z.object({ templateId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -228,7 +217,6 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // -- VYZVEDNUTÍ VŠECH ŠABLON V SYSTÉMU --
   getAllTemplates: protectedProcedure
     .input(
       z

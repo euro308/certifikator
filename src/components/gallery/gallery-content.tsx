@@ -74,14 +74,13 @@ function GalleryContentInner() {
           void fetchNextPage();
         }
       },
-      { threshold: 0.1, rootMargin: "400px" }, // Načíst trochu dříve
+      { threshold: 0.1, rootMargin: "400px" },
     );
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Žádné veřejné šablony v DB (a zrovna se nenačítá)
   const isEmpty = visible.length === 0 && !debouncedSearchQuery && !isLoading;
 
   return (
@@ -119,7 +118,6 @@ function GalleryContentInner() {
               {field.label}
               {isActive &&
                 (() => {
-                  // Šipka dolů = přirozený směr (A-Z u názvu, nejvíc u ostatních)
                   const isNatural =
                     field.key === "name"
                       ? sortDir === "asc"

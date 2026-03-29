@@ -162,7 +162,6 @@ export const emailsRouter = createTRPCRouter({
         }
       }
 
-      // Pokus poslat neodeslané znovu
       const failedRecipients = input.recipients.filter(
         (r) => !statuses.get(r.id),
       );
@@ -170,7 +169,6 @@ export const emailsRouter = createTRPCRouter({
         console.log(
           `Opakovaný pokus pro ${failedRecipients.length} e-mailů...`,
         );
-        // Počkáme 2 sekundy, abychom nenaběhli znovu do rate limitu
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         for (const recipient of failedRecipients) {
