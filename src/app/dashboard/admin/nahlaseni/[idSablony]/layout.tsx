@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Detail hlášení",
+  title: "Detail hlášení",
 };
 
 export default function AdminNahlaseniDetailLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }

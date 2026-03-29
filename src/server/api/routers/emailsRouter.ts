@@ -163,9 +163,13 @@ export const emailsRouter = createTRPCRouter({
       }
 
       // Pokus poslat neodeslané znovu
-      const failedRecipients = input.recipients.filter(r => !statuses.get(r.id));
+      const failedRecipients = input.recipients.filter(
+        (r) => !statuses.get(r.id),
+      );
       if (failedRecipients.length > 0) {
-        console.log(`Opakovaný pokus pro ${failedRecipients.length} e-mailů...`);
+        console.log(
+          `Opakovaný pokus pro ${failedRecipients.length} e-mailů...`,
+        );
         // Počkáme 2 sekundy, abychom nenaběhli znovu do rate limitu
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -190,7 +194,10 @@ export const emailsRouter = createTRPCRouter({
             });
 
             if (error) {
-              console.error(`Opakovaná chyba z Resend API pro ${recipient.email}:`, error);
+              console.error(
+                `Opakovaná chyba z Resend API pro ${recipient.email}:`,
+                error,
+              );
             } else {
               statuses.set(recipient.id, true);
             }

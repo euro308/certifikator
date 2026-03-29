@@ -77,7 +77,9 @@ interface EditorContextType {
   saveTemplate: () => void;
   getExportData: () => TemplateExportData;
   getPlaceholders: () => string[];
-  setGetPreviewImageCallback: (callback: () => { previewImageUrl: string, thumbnailImageUrl: string }) => void;
+  setGetPreviewImageCallback: (
+    callback: () => { previewImageUrl: string; thumbnailImageUrl: string },
+  ) => void;
 
   // Undo/Redo
   undo: () => void;
@@ -119,7 +121,9 @@ export function EditorProvider({
   const [pan, setPan] = useState<PanState>({ x: 0, y: 0 });
 
   // Ref pro callback na získání obrázku
-  const getPreviewImageCallbackRef = useRef<(() => { previewImageUrl: string, thumbnailImageUrl: string }) | null>(null);
+  const getPreviewImageCallbackRef = useRef<
+    (() => { previewImageUrl: string; thumbnailImageUrl: string }) | null
+  >(null);
 
   // Undo/Redo hook
   const {
@@ -541,9 +545,14 @@ export function EditorProvider({
     };
   }, [elements, getPlaceholders]);
 
-  const setGetPreviewImageCallback = useCallback((callback: () => { previewImageUrl: string, thumbnailImageUrl: string }) => {
-    getPreviewImageCallbackRef.current = callback;
-  }, []);
+  const setGetPreviewImageCallback = useCallback(
+    (
+      callback: () => { previewImageUrl: string; thumbnailImageUrl: string },
+    ) => {
+      getPreviewImageCallbackRef.current = callback;
+    },
+    [],
+  );
 
   // Uložit šablonu
   const saveTemplate = useCallback(() => {

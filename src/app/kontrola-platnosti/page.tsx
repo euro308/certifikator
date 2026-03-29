@@ -189,13 +189,18 @@ export default function KontrolaPlatnosti() {
                 {certificate.certificateUrl && (
                   <>
                     <div className="my-2 border-t" />
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-semibold text-gray-900">Náhled certifikátu</h3>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900">
+                        Náhled certifikátu
+                      </h3>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          downloadFile(certificate.certificateUrl, `${certificate.validationToken}.png`);
+                          downloadFile(
+                            certificate.certificateUrl,
+                            `${certificate.validationToken}.png`,
+                          );
                         }}
                       >
                         <Download className="mr-2 size-4" />

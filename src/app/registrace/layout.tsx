@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Registrace",
+  title: "Registrace",
 };
 
 export default function RegistraceLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }

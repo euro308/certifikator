@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Nová šablona | Certifikátor",
+  title: "Nová šablona | Certifikátor",
 };
 
 export default function NovaSablonaLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }

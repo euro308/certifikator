@@ -211,28 +211,29 @@ export const templatesRouter = createTRPCRouter({
       });
     }),
 
-  getUserTemplateCount: protectedProcedure
-    .query(async ({ ctx }) => {
-      return db.$count(
-        templates,
-        and(eq(templates.userId, ctx.session.user.id), isNull(templates.deletedAt)),
-      );
-    }),
+  getUserTemplateCount: protectedProcedure.query(async ({ ctx }) => {
+    return db.$count(
+      templates,
+      and(
+        eq(templates.userId, ctx.session.user.id),
+        isNull(templates.deletedAt),
+      ),
+    );
+  }),
 
-  pastWeeksChange: protectedProcedure
-    .query(async ({ ctx }) => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
+  pastWeeksChange: protectedProcedure.query(async ({ ctx }) => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
 
-      return db.$count(
-        templates,
-        and(
-          eq(templates.userId, ctx.session.user.id),
-          gte(templates.createdAt, weekAgo),
-          isNull(templates.deletedAt),
-        ),
-      );
-    }),
+    return db.$count(
+      templates,
+      and(
+        eq(templates.userId, ctx.session.user.id),
+        gte(templates.createdAt, weekAgo),
+        isNull(templates.deletedAt),
+      ),
+    );
+  }),
 
   createTemplate: protectedProcedure
     .input(

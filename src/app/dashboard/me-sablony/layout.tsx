@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Mé šablony",
+  title: "Mé šablony",
 };
 
 export default function MeSablonyLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }

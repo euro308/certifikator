@@ -197,7 +197,6 @@ interface EditorDialogProps {
   saveMockCanvas?: (data: TemplateExportData) => void;
 }
 
-
 // Dialog (modal) pro editor šablon certifikátů
 export function EditorDialog({
   canvasData,

@@ -1,32 +1,30 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { certificates, templates } from "@/server/db/schema";
 import { db } from "@/server/db";
 import { and, eq, gte, ne, sql, or, ilike } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const certificatesRouter = createTRPCRouter({
-  getUserCertificateCount: protectedProcedure
-    .query(async ({ ctx }) => {
-      return db.$count(certificates, eq(certificates.userId, ctx.session.user.id));
-    }),
+  getUserCertificateCount: protectedProcedure.query(async ({ ctx }) => {
+    return db.$count(
+      certificates,
+      eq(certificates.userId, ctx.session.user.id),
+    );
+  }),
 
-  pastWeeksChange: protectedProcedure
-    .query(async ({ ctx }) => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
+  pastWeeksChange: protectedProcedure.query(async ({ ctx }) => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
 
-      return db.$count(
-        certificates,
-        and(
-          eq(certificates.userId, ctx.session.user.id),
-          gte(certificates.createdAt, weekAgo),
-        ),
-      );
-    }),
+    return db.$count(
+      certificates,
+      and(
+        eq(certificates.userId, ctx.session.user.id),
+        gte(certificates.createdAt, weekAgo),
+      ),
+    );
+  }),
 
   getUserCertificates: protectedProcedure
     .input(

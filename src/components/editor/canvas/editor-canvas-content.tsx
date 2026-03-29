@@ -273,7 +273,7 @@ export function EditorCanvasContent({
         // Pokud byl výběr velmi malý (jen kliknutí), neřešíme ho zde (řeší handleStageClick)
         const dist = Math.sqrt(
           Math.pow(selectionRect.x2 - selectionRect.x1, 2) +
-          Math.pow(selectionRect.y2 - selectionRect.y1, 2),
+            Math.pow(selectionRect.y2 - selectionRect.y1, 2),
         );
 
         if (dist < 5) {
@@ -784,10 +784,10 @@ export function EditorCanvasContent({
             initialValue={
               elements.find((el) => el.id === editingId)?.type === "placeholder"
                 ? (
-                  elements.find(
-                    (el) => el.id === editingId,
-                  ) as PlaceholderElement
-                ).placeholderKey
+                    elements.find(
+                      (el) => el.id === editingId,
+                    ) as PlaceholderElement
+                  ).placeholderKey
                 : undefined
             }
           />

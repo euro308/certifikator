@@ -95,7 +95,10 @@ export default function CertificateDetailPage() {
             <Button
               variant="outline"
               onClick={() => {
-                downloadFile(certificate.certificateUrl, `${certificate.validationToken}.png`);
+                downloadFile(
+                  certificate.certificateUrl,
+                  `${certificate.validationToken}.png`,
+                );
               }}
             >
               <Download className="mr-2 size-4" />
@@ -219,10 +222,10 @@ export default function CertificateDetailPage() {
                   ))}
                   {Object.keys(certificate.recipientData as object).length ===
                     0 && (
-                      <p className="text-muted-foreground py-2 text-center text-sm italic">
-                        Žádná doplňující data.
-                      </p>
-                    )}
+                    <p className="text-muted-foreground py-2 text-center text-sm italic">
+                      Žádná doplňující data.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

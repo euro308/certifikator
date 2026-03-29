@@ -183,21 +183,25 @@ export default async function Dashboard() {
         </CardHeader>
         <CardContent className="flex flex-wrap justify-between">
           <div className="flex gap-3">
-          <Button asChild className="bg-gradient-primary hover:opacity-90">
-            <Link href="/dashboard/me-sablony/nova">
-              <Plus className="size-6" />
-              <span className="text-base">Nová šablona</span>
-            </Link>
-          </Button>
-          <Button asChild className="bg-gradient-primary hover:opacity-90">
-            <Link href="/dashboard/me-certifikaty/novy" className="text-3xl">
-              <Plus className="size-6" />
-              <span className="text-base">Nový certifikát</span>
-            </Link>
-          </Button>
+            <Button asChild className="bg-gradient-primary hover:opacity-90">
+              <Link href="/dashboard/me-sablony/nova">
+                <Plus className="size-6" />
+                <span className="text-base">Nová šablona</span>
+              </Link>
+            </Button>
+            <Button asChild className="bg-gradient-primary hover:opacity-90">
+              <Link href="/dashboard/me-certifikaty/novy" className="text-3xl">
+                <Plus className="size-6" />
+                <span className="text-base">Nový certifikát</span>
+              </Link>
+            </Button>
           </div>
           {isAdmin && (
-            <Button asChild variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+            <Button
+              asChild
+              variant="outline"
+              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
               <Link href="/dashboard/admin" className="text-3xl">
                 <Shield className="size-6" />
                 <span className="text-base">Administrace</span>

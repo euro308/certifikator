@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Detail šablony",
+  title: "Detail šablony",
 };
 
 export default function AdminSablonaDetailLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }
