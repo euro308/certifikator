@@ -48,7 +48,7 @@ export function FooterOutside() {
           </div>
 
           {/* Right side copyright */}
-          <div className="text-sm text-gray-500">© 2025 Certifikátor.</div>
+          <div className="text-sm text-gray-500">© 2026 Certifikátor.</div>
         </div>
       </div>
     </footer>
